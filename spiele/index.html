@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Sieben Browserspiele für 2 bis 10 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Acht Browserspiele für 2 bis 10 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -468,7 +468,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Sieben Browserspiele für 2 bis 10 Leute. Kein Download, kein Account
+  <p class="sub">Acht Browserspiele für 2 bis 10 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -579,7 +579,7 @@ footer a { color: inherit; }
     </a>
   </article>
 
-  <article class="game breit" style="--accent:#ffd447; --accent2:#ff8a3d;">
+  <article class="game" style="--accent:#ffd447; --accent2:#ff8a3d;">
     <button class="info" type="button" data-spiel="amehesten"
             aria-label="Wie Wer am ehesten gespielt wird">i</button>
     <a class="game-link" href="/amehesten/">
@@ -592,6 +592,24 @@ footer a { color: inherit; }
         <span class="dot" data-status></span>
         <span class="tag">3–10 Spieler</span>
         <span class="tag">Party</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+  </article>
+
+  <article class="game" style="--accent:#a06bff; --accent2:#35e6ff;">
+    <button class="info" type="button" data-spiel="imposter"
+            aria-label="Wie Imposter gespielt wird">i</button>
+    <a class="game-link" href="/imposter/">
+      <div class="icon">🕵️</div>
+      <h2>Imposter</h2>
+      <p>Alle bekommen dasselbe Wort – bis auf einen. Der kennt nur die Gruppe
+        und muss so tun, als wüsste er Bescheid. Reihum ein Hinweis, dann wird
+        abgestimmt. Der längste Abend von allen.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">4–10 Spieler</span>
+        <span class="tag">Rollen</span>
         <span class="go">Spielen →</span>
       </div>
     </a>
@@ -761,6 +779,21 @@ const SPIELE = {
       "Solange nicht alle durch sind, kann man umentscheiden. Die eigene Wahl bleibt sichtbar, die der anderen nicht.",
       "Aufgedeckt wird erst, wenn alle gewählt haben. Dann kommen die Balken: wer wie viele Stimmen bekommen hat – und von wem.",
       "Jede Stimme ist ein Punkt für den Gewählten, wer eine Runde anführt bekommt eine Krone. Am Ende steht, über wen am meisten geredet wurde."
+    ]
+  },
+  imposter: {
+    titel: "Imposter",
+    pfad: "/imposter/",
+    kurz: "Alle kennen das Wort. Bis auf einen – und der muss so tun, als ob.",
+    bild: "bilder/imposter-spiel.webp",
+    schritte: [
+      "Raum aufmachen, Link weitergeben – vier bis zehn Leute, jeder mit eigenem Handy.",
+      "Alle bekommen dasselbe Wort, zum Beispiel „Schleifpapier“. Einer bekommt es nicht: er sieht nur die Gruppe, also „Werkzeug“, und die Liste aller Wörter daraus.",
+      "Reihum sagt jeder laut ein Hinweiswort. Nicht zu deutlich, sonst weiß der Imposter gleich Bescheid – aber auch nicht zu vage, sonst hält man dich selbst für ihn.",
+      "Der Imposter hört zu und hängt sich irgendwo an. Er hat die Wortliste vor sich, mehr aber auch nicht.",
+      "Danach stimmen alle ab, wer es war. Aufgedeckt wird erst, wenn jeder gewählt hat. Bei Gleichstand hat sich die Runde nicht geeinigt – der Imposter ist durch.",
+      "Wird er erwischt, darf er noch einmal raten, welches Wort es war. Trifft er, rettet er einen Punkt.",
+      "Punkte: unerkannt durchgekommen gibt 2 für den Imposter, erwischt und richtig geraten 1. Erwischt und danebengeraten heißt: jeder andere bekommt 1."
     ]
   }
 };

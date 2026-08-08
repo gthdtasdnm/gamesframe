@@ -408,7 +408,66 @@ async function amehesten(browser) {
   for (const s of [host, g1, g2, g3]) await s.context().close();
 }
 
-const SPIELE = { keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten };
+// ----------------------------------------------------------------- Imposter
+
+async function imposter(browser) {
+  // Fuenf Sitzungen: unter vier startet das Spiel gar nicht, und die
+  // Hinweisreihe im Bild soll nach mehr aussehen als nach drei Namen.
+  const namen = ['Ata', 'Mira', 'Nuri', 'Jo', 'Sam'];
+  const seiten = [];
+  for (const name of namen) {
+    const p = await spieler(browser, name);
+    await p.goto(`${BASIS}/imposter/`, { waitUntil: 'networkidle' });
+    await p.fill('#name', name);
+    seiten.push(p);
+  }
+  const [host, ...gaeste] = seiten;
+
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const g of gaeste) {
+    await g.fill('#codeInput', code);
+    await g.click('#joinBtn');
+    await g.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await g.click('#readyBtn');
+  }
+
+  await warte(600);
+  await knipsen(host, 'imposter-raum.png');
+
+  await host.click('#startBtn');
+  await host.waitForSelector('#screen-game.active', { timeout: 15000 });
+  await warte(600);
+
+  // Alle bestaetigen ihre Karte, dann laeuft die Hinweisrunde an.
+  for (const s of seiten) await s.click('#aktionen .btn.primary');
+  await host.waitForSelector('#reihenListe:not([hidden])', { timeout: 15000 });
+  await warte(400);
+
+  // Fuers Bild die Seite eines *Nicht*-Imposters nehmen: sie zeigt ein echtes
+  // Wort statt der Luper-Karte, und das erklaert das Spiel besser. Wer der
+  // Imposter ist, steht nur auf dessen eigenem Bildschirm.
+  let bild = null;
+  for (const s of seiten) {
+    const kopf = await s.textContent('#karteKopf');
+    if (kopf && kopf.trim() === 'Dein Wort') { bild = s; break; }
+  }
+  if (!bild) throw new Error('keine Seite ohne Imposter-Karte gefunden');
+
+  // Die Wortliste aufklappen: sie ist der Kniff des Spiels und im
+  // zusammengeklappten Zustand nicht zu sehen.
+  await bild.click('#liste summary');
+  await warte(500);
+  await knipsen(bild, 'imposter-spiel.png');
+
+  for (const s of seiten) await s.context().close();
+}
+
+const SPIELE = {
+  keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
+};
 
 const gewaehlt = process.argv.slice(2);
 const liste = gewaehlt.length ? gewaehlt : Object.keys(SPIELE);
