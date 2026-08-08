@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Fünf Browserspiele für 2 bis 8 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Sechs Browserspiele für 2 bis 8 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -468,7 +468,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Fünf Browserspiele für 2 bis 8 Leute. Kein Download, kein Account
+  <p class="sub">Sechs Browserspiele für 2 bis 8 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -542,7 +542,7 @@ footer a { color: inherit; }
     </a>
   </article>
 
-  <article class="game breit" style="--accent:#ff9f1c; --accent2:#ff2e88;">
+  <article class="game" style="--accent:#ff9f1c; --accent2:#ff2e88;">
     <button class="info" type="button" data-spiel="nochnie"
             aria-label="Wie Ich hab noch nie gespielt wird">i</button>
     <a class="game-link" href="/nochnie/">
@@ -561,6 +561,23 @@ footer a { color: inherit; }
     </a>
   </article>
 
+  <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;">
+    <button class="info" type="button" data-spiel="maexchen"
+            aria-label="Wie Mäxchen gespielt wird">i</button>
+    <a class="game-link" href="/maexchen/">
+      <div class="icon">🎲</div>
+      <h2>Mäxchen</h2>
+      <p>Zwei Würfel unter dem Becher, und nur du siehst sie. Sag an, was du
+        angeblich hast – höher als der vor dir. Der Nächste glaubt es oder
+        deckt auf. Einer verliert dabei immer ein Leben.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–8 Spieler</span>
+        <span class="tag">Bluff</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+  </article>
 
 </main>
 
@@ -698,7 +715,21 @@ const SPIELE = {
       "Wer erwischt wurde, steht rot in der Liste. Ob daraus ein Schluck wird, die Geschichte dazu oder nichts, entscheidet ihr – das Spiel zählt nur mit.",
       "Der Host stellt ein, was auf den Karten steht: harmlos, gemischt oder nur 18+. Vor den 18+-Karten fragt jedes Gerät einmal nach."
     ]
-  }
+  },
+  maexchen: {
+    titel: "Mäxchen",
+    pfad: "/maexchen/",
+    kurz: "Gewürfelt wird, damit man lügen kann. Zwei Würfel, ein Becher, und nur du siehst darunter.",
+    bild: "bilder/maexchen-spiel.webp",
+    schritte: [
+      "Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.",
+      "Wer am Zug ist, schüttelt den Becher. Die zwei Würfel erscheinen nur auf seinem Bildschirm – der Server verrät sie sonst niemandem.",
+      "Dann sagt er an, was er angeblich hat. Die Ansage muss die vorherige überbieten; ob sie zum eigenen Wurf passt, ist seine Sache.",
+      "Der Nächste entscheidet: „Ich glaube“ – dann würfelt er selbst und muss noch höher ansagen. Oder „Ich glaub’s nicht“ – dann wird aufgedeckt.",
+      "Beim Aufdecken verliert immer eine Seite ein Leben: war gelogen, der Ansager. War es wahr, der Zweifler.",
+      "Die Rangfolge: 31 ist das Schlechteste, dann aufwärts bis 65, darüber die Doppel. Ganz oben steht die 21 – das Mäxchen. Es lässt sich nicht überbieten, nur anzweifeln, und das kostet doppelt.",
+      "Wer keine Leben mehr hat, ist raus. Der Letzte am Tisch gewinnt."
+    ]
   }
 };
 

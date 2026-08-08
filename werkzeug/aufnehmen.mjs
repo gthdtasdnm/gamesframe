@@ -273,7 +273,88 @@ async function nochnie(browser) {
   for (const s of [host, g1, g2]) await s.context().close();
 }
 
-const SPIELE = { keep, cardchaos, seconds, luckyreflex, nochnie };
+// ------------------------------------------------------------------ Mäxchen
+
+async function maexchen(browser) {
+  // Drei statt zwei: die Punkteleiste unten ist die halbe Miete im Bild, und
+  // mit nur einem Mitspieler stehen da zwei Chips.
+  const host = await spieler(browser, 'host');
+  const g1 = await spieler(browser, 'gast1');
+  const g2 = await spieler(browser, 'gast2');
+
+  await host.goto(`${BASIS}/maexchen/`, { waitUntil: 'networkidle' });
+  await host.fill('#name', 'Ata');
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const [seite, name] of [[g1, 'Mira'], [g2, 'Nuri']]) {
+    await seite.goto(`${BASIS}/maexchen/`, { waitUntil: 'networkidle' });
+    await seite.fill('#name', name);
+    await seite.fill('#codeInput', code);
+    await seite.click('#joinBtn');
+    await seite.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await seite.click('#readyBtn');
+  }
+
+  await warte(600);
+  await knipsen(host, 'maexchen-raum.png');
+
+  await host.click('#startBtn');
+  await host.waitForSelector('#screen-game.active', { timeout: 15000 });
+  await warte(600);
+
+  // Wer am Zug ist, steht nur auf dem Bildschirm - beim Betroffenen als "Du".
+  const namen = new Map([['Ata', host], ['Mira', g1], ['Nuri', g2]]);
+  const werIstDran = async () => {
+    const n = (await host.textContent('#dranName')).trim();
+    return n === 'Du' ? host : namen.get(n);
+  };
+
+  // Erste Person: schuetteln und moeglichst niedrig ansagen - dann bleibt der
+  // zweiten noch fast die ganze Tastatur, und die ist das eigentliche Motiv.
+  const erste = await werIstDran();
+  await erste.click('#aktionen .btn.primary');
+  await erste.waitForSelector('#ansageGitter .ansage', { timeout: 15000 });
+  await erste.click('#ansageGitter .ansage:first-child');
+
+  // Zweite Person: glauben, schuetteln - und genau da abdruecken. Im Bild
+  // stehen dann beide Wuerfel offen, die liegende Ansage oben und das Gitter
+  // mit den gruen markierten, gedeckten Werten.
+  //
+  // Nur zaehlt genau dieser Wurf: bei einem Maexchen ist *jede* Ansage gedeckt
+  // und damit alles gruen, bei einem ganz niedrigen Wurf nichts. Beides
+  // widerlegt die Bildunterschrift ("Gruen ist gedeckt"), statt sie zu zeigen.
+  // Also so lange weiterreichen, bis ein gemischter Wurf faellt.
+  let seite = null;
+  for (let versuch = 0; versuch < 8; versuch++) {
+    await warte(700);
+    seite = await werIstDran();
+    if (!seite) throw new Error('unbekannt, wer am Zug ist');
+    await seite.click('#aktionen .btn.wahl.glaub');
+    await warte(400);
+    await seite.click('#aktionen .btn.primary');
+    await seite.waitForSelector('#ansageGitter .ansage', { timeout: 15000 });
+    await warte(300);
+
+    const gesamt = await seite.locator('#ansageGitter .ansage').count();
+    const gruen = await seite.locator('#ansageGitter .ansage.gedeckt').count();
+    if (gruen > 0 && gruen < gesamt) break;
+
+    // Danebengegriffen - Zug weiterreichen und noch einmal.
+    console.log(`    Wurf unbrauchbar (${gruen}/${gesamt} gedeckt), nächster Versuch`);
+    await seite.click('#aktionen .btn.ghost.sm');   // "Aussetzen"
+    seite = null;
+  }
+  if (!seite) throw new Error('kein brauchbar gemischter Wurf in acht Versuchen');
+
+  await warte(500);
+  await knipsen(seite, 'maexchen-spiel.png');
+
+  for (const s of [host, g1, g2]) await s.context().close();
+}
+
+const SPIELE = { keep, cardchaos, seconds, luckyreflex, nochnie, maexchen };
 
 const gewaehlt = process.argv.slice(2);
 const liste = gewaehlt.length ? gewaehlt : Object.keys(SPIELE);
