@@ -36,11 +36,11 @@ oben einzeln zugelassen. Nextcloud, die Tradingbots, die Spiel-Repos und
 
 - Keep · Card Chaos · Seconds · Lucky Reflex – die vier älteren Spiele
 - Bugreport – Fehlermeldungen zu allen zehn
-- **Ich hab noch nie** (`/var/www/html/nochnie/`) ist live, hat aber **noch
-  kein Repo** – deshalb fehlt es in der Aktualisierungsschleife unten.
-- Die fünf neuen Spiele – **Mäxchen**, **Wer am ehesten**, **Imposter**,
-  **Reaktion** und **Kurven** – haben je ein lokales Repo, aber **noch kein
-  `origin`**. Bis es eins gibt, liegt ihr Quelltext nur auf diesem Server.
+- Die sechs neueren Spiele – **Ich hab noch nie**, **Mäxchen**, **Wer am
+  ehesten**, **Imposter**, **Reaktion** und **Kurven** – haben je ein
+  **lokales** Repo, aber **noch kein `origin`**. Bis es eins gibt, liegt ihr
+  Quelltext nur auf diesem Server. Deshalb fehlen sie auch in der
+  Aktualisierungsschleife unten: ohne Remote gibt es nichts zu ziehen.
 
 ## Zwei Arten von Spiel
 
