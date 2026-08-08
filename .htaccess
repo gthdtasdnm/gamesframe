@@ -1,7 +1,10 @@
-# Interne Notizen niemals öffentlich ausliefern
-<Files "RISIKEN-TODO.md">
+# Interne Notizen niemals öffentlich ausliefern. Sie liegen im DocumentRoot,
+# weil sie dort entstehen und dort gebraucht werden – ein Angebot sind sie
+# nicht. Beide sind ausserdem per .gitignore vom Seitenrahmen-Repo
+# ausgeschlossen, diese Sperre ist die zweite Reihe.
+<FilesMatch "^(RISIKEN-TODO|SPIELE-IDEEN)\.md$">
     Require all denied
-</Files>
+</FilesMatch>
 
 # Werkzeuge sind Quelltext, kein Angebot. Sie liegen nur im DocumentRoot,
 # damit sie mit dem Seitenrahmen versioniert werden.

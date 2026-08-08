@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Vier Browserspiele für 2–4 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Fünf Browserspiele für 2 bis 8 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -87,6 +87,9 @@ main {
 
 @media (min-width: 720px) {
   main { grid-template-columns: 1fr 1fr; gap: 20px; }
+  /* Bei ungerader Kachelzahl steht die letzte sonst allein und wirkt wie
+     abgeschnitten. Über beide Spalten gezogen sieht sie gewollt aus. */
+  .game.breit { grid-column: 1 / -1; }
 }
 
 .game {
@@ -465,7 +468,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Vier Browserspiele für 2 bis 4 Leute. Kein Download, kein Account
+  <p class="sub">Fünf Browserspiele für 2 bis 8 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -538,6 +541,26 @@ footer a { color: inherit; }
       </div>
     </a>
   </article>
+
+  <article class="game breit" style="--accent:#ff9f1c; --accent2:#ff2e88;">
+    <button class="info" type="button" data-spiel="nochnie"
+            aria-label="Wie Ich hab noch nie gespielt wird">i</button>
+    <a class="game-link" href="/nochnie/">
+      <div class="icon">🙈</div>
+      <h2>Ich hab noch nie</h2>
+      <p>Das Spiel für die Runde am Tisch: Einer gesteht, alle anderen werden
+        ertappt. Kein Zeitdruck, keine Reaktion – nur reden. Harmlose Karten
+        sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–8 Spieler</span>
+        <span class="tag">Party</span>
+        <span class="tag">18+ optional</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+  </article>
+
 
 </main>
 
@@ -661,6 +684,21 @@ const SPIELE = {
       "Wer es zuerst auf der eigenen Karte antippt, bekommt den Punkt, und sofort kommt die nächste Karte.",
       "Danebengetippt heißt anderthalb Sekunden Sperre, während die anderen weiterspielen. Wer die Zielpunktzahl zuerst hat, gewinnt."
     ]
+  },
+  nochnie: {
+    titel: "Ich hab noch nie",
+    pfad: "/nochnie/",
+    kurz: "Einer gesteht, der Rest wird ertappt. Das einzige Spiel hier, bei dem geredet statt gedrückt wird.",
+    bild: "bilder/nochnie-spiel.webp",
+    schritte: [
+      "Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.",
+      "Jede Runde sucht der Server eine Person aus. Sie sagt laut einen Satz, der mit „Ich hab noch nie …“ anfängt und für sie stimmt.",
+      "Fällt ihr nichts ein, drückt sie auf „Mir fällt nichts ein“ und bekommt eine Karte – die sehen dann alle.",
+      "Alle anderen gestehen: „Hab ich schon“ oder „Noch nie“. Aufgedeckt wird erst, wenn alle gedrückt haben, damit niemand abschaut.",
+      "Wer erwischt wurde, steht rot in der Liste. Ob daraus ein Schluck wird, die Geschichte dazu oder nichts, entscheidet ihr – das Spiel zählt nur mit.",
+      "Der Host stellt ein, was auf den Karten steht: harmlos, gemischt oder nur 18+. Vor den 18+-Karten fragt jedes Gerät einmal nach."
+    ]
+  }
   }
 };
 

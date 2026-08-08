@@ -219,7 +219,61 @@ async function luckyreflex(browser) {
   await gast.context().close();
 }
 
-const SPIELE = { keep, cardchaos, seconds, luckyreflex };
+// -------------------------------------------------- Ich hab noch nie
+
+async function nochnie(browser) {
+  // Drei statt zwei: das Bild lebt von der Aufloesungsliste, und die hat mit
+  // nur einem Mitspieler genau eine Zeile.
+  const host = await spieler(browser, 'host');
+  const g1 = await spieler(browser, 'gast1');
+  const g2 = await spieler(browser, 'gast2');
+
+  await host.goto(`${BASIS}/nochnie/`, { waitUntil: 'networkidle' });
+  await host.fill('#name', 'Ata');
+  // Ohne Umstellen bleibt es beim harmlosen Stapel - auf der Startseite soll
+  // keine 18+-Karte stehen.
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const [seite, name] of [[g1, 'Mira'], [g2, 'Nuri']]) {
+    await seite.goto(`${BASIS}/nochnie/`, { waitUntil: 'networkidle' });
+    await seite.fill('#name', name);
+    await seite.fill('#codeInput', code);
+    await seite.click('#joinBtn');
+    await seite.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await seite.click('#readyBtn');
+  }
+
+  await warte(600);
+  await knipsen(host, 'nochnie-raum.png');
+
+  await host.click('#startBtn');
+  await host.waitForSelector('#screen-game.active', { timeout: 15000 });
+  await warte(600);
+
+  // Wer dran ist, steht nur auf dem Bildschirm - beim Betroffenen als "Du".
+  const namen = new Map([['Ata', host], ['Mira', g1], ['Nuri', g2]]);
+  const dranName = (await host.textContent('#dranName')).trim();
+  const dran = dranName === 'Du' ? host : namen.get(dranName);
+  if (!dran) throw new Error(`unbekannt, wer dran ist: ${dranName}`);
+  const waehler = [host, g1, g2].filter((s) => s !== dran);
+
+  await dran.click('#aktionen .btn:not(.primary)');      // "Mir faellt nichts ein"
+  await warte(500);
+  await dran.click('#aktionen .btn.primary');            // "Gesagt - abstimmen"
+  await warte(500);
+  await waehler[0].click('#aktionen .btn.wahl.ja');
+  await waehler[1].click('#aktionen .btn.wahl.nein');
+
+  // Aufgeloest wird erst, wenn beide gedrueckt haben.
+  await dran.waitForSelector('.erg-kopf', { timeout: 15000 });
+  await warte(400);
+  await knipsen(dran, 'nochnie-spiel.png');
+  for (const s of [host, g1, g2]) await s.context().close();
+}
+
+const SPIELE = { keep, cardchaos, seconds, luckyreflex, nochnie };
 
 const gewaehlt = process.argv.slice(2);
 const liste = gewaehlt.length ? gewaehlt : Object.keys(SPIELE);
