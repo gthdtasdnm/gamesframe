@@ -4,7 +4,7 @@ Alles, was auf inf-zeus.de nicht zu einem einzelnen Spiel gehört: die
 Spieleübersicht, Impressum und Datenschutzerklärung, der gemeinsame Stil der
 Rechtstexte und die Apache-Regeln des DocumentRoot.
 
-Die zehn Spiele und der Bugreport liegen in eigenen Repos und werden hier
+Die elf Spiele und der Bugreport liegen in eigenen Repos und werden hier
 bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
 mitreißen.
 
@@ -12,11 +12,11 @@ mitreißen.
 
 | Pfad | Was |
 |---|---|
-| `spiele/index.html` | Startseite mit den zehn Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
+| `spiele/index.html` | Startseite mit den elf Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
-| `spiele/bilder/` | Vorschaubilder der zehn Spiele (WebP) |
+| `spiele/bilder/` | Vorschaubilder der elf Spiele (WebP) |
 | `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
 | `.htaccess` | sperrt die interne Risikoliste, `/.git/` und `/werkzeug/` |
@@ -35,10 +35,10 @@ oben einzeln zugelassen. Nextcloud, die Tradingbots, die Spiel-Repos und
 ## Verwandte Repos
 
 - Keep · Card Chaos · Seconds · Lucky Reflex – die vier älteren Spiele
-- Bugreport – Fehlermeldungen zu allen zehn
-- Die sechs neueren Spiele – **Ich hab noch nie**, **Mäxchen**, **Wer am
-  ehesten**, **Imposter**, **Reaktion** und **Kurven** – haben je ein
-  **lokales** Repo, aber **noch kein `origin`**. Bis es eins gibt, liegt ihr
+- Bugreport – Fehlermeldungen zu allen elf
+- Die sieben neueren Spiele – **Ich hab noch nie**, **Mäxchen**, **Wer am
+  ehesten**, **Imposter**, **Reaktion**, **Kurven** und **Flaschendrehen** –
+  haben je ein **lokales** Repo, aber **noch kein `origin`**. Bis es eins gibt, liegt ihr
   Quelltext nur auf diesem Server. Deshalb fehlen sie auch in der
   Aktualisierungsschleife unten: ohne Remote gibt es nichts zu ziehen.
 
@@ -49,7 +49,7 @@ und der Unterschied entscheidet fast alles am Betrieb:
 
 | | Server-Spiele | Spiele am Tisch |
 |---|---|---|
-| welche | Keep, Card Chaos, Seconds, Lucky Reflex, Ich hab noch nie, Mäxchen, Wer am ehesten, Imposter | **Reaktion, Kurven** |
+| welche | Keep, Card Chaos, Seconds, Lucky Reflex, Ich hab noch nie, Mäxchen, Wer am ehesten, Imposter, Flaschendrehen | **Reaktion, Kurven** |
 | Geräte | eines je Person | **eines für alle** |
 | Dienst | je einer (systemd) | **keiner** |
 | Port | je einer | **keiner** |
@@ -75,6 +75,7 @@ dann einfach nicht.
 | 7867 | Notify Push (Nextcloud) | – |
 | 8010 | Tradingbot Value | – |
 | 8011 | Tradingbot Momentum | – |
+| 8072 | **Flaschendrehen** | `flasche.service` |
 | 8073 | **Imposter** | `imposter.service` |
 | 8074 | **Wer am ehesten** | `amehesten.service` |
 | 8075 | **Mäxchen** | `maexchen.service` |
@@ -85,7 +86,7 @@ dann einfach nicht.
 | 8080 | Talk-Signaling (Nextcloud) | Container |
 | 8090 | Card Chaos | – |
 
-Frei und der Reihe nach dran: **8072, 8071, 8070 …** abwärts. Alle Spiele
+Frei und der Reihe nach dran: **8071, 8070, 8069 …** abwärts. Alle Spiele
 binden auf `127.0.0.1` und stehen nicht in UFW; nach außen führt
 ausschließlich Apache.
 
@@ -99,12 +100,13 @@ tritt bei, startet die Runde und drueckt ab. Nicht alle bekommen zwei
 Sitzungen: Ich hab noch nie und Maexchen brauchen drei, Wer am ehesten vier,
 Imposter fuenf – sonst haetten Aufloesungsliste, Punkteleiste, Balken bzw.
 Hinweisreihe nur eine Zeile. (Imposter startet unter vier Leuten gar nicht.)
-Reaktion und Kurven brauchen umgekehrt nur **eine** Sitzung: dort spielen alle
-auf demselben Geraet.
+Flaschendrehen bekommt fuenf – der Kreis lebt davon, dass Namen darauf
+verteilt sind. Reaktion und Kurven brauchen umgekehrt nur **eine** Sitzung:
+dort spielen alle auf demselben Geraet.
 
 ```bash
 cd /root/werkzeug-screenshots
-node aufnehmen.mjs                 # alle zehn
+node aufnehmen.mjs                 # alle elf
 node aufnehmen.mjs cardchaos       # nur eins
 ```
 
@@ -139,9 +141,11 @@ cd /root/werkzeug-screenshots
 node pruefe-startseite.mjs
 ```
 
-Er öffnet **jeden** der zehn Dialoge und prüft Titel, Kurztext, Schrittzahl,
+Er öffnet **jeden** Dialog und prüft Titel, Kurztext, Schrittzahl,
 Vorschaubild (wirklich geladen, nicht nur verlinkt), den Spielen-Link, die
-Überschriftenebenen und dass alle zehn Statuspunkte grün sind.
+Überschriftenebenen und dass alle Statuspunkte grün sind. Ausserdem prüft
+er die Zahl im Untertitel gegen die Zahl der Kacheln – genau dieser Text
+wurde beim Hinzufügen eines Spiels schon vergessen.
 
 Bewusst *nicht* umgesetzt, obwohl `SPIELE-IDEEN.md` es vorschlägt: die
 Spielliste als JS-Datenfeld, aus dem die Kacheln erst im Browser entstehen.

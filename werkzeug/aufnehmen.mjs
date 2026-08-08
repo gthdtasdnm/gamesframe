@@ -529,9 +529,75 @@ async function kurven(browser) {
   await page.context().close();
 }
 
+// ------------------------------------------------------------ Flaschendrehen
+
+async function flasche(browser) {
+  // Fuenf Sitzungen: der Kreis lebt davon, dass Namen darauf verteilt sind.
+  const namen = ['Ata', 'Mira', 'Nuri', 'Jo', 'Sam'];
+  const seiten = [];
+  for (const name of namen) {
+    const p = await spieler(browser, name);
+    await p.goto(`${BASIS}/flasche/`, { waitUntil: 'networkidle' });
+    await p.fill('#name', name);
+    seiten.push(p);
+  }
+  const [host, ...gaeste] = seiten;
+
+  // Harmlos bleibt eingestellt – auf der Startseite soll keine freche Karte
+  // stehen.
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const g of gaeste) {
+    await g.fill('#codeInput', code);
+    await g.click('#joinBtn');
+    await g.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await g.click('#readyBtn');
+  }
+
+  await warte(600);
+  await knipsen(host, 'flasche-raum.png');
+
+  await host.click('#startBtn');
+  await host.waitForSelector('#screen-game.active', { timeout: 15000 });
+  await warte(600);
+
+  // Wer dreht, steht auf jedem Bildschirm – der Dreher selbst hat den grossen
+  // Knopf.
+  const dreher = [];
+  for (const s of seiten) {
+    const txt = await s.textContent('#phasenText');
+    if (txt && txt.trim() === 'Du drehst') dreher.push(s);
+  }
+  if (!dreher.length) throw new Error('niemand hat den Drehknopf');
+  await dreher[0].click('#aktionen .btn.primary');
+
+  // Die Drehung abwarten – danach steht die Flasche auf einer Person und die
+  // Wahl zwischen Wahrheit und Pflicht liegt an. Genau das ist das Motiv:
+  // Kreis, Flasche, Ziel.
+  await host.waitForFunction(() => {
+    const t = document.getElementById('phasenText')?.textContent ?? '';
+    return /zeigt auf/.test(t);
+  }, { timeout: 20000 });
+  await warte(700);
+
+  // Die getroffene Person waehlt Wahrheit, damit im Bild eine echte Karte
+  // steht und nicht nur zwei Knoepfe.
+  for (const s of seiten) {
+    const b = s.locator('#aktionen .btn.wahl.wahrheit');
+    if (await b.count()) { await b.click(); break; }
+  }
+  await host.waitForSelector('#karte:not([hidden])', { timeout: 15000 });
+  await warte(600);
+  await knipsen(host, 'flasche-spiel.png');
+
+  for (const s of seiten) await s.context().close();
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
-  reaktion, kurven,
+  reaktion, kurven, flasche,
 };
 
 const gewaehlt = process.argv.slice(2);
