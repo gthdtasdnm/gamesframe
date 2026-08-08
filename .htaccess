@@ -1,8 +1,14 @@
 # Interne Notizen niemals öffentlich ausliefern. Sie liegen im DocumentRoot,
 # weil sie dort entstehen und dort gebraucht werden – ein Angebot sind sie
-# nicht. Beide sind ausserdem per .gitignore vom Seitenrahmen-Repo
-# ausgeschlossen, diese Sperre ist die zweite Reihe.
-<FilesMatch "^(RISIKEN-TODO|SPIELE-IDEEN)\.md$">
+# nicht.
+#
+# RISIKEN-TODO.md und SPIELE-IDEEN.md sind ausserdem per .gitignore vom
+# Seitenrahmen-Repo ausgeschlossen, diese Sperre ist dort die zweite Reihe.
+# CLAUDE.md ist umgekehrt bewusst im Repo (sie beschreibt genau diesen
+# Seitenrahmen), gehoert aber trotzdem nicht ins Netz: sie nennt Serverpfade
+# und verweist auf die Risikoliste – wer sie liest, weiss, wonach er suchen
+# muesste.
+<FilesMatch "^(RISIKEN-TODO|SPIELE-IDEEN|CLAUDE)\.md$">
     Require all denied
 </FilesMatch>
 

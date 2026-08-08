@@ -2,11 +2,17 @@
 # Tradingbots, die vier Spiel-Repos und die interne Risikoliste. Deshalb: erst
 # alles ausschliessen, dann einzeln freigeben. Was neu dazukommt, ist damit
 # automatisch draussen und kann nicht versehentlich mitgehen.
+#
+# CLAUDE.md gehoert bewusst dazu: sie beschreibt den Seitenrahmen und die
+# Konventionen aller Spiele und ist damit Teil genau dieses Repos. Die
+# beiden internen Notizen (RISIKEN-TODO.md, SPIELE-IDEEN.md) bleiben
+# draussen - sie enthalten offene Schwachstellen bzw. unfertige Plaene.
 /*
 
 !/.gitignore
 !/.htaccess
 !/README.md
+!/CLAUDE.md
 !/index.php
 !/recht.css
 !/spiele/
