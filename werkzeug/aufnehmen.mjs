@@ -354,7 +354,61 @@ async function maexchen(browser) {
   for (const s of [host, g1, g2]) await s.context().close();
 }
 
-const SPIELE = { keep, cardchaos, seconds, luckyreflex, nochnie, maexchen };
+// ------------------------------------------------------- Wer am ehesten
+
+async function amehesten(browser) {
+  // Vier statt drei: das Bild lebt von den Balken, und die brauchen genug
+  // Stimmen, damit ueberhaupt ein Unterschied zu sehen ist.
+  const host = await spieler(browser, 'host');
+  const g1 = await spieler(browser, 'gast1');
+  const g2 = await spieler(browser, 'gast2');
+  const g3 = await spieler(browser, 'gast3');
+
+  await host.goto(`${BASIS}/amehesten/`, { waitUntil: 'networkidle' });
+  await host.fill('#name', 'Ata');
+  // Ohne Umstellen bleibt es bei "Gemischt" - auf der Startseite soll keine
+  // Frage aus dem frechen Stapel stehen.
+  await host.click('[data-modus="harmlos"]');
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const [seite, name] of [[g1, 'Mira'], [g2, 'Nuri'], [g3, 'Jo']]) {
+    await seite.goto(`${BASIS}/amehesten/`, { waitUntil: 'networkidle' });
+    await seite.fill('#name', name);
+    await seite.fill('#codeInput', code);
+    await seite.click('#joinBtn');
+    await seite.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await seite.click('#readyBtn');
+  }
+
+  await warte(600);
+  await knipsen(host, 'amehesten-raum.png');
+
+  await host.click('#startBtn');
+  await host.waitForSelector('#screen-game.active', { timeout: 15000 });
+  await warte(600);
+
+  // Absichtlich ungleich verteilen: drei Stimmen auf einen, eine auf einen
+  // anderen. Ein Gleichstand ergaebe vier gleich lange Balken - technisch
+  // richtig, als Bild aber nichtssagend.
+  const waehle = async (seite, nr) => {
+    await seite.click(`#wahlGitter .wahl:nth-child(${nr})`);
+  };
+  await waehle(host, 2);
+  await waehle(g1, 2);
+  await waehle(g2, 2);
+  await waehle(g3, 1);
+
+  // Aufgeloest wird erst, wenn alle vier durch sind - genau darauf warten.
+  await host.waitForSelector('.erg-kopf', { timeout: 15000 });
+  await warte(600);
+  await knipsen(host, 'amehesten-spiel.png');
+
+  for (const s of [host, g1, g2, g3]) await s.context().close();
+}
+
+const SPIELE = { keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten };
 
 const gewaehlt = process.argv.slice(2);
 const liste = gewaehlt.length ? gewaehlt : Object.keys(SPIELE);
