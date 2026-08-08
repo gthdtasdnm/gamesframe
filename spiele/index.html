@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Acht Browserspiele für 2 bis 10 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Zehn Browserspiele für 2 bis 10 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -77,7 +77,37 @@ h1 {
 
 /* --- Kacheln ------------------------------------------------------------- */
 
-main {
+/* --- Kategorien ---------------------------------------------------------- */
+/* Ab zehn Spielen ist ein einziges Raster eine Wand. Die Überschrift sagt
+   nicht nur, was für Spiele kommen, sondern vor allem, *was man braucht*:
+   ein Gerät oder eines pro Person. Das ist die Frage, die vor dem Klicken
+   steht. */
+
+.gruppe {
+  width: 100%;
+  max-width: 880px;
+  /* Zieht die Überschrift an ihr Raster heran und weg vom vorigen. Der
+     Seitenabstand (body gap) gilt für beide gleich, das reicht hier nicht. */
+  margin-bottom: -14px;
+}
+
+.gruppe-titel {
+  font-size: clamp(19px, 5vw, 24px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.gruppe-sub {
+  margin-top: 6px;
+  max-width: 62ch;
+  color: var(--dim);
+  font-size: 15px;
+  text-wrap: pretty;
+}
+
+/* --- Kachelraster -------------------------------------------------------- */
+
+.raster {
   width: 100%;
   max-width: 880px;
   display: grid;
@@ -86,11 +116,17 @@ main {
 }
 
 @media (min-width: 720px) {
-  main { grid-template-columns: 1fr 1fr; gap: 20px; }
-  /* Bei ungerader Kachelzahl steht die letzte sonst allein und wirkt wie
-     abgeschnitten. Über beide Spalten gezogen sieht sie gewollt aus. */
-  .game.breit { grid-column: 1 / -1; }
+  .raster { grid-template-columns: 1fr 1fr; gap: 20px; }
+  /* Bei ungerader Kachelzahl innerhalb einer Kategorie steht die letzte sonst
+     allein und wirkt wie abgeschnitten. Über beide Spalten gezogen sieht sie
+     gewollt aus. */
+  .raster > .game:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
+
+/* Die Anleitung im <template> wird nie angezeigt, nur geklont – der Browser
+   rendert sie ohnehin nicht. Die Zeile steht hier als Hinweis für den
+   nächsten, der sich fragt, wo die Schritte herkommen. */
+.game > template { display: none; }
 
 .game {
   --accent: #b06bff;
@@ -189,7 +225,7 @@ main {
   filter: drop-shadow(0 4px 14px rgba(0, 0, 0, .5));
 }
 
-.game h2 {
+.game h3 {
   font-size: clamp(21px, 5.5vw, 25px);
   font-weight: 700;
   letter-spacing: -.01em;
@@ -240,8 +276,8 @@ main {
 
 /* --- Fehler melden ------------------------------------------------------- */
 
-/* Bewusst keine .game-Kachel: der Bugreport ist kein fünftes Spiel und soll
-   das Raster aus vier Kacheln nicht durcheinanderbringen. */
+/* Bewusst keine .game-Kachel: der Bugreport ist kein Spiel und gehört in
+   keine der Kategorien. Als Kachel würde er eine davon verfälschen. */
 .melden {
   width: 100%;
   max-width: 880px;
@@ -468,89 +504,93 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Acht Browserspiele für 2 bis 10 Leute. Kein Download, kein Account
+  <p class="sub">Zehn Browserspiele für 2 bis 10 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
-<main>
+<section class="gruppe" aria-labelledby="gruppe-tisch">
+  <h2 class="gruppe-titel" id="gruppe-tisch">Am Tisch, ein Gerät</h2>
+  <p class="gruppe-sub">Handy oder Tablet flach in die Mitte, jeder an eine Kante. Kein Link, kein Raumcode, und niemand muss ein zweites Gerät dabei haben – der schnellste Einstieg.</p>
+</section>
 
-  <article class="game" style="--accent:#8a6cff; --accent2:#f5c542;">
-    <button class="info" type="button" data-spiel="keep"
-            aria-label="Wie Keep gespielt wird">i</button>
-    <a class="game-link" href="/keep/">
-      <div class="icon">🎰</div>
-      <h2>Keep</h2>
-      <p>Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die
-        wertvollste Kombination legt, räumt ab.</p>
-      <div class="meta">
-        <span class="dot" data-status></span>
-        <span class="tag">2–4 Spieler</span>
-        <span class="tag">Glück &amp; Nerven</span>
-        <span class="go">Spielen →</span>
-      </div>
-    </a>
-  </article>
+<main class="raster">
 
-  <article class="game" style="--accent:#ff2e88; --accent2:#ffd447;">
-    <button class="info" type="button" data-spiel="cardchaos"
-            aria-label="Wie Card Chaos gespielt wird">i</button>
-    <a class="game-link" href="/cardchaos/">
-      <div class="icon">🃏</div>
-      <h2>Card Chaos</h2>
-      <p>Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut,
-        räumt die Türme ab.</p>
-      <div class="meta">
-        <span class="dot" data-status></span>
-        <span class="tag">2–4 Spieler</span>
-        <span class="tag">Karten</span>
-        <span class="go">Spielen →</span>
-      </div>
-    </a>
-  </article>
-
-  <article class="game" style="--accent:#8e2de2; --accent2:#29e7ff;">
-    <button class="info" type="button" data-spiel="luckyreflex"
-            aria-label="Wie Lucky Reflex gespielt wird">i</button>
-    <a class="game-link" href="/luckyreflex/">
+  <article class="game" style="--accent:#52ffa8; --accent2:#35e6ff;"
+           data-spiel="reaktion" data-bild="bilder/reaktion-spiel.webp"
+           data-kurz="Vier Kanten, ein Gerät, kein Raumcode. Der schnellste Einstieg von allen.">
+    <button class="info" type="button" aria-label="Wie Reaktion gespielt wird">i</button>
+    <a class="game-link" href="/reaktion/">
       <div class="icon">⚡</div>
-      <h2>Lucky Reflex</h2>
-      <p>Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen
-        und Fallen für alle, die einfach dauerdrücken.</p>
+      <h3>Reaktion</h3>
+      <p>Ein Gerät flach auf den Tisch, jeder an eine Kante. Wird die Mitte grün, drückt ihr zu – wer zuerst drückt, bekommt den Punkt. Wird sie rot, hält still, wer nicht verlieren will.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–4 Spieler</span>
+        <span class="tag">Ein Gerät</span>
         <span class="tag">Reaktion</span>
         <span class="go">Spielen →</span>
       </div>
     </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Gerät flach auf den Tisch, jeder setzt sich an eine Kante. Kein Link, kein Code, keine zweite Person mit eigenem Handy.</li>
+        <li>Die Mitte zeigt „Gleich …“. Wann sie umspringt, weiß niemand – zwischen einer und fünf Sekunden.</li>
+        <li>Wird sie grün, drückt ihr auf eure eigene Kante. Wer zuerst drückt, bekommt den Punkt, und seine Zeit steht in der Mitte.</li>
+        <li>Zu früh gedrückt heißt: diese Runde ist für dich vorbei. Die anderen spielen sie zu Ende – ein Fehlstart reißt niemanden mit.</li>
+        <li>Manchmal wird die Mitte rot statt grün. Dann darf niemand drücken; wer es doch tut, verliert einen Punkt. Finten kann man abschalten.</li>
+        <li>Wer zuerst die Zielpunktzahl hat, gewinnt.</li>
+    </template>
   </article>
 
-  <article class="game" style="--accent:#37e2a4; --accent2:#7c6cff;">
-    <button class="info" type="button" data-spiel="seconds"
-            aria-label="Wie Seconds gespielt wird">i</button>
-    <a class="game-link" href="/seconds/">
-      <div class="icon">🎯</div>
-      <h2>Seconds</h2>
-      <p>Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es
-        zuerst antippt, bekommt den Punkt.</p>
+  <article class="game" style="--accent:#ff2e88; --accent2:#a06bff;"
+           data-spiel="kurven" data-bild="bilder/kurven-spiel.webp"
+           data-kurz="Zwei Knöpfe pro Person, eine Linie, die nie stehenbleibt.">
+    <button class="info" type="button" aria-label="Wie Kurven gespielt wird">i</button>
+    <a class="game-link" href="/kurven/">
+      <div class="icon">🌀</div>
+      <h3>Kurven</h3>
+      <p>Jeder steuert eine Linie, die nie stehenbleibt – lenken könnt ihr nur links oder rechts. Wer eine Linie berührt oder die Wand trifft, ist raus. Wer als Letzter fährt, bekommt den Punkt.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–4 Spieler</span>
-        <span class="tag">Augen &amp; Tempo</span>
+        <span class="tag">Ein Gerät</span>
+        <span class="tag">Geschick</span>
         <span class="go">Spielen →</span>
       </div>
     </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Gerät flach auf den Tisch, jeder greift sich seine beiden Knöpfe an seiner Kante. Kein Link, kein Code.</li>
+        <li>Alle Linien starten auf einem Kreis und schauen nach innen. Nach dem Countdown fahren sie los und hören nicht mehr auf.</li>
+        <li>Lenken könnt ihr nur links oder rechts. Loslassen heißt geradeaus – anhalten geht nicht.</li>
+        <li>Berührung heißt raus: eine fremde Linie, die eigene oder die Wand. Keine Gnadenfrist.</li>
+        <li>Wer als Letzter fährt, bekommt den Punkt. Sterben alle im selben Moment, bekommt niemand einen.</li>
+        <li>Die Linien setzen ab und zu kurz aus – durch diese Lücken kann man hindurchfahren. Ohne sie ist das Feld nach zwanzig Sekunden dicht. Abschaltbar.</li>
+        <li>Wer zuerst die Zielpunktzahl hat, gewinnt.</li>
+    </template>
   </article>
 
-  <article class="game" style="--accent:#ff9f1c; --accent2:#ff2e88;">
-    <button class="info" type="button" data-spiel="nochnie"
-            aria-label="Wie Ich hab noch nie gespielt wird">i</button>
+</main>
+
+<section class="gruppe" aria-labelledby="gruppe-runde">
+  <h2 class="gruppe-titel" id="gruppe-runde">In der Runde, jeder sein Handy</h2>
+  <p class="gruppe-sub">Ihr sitzt zusammen und redet; das Handy zählt nur mit. Einer eröffnet einen Raum, die anderen tippen den Code ein.</p>
+</section>
+
+<main class="raster">
+
+  <article class="game" style="--accent:#ff9f1c; --accent2:#ff2e88;;"
+           data-spiel="nochnie" data-bild="bilder/nochnie-spiel.webp"
+           data-kurz="Einer gesteht, der Rest wird ertappt. Das einzige Spiel hier, bei dem geredet statt gedrückt wird.">
+    <button class="info" type="button" aria-label="Wie Ich hab noch nie gespielt wird">i</button>
     <a class="game-link" href="/nochnie/">
       <div class="icon">🙈</div>
-      <h2>Ich hab noch nie</h2>
-      <p>Das Spiel für die Runde am Tisch: Einer gesteht, alle anderen werden
-        ertappt. Kein Zeitdruck, keine Reaktion – nur reden. Harmlose Karten
-        sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
+      <h3>Ich hab noch nie</h3>
+      <p>Das Spiel für die Runde am Tisch: Einer gesteht, alle anderen werden ertappt. Kein Zeitdruck, keine Reaktion – nur reden. Harmlose Karten sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–8 Spieler</span>
@@ -559,35 +599,27 @@ footer a { color: inherit; }
         <span class="go">Spielen →</span>
       </div>
     </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.</li>
+        <li>Jede Runde sucht der Server eine Person aus. Sie sagt laut einen Satz, der mit „Ich hab noch nie …“ anfängt und für sie stimmt.</li>
+        <li>Fällt ihr nichts ein, drückt sie auf „Mir fällt nichts ein“ und bekommt eine Karte – die sehen dann alle.</li>
+        <li>Alle anderen gestehen: „Hab ich schon“ oder „Noch nie“. Aufgedeckt wird erst, wenn alle gedrückt haben, damit niemand abschaut.</li>
+        <li>Wer erwischt wurde, steht rot in der Liste. Ob daraus ein Schluck wird, die Geschichte dazu oder nichts, entscheidet ihr – das Spiel zählt nur mit.</li>
+        <li>Der Host stellt ein, was auf den Karten steht: harmlos, gemischt oder nur 18+. Vor den 18+-Karten fragt jedes Gerät einmal nach.</li>
+    </template>
   </article>
 
-  <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;">
-    <button class="info" type="button" data-spiel="maexchen"
-            aria-label="Wie Mäxchen gespielt wird">i</button>
-    <a class="game-link" href="/maexchen/">
-      <div class="icon">🎲</div>
-      <h2>Mäxchen</h2>
-      <p>Zwei Würfel unter dem Becher, und nur du siehst sie. Sag an, was du
-        angeblich hast – höher als der vor dir. Der Nächste glaubt es oder
-        deckt auf. Einer verliert dabei immer ein Leben.</p>
-      <div class="meta">
-        <span class="dot" data-status></span>
-        <span class="tag">2–8 Spieler</span>
-        <span class="tag">Bluff</span>
-        <span class="go">Spielen →</span>
-      </div>
-    </a>
-  </article>
-
-  <article class="game" style="--accent:#ffd447; --accent2:#ff8a3d;">
-    <button class="info" type="button" data-spiel="amehesten"
-            aria-label="Wie Wer am ehesten gespielt wird">i</button>
+  <article class="game" style="--accent:#ffd447; --accent2:#ff8a3d;;"
+           data-spiel="amehesten" data-bild="bilder/amehesten-spiel.webp"
+           data-kurz="Eine Frage, alle zeigen gleichzeitig. Die Auflösung ist der Gesprächsanlass.">
+    <button class="info" type="button" aria-label="Wie Wer am ehesten gespielt wird">i</button>
     <a class="game-link" href="/amehesten/">
       <div class="icon">👉</div>
-      <h2>Wer am ehesten?</h2>
-      <p>Eine Frage, und alle zeigen gleichzeitig auf eine Person. Aufgedeckt
-        wird erst, wenn jeder gewählt hat – dann zeigen Balken, wer wie oft
-        gemeint war und von wem. Der schnellste Einstieg von allen.</p>
+      <h3>Wer am ehesten?</h3>
+      <p>Eine Frage, und alle zeigen gleichzeitig auf eine Person. Aufgedeckt wird erst, wenn jeder gewählt hat – dann zeigen Balken, wer wie oft gemeint war und von wem. Der schnellste Einstieg von allen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">3–10 Spieler</span>
@@ -595,17 +627,27 @@ footer a { color: inherit; }
         <span class="go">Spielen →</span>
       </div>
     </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Raum aufmachen, Link weitergeben – drei bis zehn Leute, jeder mit eigenem Handy.</li>
+        <li>Jede Runde kommt eine Frage, die den Satz „Wer von euch …?“ ergänzt. Darunter stehen alle Namen aus dem Raum.</li>
+        <li>Alle tippen gleichzeitig auf die Person, auf die es am ehesten zutrifft – auch auf sich selbst, wenn der Host das erlaubt hat.</li>
+        <li>Solange nicht alle durch sind, kann man umentscheiden. Die eigene Wahl bleibt sichtbar, die der anderen nicht.</li>
+        <li>Aufgedeckt wird erst, wenn alle gewählt haben. Dann kommen die Balken: wer wie viele Stimmen bekommen hat – und von wem.</li>
+        <li>Jede Stimme ist ein Punkt für den Gewählten, wer eine Runde anführt bekommt eine Krone. Am Ende steht, über wen am meisten geredet wurde.</li>
+    </template>
   </article>
 
-  <article class="game" style="--accent:#a06bff; --accent2:#35e6ff;">
-    <button class="info" type="button" data-spiel="imposter"
-            aria-label="Wie Imposter gespielt wird">i</button>
+  <article class="game" style="--accent:#a06bff; --accent2:#35e6ff;;"
+           data-spiel="imposter" data-bild="bilder/imposter-spiel.webp"
+           data-kurz="Alle kennen das Wort. Bis auf einen – und der muss so tun, als ob.">
+    <button class="info" type="button" aria-label="Wie Imposter gespielt wird">i</button>
     <a class="game-link" href="/imposter/">
       <div class="icon">🕵️</div>
-      <h2>Imposter</h2>
-      <p>Alle bekommen dasselbe Wort – bis auf einen. Der kennt nur die Gruppe
-        und muss so tun, als wüsste er Bescheid. Reihum ein Hinweis, dann wird
-        abgestimmt. Der längste Abend von allen.</p>
+      <h3>Imposter</h3>
+      <p>Alle bekommen dasselbe Wort – bis auf einen. Der kennt nur die Gruppe und muss so tun, als wüsste er Bescheid. Reihum ein Hinweis, dann wird abgestimmt. Der längste Abend von allen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">4–10 Spieler</span>
@@ -613,6 +655,164 @@ footer a { color: inherit; }
         <span class="go">Spielen →</span>
       </div>
     </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Raum aufmachen, Link weitergeben – vier bis zehn Leute, jeder mit eigenem Handy.</li>
+        <li>Alle bekommen dasselbe Wort, zum Beispiel „Schleifpapier“. Einer bekommt es nicht: er sieht nur die Gruppe, also „Werkzeug“, und die Liste aller Wörter daraus.</li>
+        <li>Reihum sagt jeder laut ein Hinweiswort. Nicht zu deutlich, sonst weiß der Imposter gleich Bescheid – aber auch nicht zu vage, sonst hält man dich selbst für ihn.</li>
+        <li>Der Imposter hört zu und hängt sich irgendwo an. Er hat die Wortliste vor sich, mehr aber auch nicht.</li>
+        <li>Danach stimmen alle ab, wer es war. Aufgedeckt wird erst, wenn jeder gewählt hat. Bei Gleichstand hat sich die Runde nicht geeinigt – der Imposter ist durch.</li>
+        <li>Wird er erwischt, darf er noch einmal raten, welches Wort es war. Trifft er, rettet er einen Punkt.</li>
+        <li>Punkte: unerkannt durchgekommen gibt 2 für den Imposter, erwischt und richtig geraten 1. Erwischt und danebengeraten heißt: jeder andere bekommt 1.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;;"
+           data-spiel="maexchen" data-bild="bilder/maexchen-spiel.webp"
+           data-kurz="Gewürfelt wird, damit man lügen kann. Zwei Würfel, ein Becher, und nur du siehst darunter.">
+    <button class="info" type="button" aria-label="Wie Mäxchen gespielt wird">i</button>
+    <a class="game-link" href="/maexchen/">
+      <div class="icon">🎲</div>
+      <h3>Mäxchen</h3>
+      <p>Zwei Würfel unter dem Becher, und nur du siehst sie. Sag an, was du angeblich hast – höher als der vor dir. Der Nächste glaubt es oder deckt auf. Einer verliert dabei immer ein Leben.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–8 Spieler</span>
+        <span class="tag">Bluff</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.</li>
+        <li>Wer am Zug ist, schüttelt den Becher. Die zwei Würfel erscheinen nur auf seinem Bildschirm – der Server verrät sie sonst niemandem.</li>
+        <li>Dann sagt er an, was er angeblich hat. Die Ansage muss die vorherige überbieten; ob sie zum eigenen Wurf passt, ist seine Sache.</li>
+        <li>Der Nächste entscheidet: „Ich glaube“ – dann würfelt er selbst und muss noch höher ansagen. Oder „Ich glaub’s nicht“ – dann wird aufgedeckt.</li>
+        <li>Beim Aufdecken verliert immer eine Seite ein Leben: war gelogen, der Ansager. War es wahr, der Zweifler.</li>
+        <li>Die Rangfolge: 31 ist das Schlechteste, dann aufwärts bis 65, darüber die Doppel. Ganz oben steht die 21 – das Mäxchen. Es lässt sich nicht überbieten, nur anzweifeln, und das kostet doppelt.</li>
+        <li>Wer keine Leben mehr hat, ist raus. Der Letzte am Tisch gewinnt.</li>
+    </template>
+  </article>
+
+</main>
+
+<section class="gruppe" aria-labelledby="gruppe-tempo">
+  <h2 class="gruppe-titel" id="gruppe-tempo">Tempo und Geschick</h2>
+  <p class="gruppe-sub">Karten, Symbole, Reflexe. Kurze Runden, harte Punktestände – jeder mit eigenem Gerät.</p>
+</section>
+
+<main class="raster">
+
+  <article class="game" style="--accent:#37e2a4; --accent2:#7c6cff;;"
+           data-spiel="seconds" data-bild="bilder/seconds-spiel.webp"
+           data-kurz="Zwei Karten, immer genau ein gemeinsames Symbol. Finde es zuerst.">
+    <button class="info" type="button" aria-label="Wie Seconds gespielt wird">i</button>
+    <a class="game-link" href="/seconds/">
+      <div class="icon">🎯</div>
+      <h3>Seconds</h3>
+      <p>Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es zuerst antippt, bekommt den Punkt.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Augen &amp; Tempo</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Raum aufmachen, Link weitergeben – zu zweit bis zu viert.</li>
+        <li>In der Mitte liegt eine Karte, davor deine eigene.</li>
+        <li>Die beiden haben immer genau ein Symbol gemeinsam – nie mehr, nie weniger. Das ist keine Glückssache, sondern steckt im Aufbau des Decks.</li>
+        <li>Wer es zuerst auf der eigenen Karte antippt, bekommt den Punkt, und sofort kommt die nächste Karte.</li>
+        <li>Danebengetippt heißt anderthalb Sekunden Sperre, während die anderen weiterspielen. Wer die Zielpunktzahl zuerst hat, gewinnt.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#8e2de2; --accent2:#29e7ff;;"
+           data-spiel="luckyreflex" data-bild="bilder/luckyreflex-spiel.webp"
+           data-kurz="Schnell sein reicht nicht – du musst auch richtig liegen.">
+    <button class="info" type="button" aria-label="Wie Lucky Reflex gespielt wird">i</button>
+    <a class="game-link" href="/luckyreflex/">
+      <div class="icon">⚡</div>
+      <h3>Lucky Reflex</h3>
+      <p>Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen und Fallen für alle, die einfach dauerdrücken.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Reaktion</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Raum aufmachen, Code weitergeben – zu zweit bis zu viert.</li>
+        <li>Die ganze Fläche ist der Knopf: irgendwo hintippen, am Rechner die Leertaste.</li>
+        <li>Pro Runde kommen fünf Aufgaben derselben Art. Zwei oder drei passen – bei den übrigen ist Stillhalten die richtige Antwort.</li>
+        <li>Zu früh gedrückt oder auf die falsche Aufgabe: Punkt weg. Im Bild oben ist der Bildschirm grün, gesucht ist aber Orange.</li>
+        <li>17 verschiedene Rundenarten sorgen dafür, dass blindes Dauerdrücken nicht funktioniert.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#ff2e88; --accent2:#ffd447;;"
+           data-spiel="cardchaos" data-bild="bilder/cardchaos-spiel.webp"
+           data-kurz="Drei Kartenpyramiden, zehn Runden, und am Ende darfst du zocken.">
+    <button class="info" type="button" aria-label="Wie Card Chaos gespielt wird">i</button>
+    <a class="game-link" href="/cardchaos/">
+      <div class="icon">🃏</div>
+      <h3>Card Chaos</h3>
+      <p>Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut, räumt die Türme ab.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Karten</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Tisch aufmachen, vierstelligen Code weitergeben – zu zweit bis zu viert.</li>
+        <li>Alle spielen gleichzeitig ihr eigenes Brett gegen dieselbe Uhr.</li>
+        <li>Eine offene Karte geht, wenn sie genau eins über oder unter der Ablage liegt. König, Ass und Zwei zählen dabei rundherum.</li>
+        <li>Passt nichts mehr, ziehst du eine neue Karte – das kostet dich deine Kette.</li>
+        <li>Je länger die Kette, desto höher der Multiplikator. Nach der Runde darfst du die Hälfte deiner Punkte auf einen Münzwurf setzen.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#8a6cff; --accent2:#f5c542;;"
+           data-spiel="keep" data-bild="bilder/keep-spiel.webp"
+           data-kurz="Ein Automat, fünf Runden, und die Uhr wird jedes Mal knapper.">
+    <button class="info" type="button" aria-label="Wie Keep gespielt wird">i</button>
+    <a class="game-link" href="/keep/">
+      <div class="icon">🎰</div>
+      <h3>Keep</h3>
+      <p>Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die wertvollste Kombination legt, räumt ab.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Glück &amp; Nerven</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
+         JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
+         ist. -->
+    <template class="ablauf">
+        <li>Raum aufmachen, Link weitergeben – zu zweit bis zu viert.</li>
+        <li>Fünf Runden, und jede ist kürzer als die davor: von 90 Sekunden herunter auf 25.</li>
+        <li>Die Walze dreht von allein. Danach darfst du zweimal nachziehen und dazwischen entscheiden, welche Symbole liegen bleiben.</li>
+        <li>Aus dem, was steht, eine gültige Kombination wählen. Je seltener, desto mehr Punkte – fünf gleiche Herzen bringen das Sechzigfache eines Kleeblatt-Drillings.</li>
+        <li>Jede gewertete Kombination in Folge hebt den Multiplikator bis auf das Fünffache. Findest du nichts mehr, ist die Runde vorbei und die Serie weg.</li>
+    </template>
   </article>
 
 </main>
@@ -661,8 +861,9 @@ footer a { color: inherit; }
 </dialog>
 
 <footer>
-  <p>Läuft auf Handy und Rechner, im selben WLAN oder über das Netz.
-    Ein Gerät eröffnet den Raum, die anderen treten bei.</p>
+  <p>Läuft auf Handy und Rechner, im selben WLAN oder über das Netz. Meistens
+    eröffnet ein Gerät den Raum und die anderen treten bei – die beiden Spiele
+    am Tisch brauchen nicht einmal das.</p>
   <nav class="recht">
     <a href="/impressum/">Impressum</a>
     <a href="/datenschutz/">Datenschutz</a>
@@ -685,140 +886,41 @@ for (const card of document.querySelectorAll(".game")) {
 // Die Schritte stehen bewusst hier und nicht im Markup: ein Dialog, vier
 // Datensätze. Die Bilder kommen aus werkzeug-screenshots/aufnehmen.mjs und
 // zeigen echte Partien, keine Zeichnung.
-const SPIELE = {
-  keep: {
-    titel: "Keep",
-    pfad: "/keep/",
-    kurz: "Ein Automat, fünf Runden, und die Uhr wird jedes Mal knapper.",
-    bild: "bilder/keep-spiel.webp",
-    schritte: [
-      "Raum aufmachen, Link weitergeben – zu zweit bis zu viert.",
-      "Fünf Runden, und jede ist kürzer als die davor: von 90 Sekunden herunter auf 25.",
-      "Die Walze dreht von allein. Danach darfst du zweimal nachziehen und dazwischen entscheiden, welche Symbole liegen bleiben.",
-      "Aus dem, was steht, eine gültige Kombination wählen. Je seltener, desto mehr Punkte – fünf gleiche Herzen bringen das Sechzigfache eines Kleeblatt-Drillings.",
-      "Jede gewertete Kombination in Folge hebt den Multiplikator bis auf das Fünffache. Findest du nichts mehr, ist die Runde vorbei und die Serie weg."
-    ]
-  },
-  cardchaos: {
-    titel: "Card Chaos",
-    pfad: "/cardchaos/",
-    kurz: "Drei Kartenpyramiden, zehn Runden, und am Ende darfst du zocken.",
-    bild: "bilder/cardchaos-spiel.webp",
-    schritte: [
-      "Tisch aufmachen, vierstelligen Code weitergeben – zu zweit bis zu viert.",
-      "Alle spielen gleichzeitig ihr eigenes Brett gegen dieselbe Uhr.",
-      "Eine offene Karte geht, wenn sie genau eins über oder unter der Ablage liegt. König, Ass und Zwei zählen dabei rundherum.",
-      "Passt nichts mehr, ziehst du eine neue Karte – das kostet dich deine Kette.",
-      "Je länger die Kette, desto höher der Multiplikator. Nach der Runde darfst du die Hälfte deiner Punkte auf einen Münzwurf setzen."
-    ]
-  },
-  luckyreflex: {
-    titel: "Lucky Reflex",
-    pfad: "/luckyreflex/",
-    kurz: "Schnell sein reicht nicht – du musst auch richtig liegen.",
-    bild: "bilder/luckyreflex-spiel.webp",
-    schritte: [
-      "Raum aufmachen, Code weitergeben – zu zweit bis zu viert.",
-      "Die ganze Fläche ist der Knopf: irgendwo hintippen, am Rechner die Leertaste.",
-      "Pro Runde kommen fünf Aufgaben derselben Art. Zwei oder drei passen – bei den übrigen ist Stillhalten die richtige Antwort.",
-      "Zu früh gedrückt oder auf die falsche Aufgabe: Punkt weg. Im Bild oben ist der Bildschirm grün, gesucht ist aber Orange.",
-      "17 verschiedene Rundenarten sorgen dafür, dass blindes Dauerdrücken nicht funktioniert."
-    ]
-  },
-  seconds: {
-    titel: "Seconds",
-    pfad: "/seconds/",
-    kurz: "Zwei Karten, immer genau ein gemeinsames Symbol. Finde es zuerst.",
-    bild: "bilder/seconds-spiel.webp",
-    schritte: [
-      "Raum aufmachen, Link weitergeben – zu zweit bis zu viert.",
-      "In der Mitte liegt eine Karte, davor deine eigene.",
-      "Die beiden haben immer genau ein Symbol gemeinsam – nie mehr, nie weniger. Das ist keine Glückssache, sondern steckt im Aufbau des Decks.",
-      "Wer es zuerst auf der eigenen Karte antippt, bekommt den Punkt, und sofort kommt die nächste Karte.",
-      "Danebengetippt heißt anderthalb Sekunden Sperre, während die anderen weiterspielen. Wer die Zielpunktzahl zuerst hat, gewinnt."
-    ]
-  },
-  nochnie: {
-    titel: "Ich hab noch nie",
-    pfad: "/nochnie/",
-    kurz: "Einer gesteht, der Rest wird ertappt. Das einzige Spiel hier, bei dem geredet statt gedrückt wird.",
-    bild: "bilder/nochnie-spiel.webp",
-    schritte: [
-      "Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.",
-      "Jede Runde sucht der Server eine Person aus. Sie sagt laut einen Satz, der mit „Ich hab noch nie …“ anfängt und für sie stimmt.",
-      "Fällt ihr nichts ein, drückt sie auf „Mir fällt nichts ein“ und bekommt eine Karte – die sehen dann alle.",
-      "Alle anderen gestehen: „Hab ich schon“ oder „Noch nie“. Aufgedeckt wird erst, wenn alle gedrückt haben, damit niemand abschaut.",
-      "Wer erwischt wurde, steht rot in der Liste. Ob daraus ein Schluck wird, die Geschichte dazu oder nichts, entscheidet ihr – das Spiel zählt nur mit.",
-      "Der Host stellt ein, was auf den Karten steht: harmlos, gemischt oder nur 18+. Vor den 18+-Karten fragt jedes Gerät einmal nach."
-    ]
-  },
-  maexchen: {
-    titel: "Mäxchen",
-    pfad: "/maexchen/",
-    kurz: "Gewürfelt wird, damit man lügen kann. Zwei Würfel, ein Becher, und nur du siehst darunter.",
-    bild: "bilder/maexchen-spiel.webp",
-    schritte: [
-      "Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.",
-      "Wer am Zug ist, schüttelt den Becher. Die zwei Würfel erscheinen nur auf seinem Bildschirm – der Server verrät sie sonst niemandem.",
-      "Dann sagt er an, was er angeblich hat. Die Ansage muss die vorherige überbieten; ob sie zum eigenen Wurf passt, ist seine Sache.",
-      "Der Nächste entscheidet: „Ich glaube“ – dann würfelt er selbst und muss noch höher ansagen. Oder „Ich glaub’s nicht“ – dann wird aufgedeckt.",
-      "Beim Aufdecken verliert immer eine Seite ein Leben: war gelogen, der Ansager. War es wahr, der Zweifler.",
-      "Die Rangfolge: 31 ist das Schlechteste, dann aufwärts bis 65, darüber die Doppel. Ganz oben steht die 21 – das Mäxchen. Es lässt sich nicht überbieten, nur anzweifeln, und das kostet doppelt.",
-      "Wer keine Leben mehr hat, ist raus. Der Letzte am Tisch gewinnt."
-    ]
-  },
-  amehesten: {
-    titel: "Wer am ehesten?",
-    pfad: "/amehesten/",
-    kurz: "Eine Frage, alle zeigen gleichzeitig. Die Auflösung ist der Gesprächsanlass.",
-    bild: "bilder/amehesten-spiel.webp",
-    schritte: [
-      "Raum aufmachen, Link weitergeben – drei bis zehn Leute, jeder mit eigenem Handy.",
-      "Jede Runde kommt eine Frage, die den Satz „Wer von euch …?“ ergänzt. Darunter stehen alle Namen aus dem Raum.",
-      "Alle tippen gleichzeitig auf die Person, auf die es am ehesten zutrifft – auch auf sich selbst, wenn der Host das erlaubt hat.",
-      "Solange nicht alle durch sind, kann man umentscheiden. Die eigene Wahl bleibt sichtbar, die der anderen nicht.",
-      "Aufgedeckt wird erst, wenn alle gewählt haben. Dann kommen die Balken: wer wie viele Stimmen bekommen hat – und von wem.",
-      "Jede Stimme ist ein Punkt für den Gewählten, wer eine Runde anführt bekommt eine Krone. Am Ende steht, über wen am meisten geredet wurde."
-    ]
-  },
-  imposter: {
-    titel: "Imposter",
-    pfad: "/imposter/",
-    kurz: "Alle kennen das Wort. Bis auf einen – und der muss so tun, als ob.",
-    bild: "bilder/imposter-spiel.webp",
-    schritte: [
-      "Raum aufmachen, Link weitergeben – vier bis zehn Leute, jeder mit eigenem Handy.",
-      "Alle bekommen dasselbe Wort, zum Beispiel „Schleifpapier“. Einer bekommt es nicht: er sieht nur die Gruppe, also „Werkzeug“, und die Liste aller Wörter daraus.",
-      "Reihum sagt jeder laut ein Hinweiswort. Nicht zu deutlich, sonst weiß der Imposter gleich Bescheid – aber auch nicht zu vage, sonst hält man dich selbst für ihn.",
-      "Der Imposter hört zu und hängt sich irgendwo an. Er hat die Wortliste vor sich, mehr aber auch nicht.",
-      "Danach stimmen alle ab, wer es war. Aufgedeckt wird erst, wenn jeder gewählt hat. Bei Gleichstand hat sich die Runde nicht geeinigt – der Imposter ist durch.",
-      "Wird er erwischt, darf er noch einmal raten, welches Wort es war. Trifft er, rettet er einen Punkt.",
-      "Punkte: unerkannt durchgekommen gibt 2 für den Imposter, erwischt und richtig geraten 1. Erwischt und danebengeraten heißt: jeder andere bekommt 1."
-    ]
-  }
-};
+// Der Anleitungsdialog liest alles aus der Kachel, auf die geklickt wurde.
+// Vorher stand jedes Spiel zweimal in dieser Datei – als Kachel und als
+// Eintrag in einem JS-Objekt. Bei zehn Spielen laufen zwei Fassungen
+// unweigerlich auseinander, und der Dialog ist die, die niemand nachprüft.
+function anleitungAus(kachel) {
+  const link = kachel.querySelector(".game-link");
+  const ablauf = kachel.querySelector("template.ablauf");
+  return {
+    titel: kachel.querySelector("h3").textContent.trim(),
+    kurz: kachel.dataset.kurz ?? "",
+    bild: kachel.dataset.bild ?? "",
+    pfad: link ? link.getAttribute("href") : "/",
+    // Aus dem <template> kommen fertige <li> – sie müssen nicht neu gebaut
+    // werden, nur geklont.
+    schritte: ablauf ? [...ablauf.content.querySelectorAll("li")] : [],
+  };
+}
 
 const spielDialog = document.getElementById("spielDialog");
 const spielBild = document.getElementById("spielBild");
 
 for (const knopf of document.querySelectorAll(".info")) {
   knopf.addEventListener("click", () => {
-    const s = SPIELE[knopf.dataset.spiel];
-    if (!s) return;
+    const kachel = knopf.closest(".game");
+    if (!kachel) return;
+    const s = anleitungAus(kachel);
     // Die Akzentfarben der Kachel übernehmen, damit Knopf und Ziffern im
     // Dialog zum jeweiligen Spiel passen.
-    const kachel = knopf.closest(".game");
     spielDialog.style.cssText = kachel.getAttribute("style") ?? "";
     document.getElementById("spielTitel").textContent = s.titel;
     document.getElementById("spielKurz").textContent = s.kurz;
     spielBild.src = s.bild;
     spielBild.alt = `Bildschirmfoto aus einer laufenden Partie ${s.titel}`;
-    document.getElementById("spielSchritte").innerHTML = "";
-    for (const schritt of s.schritte) {
-      const li = document.createElement("li");
-      li.textContent = schritt;
-      document.getElementById("spielSchritte").appendChild(li);
-    }
+    const liste = document.getElementById("spielSchritte");
+    liste.replaceChildren(...s.schritte.map((li) => li.cloneNode(true)));
     document.getElementById("spielLink").href = s.pfad;
     spielDialog.showModal();
     spielDialog.scrollTop = 0;

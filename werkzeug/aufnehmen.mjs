@@ -465,8 +465,73 @@ async function imposter(browser) {
   for (const s of seiten) await s.context().close();
 }
 
+// -------------------------------------------- Ein Gerät, mehrere Kanten
+//
+// Diese beiden brauchen nur *eine* Sitzung: das Spiel laeuft komplett im
+// Browser, es gibt keinen Raum, dem man beitreten koennte. Ansonsten gilt
+// dasselbe Querformat wie fuer alle Kacheln – ein Tablet liegt flach auf dem
+// Tisch, und genau so soll es im Bild aussehen.
+
+async function reaktion(browser) {
+  const page = await spieler(browser, 'reaktion');
+  await page.goto(`${BASIS}/reaktion/`, { waitUntil: 'networkidle' });
+  await page.click('[data-spieler="4"]');
+  await knipsen(page, 'reaktion-raum.png');
+
+  await page.click('#startBtn');
+  await page.waitForSelector('#screen-game.active', { timeout: 15000 });
+
+  // Auf ein echtes Gruen warten und sofort druecken – gewollt ist das Bild
+  // *nach* dem Treffer: dann steht die gemessene Zeit in der Mitte und eine
+  // Kante leuchtet. Ein Bild vom Wartezustand zeigte nur „Gleich …".
+  for (let versuch = 0; versuch < 12; versuch++) {
+    await page.waitForSelector('.mitte.signal', { timeout: 9000 });
+    await page.locator('.kante[data-sitz="1"]').dispatchEvent('pointerdown');
+    await page.waitForSelector('.mitte.aufloesung', { timeout: 3000 });
+    const t = (await page.textContent('#mitteText')).trim();
+    if (/ms$/.test(t)) break;
+  }
+  await warte(300);
+  await knipsen(page, 'reaktion-spiel.png');
+  await page.context().close();
+}
+
+async function kurven(browser) {
+  const page = await spieler(browser, 'kurven');
+  await page.goto(`${BASIS}/kurven/`, { waitUntil: 'networkidle' });
+  await page.click('[data-spieler="4"]');
+  await knipsen(page, 'kurven-raum.png');
+
+  await page.click('#startBtn');
+  await page.waitForSelector('#screen-game.active', { timeout: 15000 });
+  await page.waitForSelector('.overlay.an', { state: 'hidden', timeout: 12000 });
+
+  // Zwei Sekunden fahren lassen und dabei zwei Linien lenken: ohne Lenken
+  // fahren alle vier schnurgerade und das Bild zeigt vier Striche statt
+  // Kurven. Genau die sind aber der Name des Spiels.
+  const l0 = page.locator('.knopf[data-spieler="0"][data-seite="links"]');
+  const r1 = page.locator('.knopf[data-spieler="1"][data-seite="rechts"]');
+  await l0.dispatchEvent('pointerdown');
+  await r1.dispatchEvent('pointerdown');
+  await warte(900);
+  await l0.dispatchEvent('pointerup');
+  await warte(600);
+  await r1.dispatchEvent('pointerup');
+  await warte(700);
+
+  // Nur ein Bild einer *laufenden* Runde taugt. Ist inzwischen jemand
+  // angestossen, liegt die Ueberlagerung darueber.
+  if (await page.locator('.overlay.an').isVisible().catch(() => false)) {
+    await page.waitForSelector('.overlay.an', { state: 'hidden', timeout: 12000 });
+    await warte(2200);
+  }
+  await knipsen(page, 'kurven-spiel.png');
+  await page.context().close();
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
+  reaktion, kurven,
 };
 
 const gewaehlt = process.argv.slice(2);

@@ -4,7 +4,7 @@ Alles, was auf inf-zeus.de nicht zu einem einzelnen Spiel gehört: die
 Spieleübersicht, Impressum und Datenschutzerklärung, der gemeinsame Stil der
 Rechtstexte und die Apache-Regeln des DocumentRoot.
 
-Die acht Spiele und der Bugreport liegen in eigenen Repos und werden hier
+Die zehn Spiele und der Bugreport liegen in eigenen Repos und werden hier
 bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
 mitreißen.
 
@@ -12,11 +12,11 @@ mitreißen.
 
 | Pfad | Was |
 |---|---|
-| `spiele/index.html` | Startseite mit den acht Spielkacheln, Statuspunkten und dem Spendenknopf |
+| `spiele/index.html` | Startseite mit den zehn Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
-| `spiele/bilder/` | Vorschaubilder der acht Spiele (WebP) |
+| `spiele/bilder/` | Vorschaubilder der zehn Spiele (WebP) |
 | `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
 | `.htaccess` | sperrt die interne Risikoliste, `/.git/` und `/werkzeug/` |
@@ -35,13 +35,31 @@ oben einzeln zugelassen. Nextcloud, die Tradingbots, die Spiel-Repos und
 ## Verwandte Repos
 
 - Keep · Card Chaos · Seconds · Lucky Reflex – die vier älteren Spiele
-- Bugreport – Fehlermeldungen zu allen achten
+- Bugreport – Fehlermeldungen zu allen zehn
 - **Ich hab noch nie** (`/var/www/html/nochnie/`) ist live, hat aber **noch
   kein Repo** – deshalb fehlt es in der Aktualisierungsschleife unten.
-- **Mäxchen** (`/var/www/html/maexchen/`), **Wer am ehesten**
-  (`/var/www/html/amehesten/`) und **Imposter** (`/var/www/html/imposter/`)
-  haben je ein lokales Repo, aber **noch kein `origin`**. Bis es eins gibt,
-  liegt ihr Quelltext nur auf diesem Server.
+- Die fünf neuen Spiele – **Mäxchen**, **Wer am ehesten**, **Imposter**,
+  **Reaktion** und **Kurven** – haben je ein lokales Repo, aber **noch kein
+  `origin`**. Bis es eins gibt, liegt ihr Quelltext nur auf diesem Server.
+
+## Zwei Arten von Spiel
+
+Seit Reaktion und Kurven gibt es hier zwei technisch grundverschiedene Sorten,
+und der Unterschied entscheidet fast alles am Betrieb:
+
+| | Server-Spiele | Spiele am Tisch |
+|---|---|---|
+| welche | Keep, Card Chaos, Seconds, Lucky Reflex, Ich hab noch nie, Mäxchen, Wer am ehesten, Imposter | **Reaktion, Kurven** |
+| Geräte | eines je Person | **eines für alle** |
+| Dienst | je einer (systemd) | **keiner** |
+| Port | je einer | **keiner** |
+| Apache | `Location` mit Proxy und WebSocket | **nichts** – statische Dateien |
+| `bremse.js` | ja | **nein**, es gibt keine Verbindung |
+| Prüfung | `deno task probe` gegen den Server | `node pruefe-<name>.mjs` im Browser |
+
+Die zweite Sorte kann nicht abstürzen, hält keinen Zustand und braucht keine
+Wartung. Wer ein neues Spiel plant: falls es ohne Server geht, geht es auch
+ohne alles andere in der Tabelle.
 
 ## Ports
 
@@ -81,10 +99,12 @@ tritt bei, startet die Runde und drueckt ab. Nicht alle bekommen zwei
 Sitzungen: Ich hab noch nie und Maexchen brauchen drei, Wer am ehesten vier,
 Imposter fuenf – sonst haetten Aufloesungsliste, Punkteleiste, Balken bzw.
 Hinweisreihe nur eine Zeile. (Imposter startet unter vier Leuten gar nicht.)
+Reaktion und Kurven brauchen umgekehrt nur **eine** Sitzung: dort spielen alle
+auf demselben Geraet.
 
 ```bash
 cd /root/werkzeug-screenshots
-node aufnehmen.mjs                 # alle acht
+node aufnehmen.mjs                 # alle zehn
 node aufnehmen.mjs cardchaos       # nur eins
 ```
 
@@ -102,6 +122,31 @@ Zwei Voraussetzungen, die auf einem frischen Server fehlen:
 
 Die Bilder werden zum Schluss nach WebP umgewandelt (rund ein Zehntel der
 PNG-Groesse) und die PNG geloescht.
+
+## Startseite prüfen
+
+Seit dem Umbau auf Kategorien liest der Anleitungsdialog seinen Inhalt aus der
+Kachel selbst (`data-kurz`, `data-bild` und ein `<template class="ablauf">`).
+Damit steht jedes Spiel **einmal** in der Datei statt zweimal – vorher gab es
+zusätzlich ein JS-Objekt `SPIELE`, und bei zehn Spielen laufen zwei Fassungen
+unweigerlich auseinander.
+
+Die Kehrseite: ein leerer Dialog fällt niemandem auf, weil die Seite ohne ihn
+normal aussieht. Deshalb gibt es dafür einen Prüflauf:
+
+```bash
+cd /root/werkzeug-screenshots
+node pruefe-startseite.mjs
+```
+
+Er öffnet **jeden** der zehn Dialoge und prüft Titel, Kurztext, Schrittzahl,
+Vorschaubild (wirklich geladen, nicht nur verlinkt), den Spielen-Link, die
+Überschriftenebenen und dass alle zehn Statuspunkte grün sind.
+
+Bewusst *nicht* umgesetzt, obwohl `SPIELE-IDEEN.md` es vorschlägt: die
+Spielliste als JS-Datenfeld, aus dem die Kacheln erst im Browser entstehen.
+Dann zeigte die Seite ohne JavaScript gar keine Spiele mehr – und die Übersicht
+ist der einzige Teil dieser Seite, der auch ohne JS etwas wert ist.
 
 ## Alles auf einmal aktualisieren
 
