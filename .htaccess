@@ -1,0 +1,17 @@
+# Interne Notizen niemals öffentlich ausliefern
+<Files "RISIKEN-TODO.md">
+    Require all denied
+</Files>
+
+# Versionsverwaltung sperren. Seit hier ein Repo liegt, wuerde Apache
+# /.git/ sonst ganz normal als Verzeichnis ausliefern – und damit die
+# komplette Historie inklusive geloeschter Dateien.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule "(^|/)\.git(/|$)" - [F,L]
+</IfModule>
+
+# Ebenso die Git-Hilfsdateien, falls mod_rewrite mal fehlt.
+<FilesMatch "^\.(git|gitignore|gitattributes|gitmodules)$">
+    Require all denied
+</FilesMatch>

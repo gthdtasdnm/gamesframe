@@ -1,0 +1,124 @@
+/* Gemeinsames Aussehen für Impressum und Datenschutzerklärung.
+   Bewusst eine eigene Datei statt zweimal inline: die beiden Seiten sollen
+   nie auseinanderlaufen. Farben und Schrift kommen von /spiele/. */
+
+:root {
+  --bg: #0a0713;
+  --panel: rgba(28, 18, 50, .66);
+  --line: rgba(160, 120, 255, .16);
+  --ink: #f2ecff;
+  --dim: #9c8fc2;
+  --akzent: #29e7ff;
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(90vw 60dvh at 12% -12%, #2a1150 0%, transparent 62%),
+    radial-gradient(80vw 55dvh at 105% 108%, #10314c 0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font: 400 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(28px, 7vw, 64px) 18px calc(48px + env(safe-area-inset-bottom));
+  gap: clamp(22px, 4vw, 36px);
+}
+
+header, main, footer { width: 100%; max-width: 720px; }
+
+.zurueck {
+  display: inline-block;
+  color: var(--dim);
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 18px;
+  transition: color .18s ease;
+}
+.zurueck:hover, .zurueck:focus-visible { color: var(--akzent); outline: none; }
+
+h1 {
+  font-size: clamp(32px, 9vw, 52px);
+  line-height: 1;
+  letter-spacing: -.03em;
+  font-weight: 800;
+  background: linear-gradient(100deg, #ff2e88 0%, #b06bff 42%, #29e7ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: .08em;
+}
+
+.stand { color: var(--dim); font-size: 14px; margin-top: 10px; }
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+section {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+}
+
+h2 {
+  font-size: clamp(18px, 4.5vw, 21px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+  margin-bottom: 10px;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 650;
+  margin: 16px 0 6px;
+  color: var(--akzent);
+}
+
+p + p { margin-top: 10px; }
+p, li { text-wrap: pretty; }
+
+ul { margin: 8px 0 0 20px; }
+li + li { margin-top: 6px; }
+
+dl { margin-top: 4px; }
+dt { color: var(--dim); font-size: 13px; text-transform: uppercase; letter-spacing: .1em; margin-top: 12px; }
+dt:first-child { margin-top: 0; }
+dd { margin-left: 0; }
+
+address { font-style: normal; line-height: 1.5; }
+
+a { color: var(--akzent); }
+
+.hinweis {
+  border-left: 3px solid var(--akzent);
+  padding-left: 14px;
+  color: var(--dim);
+  font-size: 15px;
+}
+
+footer {
+  color: var(--dim);
+  font-size: 13px;
+  text-align: center;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+footer a { color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

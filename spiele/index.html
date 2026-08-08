@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spiele – inf-zeus.de</title>
+<meta name="description" content="Vier Browserspiele für 2–4 Leute. Ohne Installation, ohne Account.">
+<meta name="theme-color" content="#0a0713">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+<style>
+/* Höhen in dvh, nicht vh: auf Android zählt vh die URL-Leiste nicht mit. */
+:root {
+  --bg: #0a0713;
+  --panel: rgba(28, 18, 50, .66);
+  --line: rgba(160, 120, 255, .16);
+  --ink: #f2ecff;
+  --dim: #9c8fc2;
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(90vw 60dvh at 12% -12%, #2a1150 0%, transparent 62%),
+    radial-gradient(80vw 55dvh at 105% 108%, #10314c 0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font: 400 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(28px, 7vw, 72px) 18px calc(40px + env(safe-area-inset-bottom));
+  gap: clamp(26px, 5vw, 44px);
+}
+
+/* --- Kopf ---------------------------------------------------------------- */
+
+header {
+  width: 100%;
+  max-width: 880px;
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 13px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: clamp(42px, 13vw, 76px);
+  line-height: .95;
+  letter-spacing: -.03em;
+  font-weight: 800;
+  background: linear-gradient(100deg, #ff2e88 0%, #b06bff 42%, #29e7ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: .06em;
+}
+
+.sub {
+  margin: 14px auto 0;
+  max-width: 44ch;
+  color: var(--dim);
+  font-size: clamp(15px, 4vw, 17px);
+  text-wrap: balance;
+}
+
+/* --- Kacheln ------------------------------------------------------------- */
+
+main {
+  width: 100%;
+  max-width: 880px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 720px) {
+  main { grid-template-columns: 1fr 1fr; gap: 20px; }
+}
+
+.game {
+  --accent: #b06bff;
+  --accent2: #29e7ff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 20px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+/* Farbiger Schimmer je Spiel, liegt hinter dem Inhalt */
+.game::before {
+  content: "";
+  position: absolute;
+  inset: -40% -30% auto auto;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 68%);
+  opacity: .26;
+  z-index: -1;
+  transition: opacity .18s ease;
+}
+
+/* Akzentkante oben */
+.game::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  opacity: .85;
+}
+
+.game:hover, .game:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
+  outline: none;
+}
+.game:hover::before, .game:focus-visible::before { opacity: .42; }
+.game:active { transform: translateY(0); }
+
+@media (hover: none) {
+  .game:hover { transform: none; }
+}
+
+.icon {
+  font-size: 34px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, .5));
+}
+
+.game h2 {
+  font-size: clamp(21px, 5.5vw, 25px);
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.game p {
+  color: var(--dim);
+  font-size: 15px;
+  text-wrap: pretty;
+}
+
+.meta {
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.tag {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.go {
+  margin-left: auto;
+  font-weight: 650;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+
+/* Statuspunkt: wird per JS auf .up / .down gesetzt, ohne JS unsichtbar */
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.dot.up { color: #52ffa8; opacity: .8; }
+.dot.down { color: #ff4d5e; opacity: 1; }
+
+/* --- Fehler melden ------------------------------------------------------- */
+
+/* Bewusst keine .game-Kachel: der Bugreport ist kein fünftes Spiel und soll
+   das Raster aus vier Kacheln nicht durcheinanderbringen. */
+.melden {
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  color: var(--dim);
+  text-decoration: none;
+  font-size: 15px;
+  text-wrap: pretty;
+  transition: border-color .18s ease, color .18s ease, background .18s ease;
+}
+
+.melden:hover, .melden:focus-visible {
+  border-color: #ff8a3d;
+  background: rgba(255, 138, 61, .08);
+  color: var(--ink);
+  outline: none;
+}
+
+.melden .icon { font-size: 22px; }
+.melden .go { color: #ff8a3d; }
+
+/* --- Spenden ------------------------------------------------------------- */
+
+/* Erbt .melden, damit die beiden Zeilen unter dem Raster gleich aussehen.
+   Als <button> braucht es die Schrift-Vererbung, die ein <a> geschenkt kriegt. */
+.spende {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+}
+.spende:hover, .spende:focus-visible {
+  border-color: #b06bff;
+  background: rgba(176, 107, 255, .08);
+  color: var(--ink);
+  outline: none;
+}
+.spende .go { color: #b06bff; }
+
+dialog {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #150e26;
+  color: var(--ink);
+  padding: 0;
+  max-width: 400px;
+  width: calc(100% - 36px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+  /* Zentriert sich normalerweise per margin:auto selbst – das nimmt ihm aber
+     der * { margin: 0 } ganz oben weg, sonst klebt der Dialog links oben. */
+  margin: auto;
+}
+dialog::backdrop { background: rgba(6, 3, 14, .72); backdrop-filter: blur(3px); }
+
+dialog form {
+  padding: 28px 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.danke-icon { font-size: 42px; line-height: 1; }
+
+dialog h2 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
+dialog p { color: var(--dim); font-size: 15px; text-wrap: pretty; }
+dialog .klein { font-size: 13.5px; }
+
+.btn-schliessen {
+  margin-top: 6px;
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font: 700 15px/1 inherit;
+  font-family: inherit;
+  cursor: pointer;
+  color: #180a12;
+  background: linear-gradient(100deg, #b06bff, #29e7ff);
+  transition: filter .15s ease;
+}
+.btn-schliessen:hover { filter: brightness(1.1); }
+
+/* --- Fuß ----------------------------------------------------------------- */
+
+footer {
+  color: var(--dim);
+  font-size: 13px;
+  text-align: center;
+  max-width: 46ch;
+  text-wrap: balance;
+}
+
+footer a { color: inherit; }
+
+/* Pflichtlinks: deutlich abgesetzt, aber nicht lauter als der Rest des Fußes. */
+.recht {
+  margin-top: 14px;
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.recht a {
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 2px;
+  transition: color .18s ease, border-color .18s ease;
+}
+.recht a:hover, .recht a:focus-visible {
+  color: var(--ink);
+  border-color: currentColor;
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">inf-zeus.de</div>
+  <h1>Spiele</h1>
+  <p class="sub">Vier Browserspiele für 2 bis 4 Leute. Kein Download, kein Account
+    – Link teilen, Namen eintippen, los.</p>
+</header>
+
+<main>
+
+  <a class="game" href="/keep/" style="--accent:#8a6cff; --accent2:#f5c542;">
+    <div class="icon">🎰</div>
+    <h2>Keep</h2>
+    <p>Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die
+      wertvollste Kombination legt, räumt ab.</p>
+    <div class="meta">
+      <span class="dot" data-status></span>
+      <span class="tag">2–4 Spieler</span>
+      <span class="tag">Glück &amp; Nerven</span>
+      <span class="go">Spielen →</span>
+    </div>
+  </a>
+
+  <a class="game" href="/cardchaos/" style="--accent:#ff2e88; --accent2:#ffd447;">
+    <div class="icon">🃏</div>
+    <h2>Card Chaos</h2>
+    <p>Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut,
+      räumt die Türme ab.</p>
+    <div class="meta">
+      <span class="dot" data-status></span>
+      <span class="tag">2–4 Spieler</span>
+      <span class="tag">Karten</span>
+      <span class="go">Spielen →</span>
+    </div>
+  </a>
+
+  <a class="game" href="/luckyreflex/" style="--accent:#8e2de2; --accent2:#29e7ff;">
+    <div class="icon">⚡</div>
+    <h2>Lucky Reflex</h2>
+    <p>Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen
+      und Fallen für alle, die einfach dauerdrücken.</p>
+    <div class="meta">
+      <span class="dot" data-status></span>
+      <span class="tag">2–4 Spieler</span>
+      <span class="tag">Reaktion</span>
+      <span class="go">Spielen →</span>
+    </div>
+  </a>
+
+  <a class="game" href="/seconds/" style="--accent:#37e2a4; --accent2:#7c6cff;">
+    <div class="icon">🎯</div>
+    <h2>Seconds</h2>
+    <p>Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es
+      zuerst antippt, bekommt den Punkt.</p>
+    <div class="meta">
+      <span class="dot" data-status></span>
+      <span class="tag">2–4 Spieler</span>
+      <span class="tag">Augen &amp; Tempo</span>
+      <span class="go">Spielen →</span>
+    </div>
+  </a>
+
+</main>
+
+<a class="melden" href="/bugreport/">
+  <span class="icon">🐞</span>
+  <span>Etwas kaputt? Fehler melden – und nachsehen, was schon gemeldet ist.</span>
+  <span class="go">Bugreport →</span>
+</a>
+
+<!-- Spenden. Noch ohne Zahlweg: der Knopf bedankt sich und sonst nichts.
+     Sobald der Weg feststeht, kommt er in den Dialog – am Seitenaufbau
+     ändert sich dann nichts mehr. -->
+<button class="melden spende" type="button" id="spendeBtn">
+  <span class="icon">☕</span>
+  <span>Die Spiele sind kostenlos und werbefrei. Wer mag, kann den Server
+    mitfinanzieren.</span>
+  <span class="go">Unterstützen →</span>
+</button>
+
+<dialog id="spendeDialog" aria-labelledby="spendeTitel">
+  <form method="dialog">
+    <div class="danke-icon" aria-hidden="true">💜</div>
+    <h2 id="spendeTitel">Danke, dass du es versucht hast!</h2>
+    <p>Das Spenden ist noch nicht eingerichtet – der Knopf war schneller als
+      ich. Dass du daraufgedrückt hast, freut mich trotzdem ehrlich.</p>
+    <p class="klein">Schau später nochmal vorbei. Bis dahin: Der beste Beitrag
+      ist, jemanden zum Mitspielen mitzubringen.</p>
+    <button class="btn-schliessen" value="zu" autofocus>Gern geschehen</button>
+  </form>
+</dialog>
+
+<footer>
+  <p>Läuft auf Handy und Rechner, im selben WLAN oder über das Netz.
+    Ein Gerät eröffnet den Raum, die anderen treten bei.</p>
+  <nav class="recht">
+    <a href="/impressum/">Impressum</a>
+    <a href="/datenschutz/">Datenschutz</a>
+  </nav>
+</footer>
+
+<script>
+// Erreichbarkeit der Spiele anzeigen. Rein kosmetisch – ohne JS bleibt der
+// Punkt unsichtbar und die Links funktionieren trotzdem.
+for (const card of document.querySelectorAll(".game")) {
+  const dot = card.querySelector("[data-status]");
+  if (!dot) continue;
+  fetch(card.getAttribute("href"), { method: "HEAD", cache: "no-store" })
+    .then(r => { dot.className = "dot " + (r.ok ? "up" : "down"); })
+    .catch(() => { dot.className = "dot down"; });
+}
+
+// Spenden-Dialog. <dialog> bringt Fokusfalle, Escape und Backdrop selbst mit –
+// deshalb hier nur das Öffnen. Ohne JS bleibt der Knopf wirkungslos, aber die
+// Seite funktioniert; der Dialog ist bis dahin unsichtbar.
+const spendeBtn = document.getElementById("spendeBtn");
+const spendeDialog = document.getElementById("spendeDialog");
+spendeBtn.addEventListener("click", () => spendeDialog.showModal());
+</script>
+
+</body>
+</html>

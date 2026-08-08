@@ -1,0 +1,14 @@
+# Sperrliste waere hier falsch herum. In /var/www/html liegen Nextcloud, zwei
+# Tradingbots, die vier Spiel-Repos und die interne Risikoliste. Deshalb: erst
+# alles ausschliessen, dann einzeln freigeben. Was neu dazukommt, ist damit
+# automatisch draussen und kann nicht versehentlich mitgehen.
+/*
+
+!/.gitignore
+!/.htaccess
+!/README.md
+!/index.php
+!/recht.css
+!/spiele/
+!/impressum/
+!/datenschutz/
