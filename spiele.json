@@ -1,0 +1,203 @@
+{
+  "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
+  "portsFrei": [
+    8071,
+    8070,
+    8069,
+    8068,
+    8067
+  ],
+  "portsFremd": {
+    "3002": "Whiteboard (Nextcloud)",
+    "5000": "Piper PDF Reader",
+    "7867": "Notify Push (Nextcloud)",
+    "8010": "Tradingbot Value",
+    "8011": "Tradingbot Momentum",
+    "8080": "Talk-Signaling (Nextcloud)"
+  },
+  "spiele": [
+    {
+      "name": "keep",
+      "titel": "Keep",
+      "pfad": "/keep/",
+      "port": 3000,
+      "dienst": "pm2",
+      "leute": "2–4",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": "git@github.com:gthdtasdnm/PickUp.git",
+      "gemeinsam": {
+        "bremse": "server/bremse.js",
+        "lobbyCss": "public/styles.css"
+      }
+    },
+    {
+      "name": "cardchaos",
+      "titel": "Card Chaos",
+      "pfad": "/cardchaos/",
+      "port": 8090,
+      "dienst": "pm2",
+      "leute": "2–4",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": "git@github.com:gthdtasdnm/magictowers.git",
+      "gemeinsam": {
+        "bremse": "server/bremse.js",
+        "lobbyCss": "public/css/style.css"
+      }
+    },
+    {
+      "name": "seconds",
+      "titel": "Seconds",
+      "pfad": "/seconds/",
+      "port": 8077,
+      "dienst": "systemd",
+      "leute": "2–4",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": "git@github.com:gthdtasdnm/double.git",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "luckyreflex",
+      "titel": "Lucky Reflex",
+      "pfad": "/luckyreflex/",
+      "port": 8078,
+      "dienst": "systemd",
+      "leute": "2–4",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": "git@github.com:gthdtasdnm/reflex.git",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "nochnie",
+      "titel": "Ich hab noch nie",
+      "pfad": "/nochnie/",
+      "port": 8076,
+      "dienst": "systemd",
+      "leute": "2–8",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "hinweis": "einziges Spiel mit 18+-Stapel",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "maexchen",
+      "titel": "Mäxchen",
+      "pfad": "/maexchen/",
+      "port": 8075,
+      "dienst": "systemd",
+      "leute": "2–8",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "amehesten",
+      "titel": "Wer am ehesten?",
+      "pfad": "/amehesten/",
+      "port": 8074,
+      "dienst": "systemd",
+      "leute": "3–10",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "hinweis": "beste Vorlage für ein neues Spiel",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "imposter",
+      "titel": "Imposter",
+      "pfad": "/imposter/",
+      "port": 8073,
+      "dienst": "systemd",
+      "leute": "4–10",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "flasche",
+      "titel": "Flaschendrehen",
+      "pfad": "/flasche/",
+      "port": 8072,
+      "dienst": "systemd",
+      "leute": "3–10",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "reaktion",
+      "titel": "Reaktion",
+      "pfad": "/reaktion/",
+      "port": null,
+      "dienst": null,
+      "leute": "2–4",
+      "kategorie": "Am Tisch, ein Gerät",
+      "art": "tisch",
+      "repo": null,
+      "hinweis": "soll auf Raum-Modell umgestellt werden, siehe SPIELE-IDEEN.md",
+      "gemeinsam": {
+        "lobbyCss": "style.css"
+      }
+    },
+    {
+      "name": "kurven",
+      "titel": "Kurven",
+      "pfad": "/kurven/",
+      "port": null,
+      "dienst": null,
+      "leute": "2–4",
+      "kategorie": "Am Tisch, ein Gerät",
+      "art": "tisch",
+      "repo": null,
+      "hinweis": "soll auf Raum-Modell umgestellt werden, siehe SPIELE-IDEEN.md",
+      "gemeinsam": {
+        "lobbyCss": "style.css"
+      }
+    },
+    {
+      "name": "bugreport",
+      "titel": "Bugreport",
+      "pfad": "/bugreport/",
+      "port": 8079,
+      "dienst": "systemd",
+      "leute": null,
+      "kategorie": null,
+      "art": "werkzeug",
+      "repo": "git@github.com:gthdtasdnm/bugreport.git",
+      "gemeinsam": {
+        "lobbyCss": "public/style.css"
+      }
+    }
+  ]
+}

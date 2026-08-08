@@ -19,7 +19,11 @@ mitreißen.
 | `spiele/bilder/` | Vorschaubilder der elf Spiele (WebP) |
 | `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
-| `.htaccess` | sperrt die interne Risikoliste, `/.git/` und `/werkzeug/` |
+| `spiele.json` | Pfade, Ports, Dienste und Repos aller Spiele – einzige Quelle |
+| `gemeinsam/` | Vorlagen, die in jedes Spiel kopiert werden |
+| `werkzeug/verteilen.mjs` | kopiert sie dorthin und meldet Abweichungen |
+| `doku/` | Handreichungen nach Aufgabe getrennt |
+| `.htaccess` | sperrt die internen Dateien, `/.git/`, `/werkzeug/`, `/gemeinsam/` und `/doku/` |
 
 Kein Build-Schritt, keine Abhängigkeiten. Die Startseite trägt ihren Stil
 inline, die beiden Rechtstexte teilen sich `recht.css`, damit sie nicht
@@ -34,13 +38,16 @@ oben einzeln zugelassen. Nextcloud, die Tradingbots, die Spiel-Repos und
 
 ## Verwandte Repos
 
-- Keep · Card Chaos · Seconds · Lucky Reflex – die vier älteren Spiele
-- Bugreport – Fehlermeldungen zu allen elf
-- Die sieben neueren Spiele – **Ich hab noch nie**, **Mäxchen**, **Wer am
-  ehesten**, **Imposter**, **Reaktion**, **Kurven** und **Flaschendrehen** –
-  haben je ein **lokales** Repo, aber **noch kein `origin`**. Bis es eins gibt, liegt ihr
-  Quelltext nur auf diesem Server. Deshalb fehlen sie auch in der
-  Aktualisierungsschleife unten: ohne Remote gibt es nichts zu ziehen.
+Welches Spiel wohin gehört, steht in `spiele.json` unter `repo`:
+
+```bash
+jq -r '.spiele[] | "\(.titel)\t\(.repo // "– noch keins")"' spiele.json
+```
+
+Die sieben neueren Spiele haben je ein **lokales** Repo, aber noch kein
+`origin`; bis es eins gibt, liegt ihr Quelltext nur auf diesem Server. Deshalb
+fehlen sie in der Aktualisierungsschleife unten – ohne Remote gibt es nichts zu
+ziehen.
 
 ## Zwei Arten von Spiel
 
@@ -49,7 +56,7 @@ und der Unterschied entscheidet fast alles am Betrieb:
 
 | | Server-Spiele | Spiele am Tisch |
 |---|---|---|
-| welche | Keep, Card Chaos, Seconds, Lucky Reflex, Ich hab noch nie, Mäxchen, Wer am ehesten, Imposter, Flaschendrehen | **Reaktion, Kurven** |
+| welche | `jq -r '.spiele[]\|select(.art=="server").titel' spiele.json` | **Reaktion, Kurven** |
 | Geräte | eines je Person | **eines für alle** |
 | Dienst | je einer (systemd) | **keiner** |
 | Port | je einer | **keiner** |
@@ -63,32 +70,36 @@ ohne alles andere in der Tabelle.
 
 ## Ports
 
-Wer ein neues Spiel aufsetzt, sucht sich hier den nächsten freien. Ohne diese
-Tabelle fällt eine Kollision erst im Betrieb auf – der zweite Dienst startet
-dann einfach nicht.
+Die Belegung steht in **`spiele.json`** – dort und nirgends sonst, damit sie
+nicht auseinanderläuft. Ohne den Blick dorthin fällt eine Kollision erst im
+Betrieb auf: der zweite Dienst startet dann einfach nicht.
 
-| Port | Was | Dienst |
-|---|---|---|
-| 3000 | Keep | PM2 |
-| 3002 | Whiteboard (Nextcloud) | Container |
-| 5000 | Piper PDF Reader | – |
-| 7867 | Notify Push (Nextcloud) | – |
-| 8010 | Tradingbot Value | – |
-| 8011 | Tradingbot Momentum | – |
-| 8072 | **Flaschendrehen** | `flasche.service` |
-| 8073 | **Imposter** | `imposter.service` |
-| 8074 | **Wer am ehesten** | `amehesten.service` |
-| 8075 | **Mäxchen** | `maexchen.service` |
-| 8076 | Ich hab noch nie | `nochnie.service` |
-| 8077 | Seconds | `seconds.service` |
-| 8078 | Lucky Reflex | `luckyreflex.service` |
-| 8079 | Bugreport | `bugreport.service` |
-| 8080 | Talk-Signaling (Nextcloud) | Container |
-| 8090 | Card Chaos | – |
+```bash
+jq -r '.spiele[] | "\(.port // "-")\t\(.titel)\t\(.dienst // "-")"' spiele.json
+jq -r '.portsFrei[0]' spiele.json     # nächster freier Port
+jq -r '.portsFremd' spiele.json       # belegt, aber nicht von Spielen
+```
 
-Frei und der Reihe nach dran: **8071, 8070, 8069 …** abwärts. Alle Spiele
-binden auf `127.0.0.1` und stehen nicht in UFW; nach außen führt
-ausschließlich Apache.
+Wer einen Port nimmt, streicht ihn dort aus `portsFrei`. Alle Spiele binden auf
+`127.0.0.1` und stehen nicht in UFW; nach außen führt ausschließlich Apache.
+
+## Gemeinsame Teile
+
+Vier Dinge sind in allen Spielen gleich: die Bremse, die Raumverwaltung, der
+statische Einstieg und der obere CSS-Block. Sie liegen in `gemeinsam/` und
+werden von dort in jedes Spiel **kopiert** – nicht importiert.
+
+Der Grund ist dieselbe Linie wie bei den getrennten Repos: würden alle Spiele
+zur Laufzeit dieselbe Datei laden, risse ein Fehler darin alle gleichzeitig
+mit. So behält jedes Spiel eine vollständige eigene Kopie und läuft auch ohne
+diesen Ordner weiter.
+
+```bash
+node werkzeug/verteilen.mjs --pruefen        # Abweichungen melden
+node werkzeug/verteilen.mjs --nur imposter   # ein Spiel ausrollen
+```
+
+Ausgerollt wird Spiel für Spiel, mit `deno task probe` dazwischen.
 
 ## Vorschaubilder neu erzeugen
 

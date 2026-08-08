@@ -12,12 +12,20 @@
     Require all denied
 </FilesMatch>
 
-# Werkzeuge sind Quelltext, kein Angebot. Sie liegen nur im DocumentRoot,
-# damit sie mit dem Seitenrahmen versioniert werden.
+# Werkzeuge und die gemeinsamen Vorlagen sind Quelltext, kein Angebot. Sie
+# liegen nur im DocumentRoot, damit sie mit dem Seitenrahmen versioniert
+# werden. /gemeinsam/ wird von keiner Seite geladen – die Spiele haben ihre
+# eigene Kopie, genau darum geht es dort.
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule "^werkzeug(/|$)" - [F,L]
+    RewriteRule "^(werkzeug|gemeinsam|doku)(/|$)" - [F,L]
 </IfModule>
+
+# spiele.json nennt Ports und Dienstnamen. Die Dienste hoeren nur auf
+# 127.0.0.1, aber eine fertige Landkarte muss man trotzdem nicht ausliefern.
+<FilesMatch "^spiele\.json$">
+    Require all denied
+</FilesMatch>
 
 # Versionsverwaltung sperren. Seit hier ein Repo liegt, wuerde Apache
 # /.git/ sonst ganz normal als Verzeichnis ausliefern – und damit die
