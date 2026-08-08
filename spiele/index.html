@@ -95,17 +95,26 @@ main {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 20px 20px 18px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
   backdrop-filter: blur(6px);
-  color: inherit;
-  text-decoration: none;
   overflow: hidden;
   isolation: isolate;
   transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+/* Der Link traegt den Innenabstand, nicht die Kachel: so bleibt die ganze
+   Flaeche klickbar, und der Info-Knopf kann trotzdem daneben liegen. Ein
+   Knopf im Inneren eines <a> waere ungueltiges Markup. */
+.game-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 20px 18px;
+  color: inherit;
+  text-decoration: none;
 }
 
 /* Farbiger Schimmer je Spiel, liegt hinter dem Inhalt */
@@ -131,14 +140,41 @@ main {
   opacity: .85;
 }
 
-.game:hover, .game:focus-visible {
+/* focus-within statt focus-visible: fokussierbar ist jetzt der Link in der
+   Kachel, nicht die Kachel selbst. */
+.game:hover, .game:focus-within {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
   outline: none;
 }
-.game:hover::before, .game:focus-visible::before { opacity: .42; }
+.game:hover::before, .game:focus-within::before { opacity: .42; }
 .game:active { transform: translateY(0); }
+
+/* --- Info-Knopf ---------------------------------------------------------- */
+
+.info {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(10, 7, 19, .55);
+  color: var(--dim);
+  font: 700 15px/1 Georgia, "Times New Roman", serif;
+  font-style: italic;
+  cursor: pointer;
+  transition: color .18s ease, border-color .18s ease, background .18s ease;
+}
+.info:hover, .info:focus-visible {
+  color: var(--ink);
+  border-color: var(--accent2);
+  background: rgba(10, 7, 19, .85);
+  outline: none;
+}
 
 @media (hover: none) {
   .game:hover { transform: none; }
@@ -273,6 +309,102 @@ dialog form {
 
 .danke-icon { font-size: 42px; line-height: 1; }
 
+/* --- Spiel-Vorschau ------------------------------------------------------ */
+
+#spielDialog { max-width: 560px; }
+
+.dialog-inhalt {
+  padding: 26px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialog-zu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(10, 7, 19, .6);
+  color: var(--dim);
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease;
+}
+.dialog-zu:hover, .dialog-zu:focus-visible {
+  color: var(--ink);
+  background: rgba(10, 7, 19, .9);
+  outline: none;
+}
+
+#spielDialog h2 {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  padding-right: 34px;   /* laesst dem Schliessen-Knopf Platz */
+}
+
+.dialog-kurz { color: var(--dim); font-size: 15px; text-wrap: pretty; }
+
+.schau { margin: 4px 0 2px; }
+.schau img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #0a0612;
+}
+.schau figcaption {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--dim);
+  text-align: center;
+}
+
+#spielDialog h3 {
+  margin-top: 6px;
+  font-size: 13px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+#spielSchritte {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+#spielSchritte li { text-wrap: pretty; }
+#spielSchritte::marker, #spielSchritte li::marker {
+  color: var(--accent2, #29e7ff);
+  font-weight: 700;
+}
+
+.btn-spielen {
+  margin-top: 10px;
+  align-self: stretch;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #180a12;
+  background: linear-gradient(100deg, var(--accent, #b06bff), var(--accent2, #29e7ff));
+  transition: filter .15s ease;
+}
+.btn-spielen:hover, .btn-spielen:focus-visible { filter: brightness(1.1); outline: none; }
+
 dialog h2 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
 dialog p { color: var(--dim); font-size: 15px; text-wrap: pretty; }
 dialog .klein { font-size: 13.5px; }
@@ -339,59 +471,90 @@ footer a { color: inherit; }
 
 <main>
 
-  <a class="game" href="/keep/" style="--accent:#8a6cff; --accent2:#f5c542;">
-    <div class="icon">🎰</div>
-    <h2>Keep</h2>
-    <p>Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die
-      wertvollste Kombination legt, räumt ab.</p>
-    <div class="meta">
-      <span class="dot" data-status></span>
-      <span class="tag">2–4 Spieler</span>
-      <span class="tag">Glück &amp; Nerven</span>
-      <span class="go">Spielen →</span>
-    </div>
-  </a>
+  <article class="game" style="--accent:#8a6cff; --accent2:#f5c542;">
+    <button class="info" type="button" data-spiel="keep"
+            aria-label="Wie Keep gespielt wird">i</button>
+    <a class="game-link" href="/keep/">
+      <div class="icon">🎰</div>
+      <h2>Keep</h2>
+      <p>Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die
+        wertvollste Kombination legt, räumt ab.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Glück &amp; Nerven</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+  </article>
 
-  <a class="game" href="/cardchaos/" style="--accent:#ff2e88; --accent2:#ffd447;">
-    <div class="icon">🃏</div>
-    <h2>Card Chaos</h2>
-    <p>Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut,
-      räumt die Türme ab.</p>
-    <div class="meta">
-      <span class="dot" data-status></span>
-      <span class="tag">2–4 Spieler</span>
-      <span class="tag">Karten</span>
-      <span class="go">Spielen →</span>
-    </div>
-  </a>
+  <article class="game" style="--accent:#ff2e88; --accent2:#ffd447;">
+    <button class="info" type="button" data-spiel="cardchaos"
+            aria-label="Wie Card Chaos gespielt wird">i</button>
+    <a class="game-link" href="/cardchaos/">
+      <div class="icon">🃏</div>
+      <h2>Card Chaos</h2>
+      <p>Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut,
+        räumt die Türme ab.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Karten</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+  </article>
 
-  <a class="game" href="/luckyreflex/" style="--accent:#8e2de2; --accent2:#29e7ff;">
-    <div class="icon">⚡</div>
-    <h2>Lucky Reflex</h2>
-    <p>Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen
-      und Fallen für alle, die einfach dauerdrücken.</p>
-    <div class="meta">
-      <span class="dot" data-status></span>
-      <span class="tag">2–4 Spieler</span>
-      <span class="tag">Reaktion</span>
-      <span class="go">Spielen →</span>
-    </div>
-  </a>
+  <article class="game" style="--accent:#8e2de2; --accent2:#29e7ff;">
+    <button class="info" type="button" data-spiel="luckyreflex"
+            aria-label="Wie Lucky Reflex gespielt wird">i</button>
+    <a class="game-link" href="/luckyreflex/">
+      <div class="icon">⚡</div>
+      <h2>Lucky Reflex</h2>
+      <p>Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen
+        und Fallen für alle, die einfach dauerdrücken.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Reaktion</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+  </article>
 
-  <a class="game" href="/seconds/" style="--accent:#37e2a4; --accent2:#7c6cff;">
-    <div class="icon">🎯</div>
-    <h2>Seconds</h2>
-    <p>Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es
-      zuerst antippt, bekommt den Punkt.</p>
-    <div class="meta">
-      <span class="dot" data-status></span>
-      <span class="tag">2–4 Spieler</span>
-      <span class="tag">Augen &amp; Tempo</span>
-      <span class="go">Spielen →</span>
-    </div>
-  </a>
+  <article class="game" style="--accent:#37e2a4; --accent2:#7c6cff;">
+    <button class="info" type="button" data-spiel="seconds"
+            aria-label="Wie Seconds gespielt wird">i</button>
+    <a class="game-link" href="/seconds/">
+      <div class="icon">🎯</div>
+      <h2>Seconds</h2>
+      <p>Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es
+        zuerst antippt, bekommt den Punkt.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Augen &amp; Tempo</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+  </article>
 
 </main>
+
+<dialog id="spielDialog" aria-labelledby="spielTitel">
+  <button class="dialog-zu" type="button" aria-label="Schließen">✕</button>
+  <div class="dialog-inhalt">
+    <h2 id="spielTitel"></h2>
+    <p class="dialog-kurz" id="spielKurz"></p>
+    <figure class="schau">
+      <img id="spielBild" alt="" width="1000" height="680">
+      <figcaption>Echter Screenshot aus einer laufenden Partie.</figcaption>
+    </figure>
+    <h3>So läuft eine Runde</h3>
+    <ol id="spielSchritte"></ol>
+    <a class="btn-spielen" id="spielLink" href="/">Jetzt spielen →</a>
+  </div>
+</dialog>
 
 <a class="melden" href="/bugreport/">
   <span class="icon">🐞</span>
@@ -435,11 +598,103 @@ footer a { color: inherit; }
 // Punkt unsichtbar und die Links funktionieren trotzdem.
 for (const card of document.querySelectorAll(".game")) {
   const dot = card.querySelector("[data-status]");
-  if (!dot) continue;
-  fetch(card.getAttribute("href"), { method: "HEAD", cache: "no-store" })
+  const link = card.querySelector(".game-link");
+  if (!dot || !link) continue;
+  fetch(link.getAttribute("href"), { method: "HEAD", cache: "no-store" })
     .then(r => { dot.className = "dot " + (r.ok ? "up" : "down"); })
     .catch(() => { dot.className = "dot down"; });
 }
+
+// --- Spiel-Vorschau -------------------------------------------------------
+// Die Schritte stehen bewusst hier und nicht im Markup: ein Dialog, vier
+// Datensätze. Die Bilder kommen aus werkzeug-screenshots/aufnehmen.mjs und
+// zeigen echte Partien, keine Zeichnung.
+const SPIELE = {
+  keep: {
+    titel: "Keep",
+    pfad: "/keep/",
+    kurz: "Ein Automat, fünf Runden, und die Uhr wird jedes Mal knapper.",
+    bild: "bilder/keep-spiel.webp",
+    schritte: [
+      "Raum aufmachen, Link weitergeben – zu zweit bis zu viert.",
+      "Fünf Runden, und jede ist kürzer als die davor: von 90 Sekunden herunter auf 25.",
+      "Die Walze dreht von allein. Danach darfst du zweimal nachziehen und dazwischen entscheiden, welche Symbole liegen bleiben.",
+      "Aus dem, was steht, eine gültige Kombination wählen. Je seltener, desto mehr Punkte – fünf gleiche Herzen bringen das Sechzigfache eines Kleeblatt-Drillings.",
+      "Jede gewertete Kombination in Folge hebt den Multiplikator bis auf das Fünffache. Findest du nichts mehr, ist die Runde vorbei und die Serie weg."
+    ]
+  },
+  cardchaos: {
+    titel: "Card Chaos",
+    pfad: "/cardchaos/",
+    kurz: "Drei Kartenpyramiden, zehn Runden, und am Ende darfst du zocken.",
+    bild: "bilder/cardchaos-spiel.webp",
+    schritte: [
+      "Tisch aufmachen, vierstelligen Code weitergeben – zu zweit bis zu viert.",
+      "Alle spielen gleichzeitig ihr eigenes Brett gegen dieselbe Uhr.",
+      "Eine offene Karte geht, wenn sie genau eins über oder unter der Ablage liegt. König, Ass und Zwei zählen dabei rundherum.",
+      "Passt nichts mehr, ziehst du eine neue Karte – das kostet dich deine Kette.",
+      "Je länger die Kette, desto höher der Multiplikator. Nach der Runde darfst du die Hälfte deiner Punkte auf einen Münzwurf setzen."
+    ]
+  },
+  luckyreflex: {
+    titel: "Lucky Reflex",
+    pfad: "/luckyreflex/",
+    kurz: "Schnell sein reicht nicht – du musst auch richtig liegen.",
+    bild: "bilder/luckyreflex-spiel.webp",
+    schritte: [
+      "Raum aufmachen, Code weitergeben – zu zweit bis zu viert.",
+      "Die ganze Fläche ist der Knopf: irgendwo hintippen, am Rechner die Leertaste.",
+      "Pro Runde kommen fünf Aufgaben derselben Art. Zwei oder drei passen – bei den übrigen ist Stillhalten die richtige Antwort.",
+      "Zu früh gedrückt oder auf die falsche Aufgabe: Punkt weg. Im Bild oben ist der Bildschirm grün, gesucht ist aber Orange.",
+      "17 verschiedene Rundenarten sorgen dafür, dass blindes Dauerdrücken nicht funktioniert."
+    ]
+  },
+  seconds: {
+    titel: "Seconds",
+    pfad: "/seconds/",
+    kurz: "Zwei Karten, immer genau ein gemeinsames Symbol. Finde es zuerst.",
+    bild: "bilder/seconds-spiel.webp",
+    schritte: [
+      "Raum aufmachen, Link weitergeben – zu zweit bis zu viert.",
+      "In der Mitte liegt eine Karte, davor deine eigene.",
+      "Die beiden haben immer genau ein Symbol gemeinsam – nie mehr, nie weniger. Das ist keine Glückssache, sondern steckt im Aufbau des Decks.",
+      "Wer es zuerst auf der eigenen Karte antippt, bekommt den Punkt, und sofort kommt die nächste Karte.",
+      "Danebengetippt heißt anderthalb Sekunden Sperre, während die anderen weiterspielen. Wer die Zielpunktzahl zuerst hat, gewinnt."
+    ]
+  }
+};
+
+const spielDialog = document.getElementById("spielDialog");
+const spielBild = document.getElementById("spielBild");
+
+for (const knopf of document.querySelectorAll(".info")) {
+  knopf.addEventListener("click", () => {
+    const s = SPIELE[knopf.dataset.spiel];
+    if (!s) return;
+    // Die Akzentfarben der Kachel übernehmen, damit Knopf und Ziffern im
+    // Dialog zum jeweiligen Spiel passen.
+    const kachel = knopf.closest(".game");
+    spielDialog.style.cssText = kachel.getAttribute("style") ?? "";
+    document.getElementById("spielTitel").textContent = s.titel;
+    document.getElementById("spielKurz").textContent = s.kurz;
+    spielBild.src = s.bild;
+    spielBild.alt = `Bildschirmfoto aus einer laufenden Partie ${s.titel}`;
+    document.getElementById("spielSchritte").innerHTML = "";
+    for (const schritt of s.schritte) {
+      const li = document.createElement("li");
+      li.textContent = schritt;
+      document.getElementById("spielSchritte").appendChild(li);
+    }
+    document.getElementById("spielLink").href = s.pfad;
+    spielDialog.showModal();
+    spielDialog.scrollTop = 0;
+  });
+}
+
+spielDialog.querySelector(".dialog-zu").addEventListener("click", () => spielDialog.close());
+// Klick auf den abgedunkelten Rand schließt ebenfalls. Der Vergleich mit
+// target trifft nur den Hintergrund, nicht den Inhalt darin.
+spielDialog.addEventListener("click", (e) => { if (e.target === spielDialog) spielDialog.close(); });
 
 // Spenden-Dialog. <dialog> bringt Fokusfalle, Escape und Backdrop selbst mit –
 // deshalb hier nur das Öffnen. Ohne JS bleibt der Knopf wirkungslos, aber die

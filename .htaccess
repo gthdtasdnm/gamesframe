@@ -3,6 +3,13 @@
     Require all denied
 </Files>
 
+# Werkzeuge sind Quelltext, kein Angebot. Sie liegen nur im DocumentRoot,
+# damit sie mit dem Seitenrahmen versioniert werden.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule "^werkzeug(/|$)" - [F,L]
+</IfModule>
+
 # Versionsverwaltung sperren. Seit hier ein Repo liegt, wuerde Apache
 # /.git/ sonst ganz normal als Verzeichnis ausliefern – und damit die
 # komplette Historie inklusive geloeschter Dateien.

@@ -16,8 +16,10 @@ mitreißen.
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
+| `spiele/bilder/` | Vorschaubilder der vier Spiele (WebP) |
+| `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
-| `.htaccess` | sperrt die interne Risikoliste und `/.git/` |
+| `.htaccess` | sperrt die interne Risikoliste, `/.git/` und `/werkzeug/` |
 
 Kein Build-Schritt, keine Abhängigkeiten. Die Startseite trägt ihren Stil
 inline, die beiden Rechtstexte teilen sich `recht.css`, damit sie nicht
@@ -34,6 +36,35 @@ oben einzeln zugelassen. Nextcloud, die Tradingbots, die Spiel-Repos und
 
 - Keep · Card Chaos · Seconds · Lucky Reflex – die vier Spiele
 - Bugreport – Fehlermeldungen zu allen vieren
+
+## Vorschaubilder neu erzeugen
+
+Die Bilder in `spiele/bilder/` sind **echte Bildschirmfotos laufender Partien**,
+keine Zeichnungen. Von Hand waeren sie kaum zu machen: die Spiele brauchen
+mindestens zwei Spieler, um etwas herzugeben. `werkzeug/aufnehmen.mjs` faehrt
+deshalb zwei Browsersitzungen gleichzeitig, macht einen echten Raum auf, tritt
+bei, startet die Runde und drueckt ab.
+
+```bash
+cd /root/werkzeug-screenshots
+node aufnehmen.mjs                 # alle vier
+node aufnehmen.mjs cardchaos       # nur eins
+```
+
+Danach die Datei aus `/root/werkzeug-screenshots/` zurueck nach `werkzeug/`
+kopieren, falls sie sich geaendert hat.
+
+Zwei Voraussetzungen, die auf einem frischen Server fehlen:
+
+- **Playwright samt Chromium** (`npm i playwright && npx playwright install
+  chromium`). Nicht `--with-deps` benutzen, solange das kaputte MongoDB-Repo in
+  den apt-Quellen steht – das laesst jedes `apt update` scheitern.
+- **Eine Emoji-Schrift.** Ohne sie zeigen die Bilder leere Kaestchen statt
+  Spielfiguren und Symbolen; bei Seconds waeren die Karten komplett leer.
+  Liegt unter `/usr/local/share/fonts/emoji/NotoColorEmoji.ttf`.
+
+Die Bilder werden zum Schluss nach WebP umgewandelt (rund ein Zehntel der
+PNG-Groesse) und die PNG geloescht.
 
 ## Alles auf einmal aktualisieren
 
