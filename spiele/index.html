@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Zehn Browserspiele für 2 bis 10 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Elf Browserspiele für 2 bis 10 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -504,7 +504,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Zehn Browserspiele für 2 bis 10 Leute. Kein Download, kein Account
+  <p class="sub">Elf Browserspiele für 2 bis 10 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -658,6 +658,43 @@ footer a { color: inherit; }
         <li>Passt die Karte nicht, gibt es mit einem Druck eine andere. Auslassen ist immer erlaubt und kostet nichts – es wird nur mitgezählt.</li>
         <li>Die Karten kommen ohne Alkohol, ohne Sex und ohne Körperkontakt aus. „Frech“ heißt hier peinlich, nicht anzüglich, und jede Pflicht lässt sich im Sitzen erfüllen.</li>
         <li>Am Ende steht, wen die Flasche am häufigsten getroffen hat.</li>
+    </template>
+  </article>
+
+</main>
+
+<section class="gruppe" aria-labelledby="gruppe-ruhe">
+  <h2 class="gruppe-titel" id="gruppe-ruhe">Zug um Zug, in Ruhe</h2>
+  <p class="gruppe-sub">Einer ist dran, die anderen überlegen mit. Kein Zeitdruck außer der Bedenkzeit, die ihr selbst einstellt – oder abschaltet.</p>
+</section>
+
+<main class="raster">
+
+  <article class="game" style="--accent:#ffb02e; --accent2:#52ffa8;"
+           data-spiel="wortleger" data-bild="bilder/wortleger-spiel.webp"
+           data-kurz="Buchstaben mit Werten auf ein Brett mit Bonusfeldern. Geprüft wird gegen eine Wortliste, nicht gegen die Geduld der Mitspieler.">
+    <button class="info" type="button" aria-label="Wie Wortleger gespielt wird">i</button>
+    <a class="game-link" href="/wortleger/">
+      <div class="icon">🔤</div>
+      <h3>Wortleger</h3>
+      <p>Sieben Steine auf dem Regal, ein 13×13-Brett mit Bonusfeldern. Legt Wörter, kreuzt die der anderen und nehmt die dreifachen Felder mit, bevor es jemand anders tut.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">2–4 Spieler</span>
+        <span class="tag">Wörter</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li>Raum aufmachen, Code weitergeben – zu zweit bis zu viert. Jeder zieht sieben Steine, die nur er sieht.</li>
+        <li>Reihum ist einer am Zug. Stein im Regal antippen, freies Feld antippen – so legst du ihn ab. Nochmal antippen holt ihn zurück.</li>
+        <li>Das erste Wort muss durch den Stern in der Mitte. Danach muss jedes neue Wort an etwas anschließen, das schon liegt.</li>
+        <li>Ein Zug legt Steine in einer Reihe oder einer Spalte, ohne Lücke. Alles, was dabei entsteht – auch quer –, muss ein Wort sein.</li>
+        <li>Geprüft wird gegen eine deutsche Wortliste mit 488&nbsp;344 Einträgen. Umlaute haben eigene Steine, ß wird als SS geschrieben.</li>
+        <li>Bonusfelder verdoppeln oder verdreifachen Buchstabe oder Wort – aber nur in dem Zug, in dem sie belegt werden.</li>
+        <li>Alle sieben Steine in einem Zug bringen 40 Punkte Zuschlag. Wer nichts findet, tauscht Steine oder passt.</li>
+        <li>Zwei Joker liegen im Beutel. Sie werden zu jedem Buchstaben, zählen aber null.</li>
+        <li>Wer zuerst sein Regal leer hat, wenn der Beutel leer ist, bekommt obendrauf, was die anderen noch halten – die ziehen ihre Reststeine ab.</li>
     </template>
   </article>
 
@@ -882,7 +919,7 @@ for (const card of document.querySelectorAll(".game")) {
 // zeigen echte Partien, keine Zeichnung.
 // Der Anleitungsdialog liest alles aus der Kachel, auf die geklickt wurde.
 // Vorher stand jedes Spiel zweimal in dieser Datei – als Kachel und als
-// Eintrag in einem JS-Objekt. Bei zehn Spielen laufen zwei Fassungen
+// Eintrag in einem JS-Objekt. Bei elf Spielen laufen zwei Fassungen
 // unweigerlich auseinander, und der Dialog ist die, die niemand nachprüft.
 function anleitungAus(kachel) {
   const link = kachel.querySelector(".game-link");

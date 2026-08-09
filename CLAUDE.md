@@ -7,7 +7,7 @@ geöffnet. Stand: 08.08.2026.
 
 ## Was hier liegt
 
-`/var/www/html` ist der DocumentRoot. Darin: zehn Browserspiele, die
+`/var/www/html` ist der DocumentRoot. Darin: elf Browserspiele, die
 Spieleübersicht, ein Bugreport-Werkzeug, zwei Rechtstexte – und, damit nicht
 verwechselt, Nextcloud und zwei Tradingbots.
 

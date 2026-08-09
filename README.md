@@ -4,7 +4,7 @@ Alles, was auf inf-zeus.de nicht zu einem einzelnen Spiel gehört: die
 Spieleübersicht, Impressum und Datenschutzerklärung, der gemeinsame Stil der
 Rechtstexte und die Apache-Regeln des DocumentRoot.
 
-Die zehn Spiele und der Bugreport liegen in eigenen Repos und werden hier
+Die elf Spiele und der Bugreport liegen in eigenen Repos und werden hier
 bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
 mitreißen.
 
@@ -12,11 +12,11 @@ mitreißen.
 
 | Pfad | Was |
 |---|---|
-| `spiele/index.html` | Startseite mit den zehn Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
+| `spiele/index.html` | Startseite mit den elf Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
-| `spiele/bilder/` | Vorschaubilder der zehn Spiele (WebP) |
+| `spiele/bilder/` | Vorschaubilder der elf Spiele (WebP) |
 | `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
 | `spiele.json` | Pfade, Ports, Dienste und Repos aller Spiele – einzige Quelle |
@@ -45,10 +45,10 @@ jq -r '.spiele[] | "\(.titel)\t\(.repo // "– noch keins")"' spiele.json
 ```
 
 Seit dem 09.08.2026 hat jedes Spiel ein Remote; bei den neueren heißt das Repo
-wie der Ordner. **Ausnahme: Cubes**, am 09.08.2026 gebaut – lokal versioniert,
-aber noch ohne Remote, weil das Anlegen eines GitHub-Repos außerhalb dieses
-Servers passiert. Steht in `RISIKEN-TODO.md`; `spiele.json` hat dort `repo:
-null`, das ist die verlässliche Auskunft.
+wie der Ordner. **Ausnahmen: Cubes und Wortleger**, beide am 09.08.2026 gebaut
+– lokal versioniert, aber noch ohne Remote, weil das Anlegen eines GitHub-Repos
+außerhalb dieses Servers passiert. Steht in `RISIKEN-TODO.md`; `spiele.json`
+hat dort `repo: null`, das ist die verlässliche Auskunft.
 
 ## Nur eine Art von Spiel
 
@@ -108,9 +108,17 @@ Flaschendrehen bekommt fuenf – der Kreis lebt davon, dass Namen darauf
 verteilt sind. Cubes bekommt vier: das Bild lebt davon, dass mehrere Farben
 gleichzeitig im Raster liegen.
 
+**Wortleger ist der Sonderfall.** Mit sieben zufälligen Steinen lässt sich
+nicht vorher aufschreiben, welches Wort gelegt wird. Das Rezept lädt deshalb
+`zug.js` und `woerter.txt` aus dem Spielordner und sucht sich damit selbst
+gültige Züge – statt die Zugregeln hier ein zweites Mal nachzubauen. Für das
+Bild bleibt am Ende ein Wort **halb gelegt** liegen: die frischen Steine tragen
+den orangen Rand, der Knopf „Legen“ wartet. Erst damit zeigt das Bild, wie man
+spielt, und nicht nur, was dabei herauskommt.
+
 ```bash
 cd /root/werkzeug-screenshots
-node aufnehmen.mjs                 # alle zehn
+node aufnehmen.mjs                 # alle elf
 node aufnehmen.mjs cardchaos       # nur eins
 ```
 
@@ -134,7 +142,7 @@ PNG-Groesse) und die PNG geloescht.
 Seit dem Umbau auf Kategorien liest der Anleitungsdialog seinen Inhalt aus der
 Kachel selbst (`data-kurz`, `data-bild` und ein `<template class="ablauf">`).
 Damit steht jedes Spiel **einmal** in der Datei statt zweimal – vorher gab es
-zusätzlich ein JS-Objekt `SPIELE`, und bei zehn Spielen laufen zwei Fassungen
+zusätzlich ein JS-Objekt `SPIELE`, und bei elf Spielen laufen zwei Fassungen
 unweigerlich auseinander.
 
 Die Kehrseite: ein leerer Dialog fällt niemandem auf, weil die Seite ohne ihn

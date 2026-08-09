@@ -1,7 +1,6 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
   "portsFrei": [
-    8070,
     8069,
     8068,
     8067
@@ -164,6 +163,24 @@
       "kategorie": "Tempo und Geschick",
       "art": "server",
       "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "wortleger",
+      "titel": "Wortleger",
+      "pfad": "/wortleger/",
+      "port": 8070,
+      "dienst": "systemd",
+      "leute": "2–4",
+      "kategorie": "Zug um Zug",
+      "art": "server",
+      "repo": null,
+      "hinweis": "einziges Spiel mit einer Wortliste (woerter.txt, CC0)",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",

@@ -13,7 +13,7 @@ ausschließlich Apache.
 
 ## Dienste
 
-Neun laufen unter **systemd**, zwei unter **PM2** (Keep, Card Chaos).
+Zehn laufen unter **systemd**, zwei unter **PM2** (Keep, Card Chaos).
 `systemctl is-active keep` sagt „inactive", obwohl das Spiel läuft – für die
 beiden ist `pm2 list` zuständig.
 
@@ -35,10 +35,26 @@ stehen.
 
 ## Speicher
 
-Ein Deno-Dienst belegt im Leerlauf rund 60 MB, neun zusammen etwa 550 MB von
-7,7 GB. Unkritisch, aber nicht beliebig skalierbar: ab etwa zwanzig Spielen
-wird daraus ein Thema. Dann wäre Start auf Anfrage die Lösung – heute wäre das
-Aufwand ohne Anlass.
+Nachgemessen am 09.08.2026, nicht geschätzt:
+
+```bash
+for s in $(jq -r '.spiele[]|select(.dienst=="systemd").name' spiele.json); do
+  printf "%-12s %s\n" "$s" "$(systemctl show $s -p MemoryCurrent | sed 's/.*=//')"
+done
+```
+
+Ein Deno-Dienst belegt im Leerlauf **rund 17 MB**, alle zehn plus Bugreport
+zusammen **176 MB** von 7,7 GB. Die frühere Angabe hier (60 MB je Dienst,
+550 MB gesamt) war zu hoch gegriffen.
+
+Ausreißer ist **Wortleger mit 25 MB** – die 5,4-MB-Wortliste liegt im Speicher.
+Sie liegt dort als roher Bytepuffer und nicht als `Set`, genau deshalb sind es
+25 und nicht rund 100 MB; die Begründung samt Messung steht in
+`wortleger/woerter.js`.
+
+Unkritisch, aber nicht beliebig skalierbar: ab etwa zwanzig Spielen wird daraus
+ein Thema. Dann wäre Start auf Anfrage die Lösung – heute wäre das Aufwand ohne
+Anlass.
 
 ## Was nicht ins Netz darf
 

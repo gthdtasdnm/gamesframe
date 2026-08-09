@@ -614,9 +614,181 @@ async function flasche(browser) {
   for (const s of seiten) await s.context().close();
 }
 
+// ------------------------------------------------------------------ Wortleger
+
+// Dieses Rezept braucht als einziges die Regeln des Spiels selbst: mit sieben
+// zufaelligen Steinen laesst sich nicht vorher aufschreiben, welches Wort
+// gelegt wird. Statt die Zugregeln hier nachzubauen - und damit eine zweite,
+// stillschweigend veraltende Fassung zu pflegen - laedt das Rezept `zug.js`
+// und `woerter.txt` aus dem Spielordner. Faellt das Spiel weg, faellt nur
+// dieses Rezept aus; alle anderen laufen weiter.
+const WORTLEGER_DIR = '/var/www/html/wortleger';
+const WL_GROESSE = 13;
+const WL_MITTE = 6;
+
+async function wortlegerRegeln() {
+  const { werteZug } = await import(`${WORTLEGER_DIR}/zug.js`);
+  const { brettAusText } = await import(`${WORTLEGER_DIR}/zug.js`);
+  const { readFile } = await import('node:fs/promises');
+  const liste = new Set((await readFile(`${WORTLEGER_DIR}/woerter.txt`, 'utf8')).split('\n'));
+  return { werteZug, brettAusText, kennt: (w) => liste.has(w) };
+}
+
+/** Das Brett als Zeichenkette, direkt aus dem DOM gelesen. */
+const wlBrett = (page) =>
+  page.$$eval('#brett > div', (els) => els.map((e) => {
+    if (!e.classList.contains('stein')) return '.';
+    const b = (e.childNodes[0]?.nodeValue ?? '').trim();
+    return e.classList.contains('joker') ? b.toLowerCase() : b;
+  }).join(''));
+
+/** Die Buchstaben auf dem Regal, in der Reihenfolge der Knoepfe. */
+const wlRegal = (page) =>
+  page.$$eval('#regal button', (els) =>
+    els.map((e) => (e.childNodes[0]?.nodeValue ?? '').trim()));
+
+async function wortleger(browser) {
+  const { werteZug, brettAusText, kennt } = await wortlegerRegeln();
+
+  const namen = ['Ata', 'Mira', 'Nuri'];
+  const seiten = [];
+  for (const name of namen) {
+    const p = await spieler(browser, name);
+    await p.goto(`${BASIS}/wortleger/`, { waitUntil: 'networkidle' });
+    await p.fill('#name', name);
+    seiten.push(p);
+  }
+  const [host, ...gaeste] = seiten;
+
+  // Ohne Uhr: sonst laeuft waehrend der Suche nach einem Wort die Bedenkzeit
+  // ab und der Zug geht an den Naechsten, mitten im Bild.
+  await host.click('[data-zeit="0"]');
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const g of gaeste) {
+    await g.fill('#codeInput', code);
+    await g.click('#joinBtn');
+    await g.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await g.click('#readyBtn');
+  }
+  await warte(600);
+  await knipsen(host, 'wortleger-raum.png');
+
+  await host.click('#startBtn');
+  await host.waitForSelector('#screen-game.active', { timeout: 15000 });
+
+  /** Welche Seite ist gerade am Zug? */
+  const amZug = async () => {
+    for (const s of seiten) {
+      if (await s.locator('#dran.ich').count()) return s;
+    }
+    return null;
+  };
+
+  /** Legt die Steine eines Zuges hin – Regal antippen, Feld antippen. */
+  const hinlegen = async (page, gelegt) => {
+    for (const s of gelegt) {
+      // Nach jedem Stein rutscht das Regal, also jedes Mal neu nachsehen.
+      const knoepfe = await page.$$('#regal button');
+      const texte = await wlRegal(page);
+      const i = texte.indexOf(s.b);
+      if (i === -1) throw new Error(`${s.b} liegt nicht mehr im Regal`);
+      await knoepfe[i].click();
+      await page.click(`#brett > div:nth-child(${s.r * WL_GROESSE + s.c + 1})`);
+    }
+  };
+
+  /** Sucht einen gueltigen Zug: erst ein Wort durch den Stern, danach genuegt
+   *  ein einzelner Stein, der sich irgendwo anlegt. */
+  const sucheZug = async (page) => {
+    const text = await wlBrett(page);
+    const brett = brettAusText(text);
+    const leer = !/[^.]/.test(text);
+    const regal = (await wlRegal(page)).filter((b) => /^[A-ZÄÖÜ]$/.test(b));
+
+    if (leer) {
+      for (const laenge of [4, 3, 2]) {
+        for (const folge of folgen(regal, laenge)) {
+          const wort = folge.join('');
+          if (!kennt(wort)) continue;
+          for (let v = 0; v < laenge; v++) {
+            const gelegt = [...wort].map((b, i) => ({
+              r: WL_MITTE, c: WL_MITTE - v + i, b, joker: false,
+            }));
+            if (werteZug({ brett, gelegt, ersterZug: true, kennt }).ok) return gelegt;
+          }
+        }
+      }
+      return null;
+    }
+
+    for (let r = 0; r < WL_GROESSE; r++) {
+      for (let c = 0; c < WL_GROESSE; c++) {
+        if (brett[r][c]) continue;
+        for (const b of new Set(regal)) {
+          const gelegt = [{ r, c, b, joker: false }];
+          if (werteZug({ brett, gelegt, ersterZug: false, kennt }).ok) return gelegt;
+        }
+      }
+    }
+    return null;
+  };
+
+  // Eine Weile wirklich spielen. Ohne das zeigt das Bild ein leeres Brett und
+  // behauptet, hier gaebe es ein Legespiel.
+  let gelegt = 0;
+  for (let zug = 0; zug < 20 && gelegt < 8; zug++) {
+    const page = await amZug();
+    if (!page) break;
+    const wahl = await sucheZug(page);
+    if (wahl) {
+      await hinlegen(page, wahl);
+      await page.locator('#aktionen button', { hasText: 'Legen' }).click();
+      gelegt++;
+    } else {
+      // Nichts zu machen: zwei Steine tauschen statt zu passen, sonst ist die
+      // Partie nach zwei Runden ausgesessen.
+      await page.locator('#aktionen button', { hasText: 'Tauschen' }).click();
+      const knoepfe = await page.$$('#regal button');
+      for (const k of knoepfe.slice(0, 2)) await k.click();
+      await page.locator('#aktionen button', { hasText: 'tauschen' }).click();
+    }
+    await warte(500);
+  }
+  console.log(`    ${gelegt} Wörter gelegt`);
+
+  // Das Bild soll die Mechanik zeigen, nicht nur das Ergebnis: auf der Seite,
+  // die am Zug ist, liegt ein Wort schon halb – die frisch gelegten Steine
+  // tragen den orangen Rand, der Knopf „Legen“ wartet.
+  const letzte = await amZug();
+  if (letzte) {
+    const wahl = await sucheZug(letzte);
+    if (wahl) await hinlegen(letzte, wahl);
+    await warte(400);
+    await knipsen(letzte, 'wortleger-spiel.png');
+  } else {
+    await knipsen(host, 'wortleger-spiel.png');
+  }
+
+  for (const s of seiten) await s.context().close();
+}
+
+/** Alle geordneten Folgen der Länge n, ohne einen Stein doppelt zu nehmen. */
+function folgen(liste, n) {
+  if (n === 0) return [[]];
+  const raus = [];
+  for (let i = 0; i < liste.length; i++) {
+    const rest = liste.slice(0, i).concat(liste.slice(i + 1));
+    for (const f of folgen(rest, n - 1)) raus.push([liste[i], ...f]);
+  }
+  return raus;
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
-  flasche, cubes,
+  flasche, cubes, wortleger,
 };
 
 const gewaehlt = process.argv.slice(2);
