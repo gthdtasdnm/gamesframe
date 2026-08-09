@@ -672,12 +672,12 @@ footer a { color: inherit; }
 
   <article class="game" style="--accent:#35e6ff; --accent2:#a06bff;"
            data-spiel="cubes" data-bild="bilder/cubes-spiel.webp"
-           data-kurz="Deine Farbe, deine Quadrate. Die der anderen kannst du nicht antippen.">
+           data-kurz="Ein volles Raster, deine Farbe darin. Die der anderen kannst du nicht antippen.">
     <button class="info" type="button" aria-label="Wie Cubes gespielt wird">i</button>
     <a class="game-link" href="/cubes/">
       <div class="icon">🟪</div>
       <h3>Cubes</h3>
-      <p>Jeder bekommt eine Farbe. Im Raster tauchen Quadrate auf und verschwinden wieder – triff deine eigenen, bevor sie weg sind. Drei Runden, jede mit einer neuen Gemeinheit.</p>
+      <p>Jeder bekommt eine Farbe. Das Raster ist immer voll und wechselt ständig – triff deine eigenen, bevor sie weg sind. Drei Runden, jede mit einer neuen Gemeinheit.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–6 Spieler</span>
@@ -691,9 +691,11 @@ footer a { color: inherit; }
     <template class="ablauf">
         <li>Raum aufmachen, Code weitergeben – zu zweit bis zu sechst. Jeder bekommt eine eigene Farbe.</li>
         <li>Alle sehen dasselbe Raster. Antippen kannst du nur die Quadrate in deiner Farbe; die fremden sind blass und reagieren nicht.</li>
+        <li>Das Raster ist immer voll – jede Lücke ist sofort wieder besetzt, und die Hälfte gehört den anderen. Seine eigenen zu finden ist die halbe Aufgabe.</li>
         <li><b>Runde 1 – Antippen:</b> deine Quadrate tauchen auf und verschwinden von allein wieder. Wer rechtzeitig trifft, bekommt den Punkt. Der Balken unten zeigt, wie lange es noch da ist.</li>
         <li><b>Runde 2 – Mehrfach:</b> dasselbe, aber jedes Quadrat braucht zwei bis vier Treffer. Punkte gibt es erst beim letzten – ein halb abgeräumtes zählt nicht.</li>
         <li><b>Runde 3 – Plus und Minus:</b> jetzt stehen Zahlen drin, auch negative. Tipp die positiven, lass die negativen liegen: sie gehen von selbst weg.</li>
+        <li>Die negativen sehen aus wie die positiven – nur die Zahl verrät sie. Genau darum greift man im Eifer daneben.</li>
         <li>Niemand kann dir dein Minusfeld drücken – das entscheidet der Server, nicht die Höflichkeit der anderen.</li>
         <li>Am Ende zählen die Punkte aus allen Runden zusammen.</li>
     </template>

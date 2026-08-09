@@ -14,6 +14,7 @@ cd /var/www/html && node werkzeug/verteilen.mjs --pruefen
 cd /root/werkzeug-screenshots
 node pruefe-startseite.mjs     # alle Kacheln, alle Dialoge, alle Bilder
 node pruefe-flasche.mjs        # zeigt die Flasche wirklich auf die Person?
+node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 ```
 
 `probe.js` ist kein Testrahmen: ein Skript, das wirft, wenn etwas nicht stimmt,
@@ -27,7 +28,7 @@ werden die beiden nicht umgebaut – es fehlt der Nachweis.
 
 ## Der Browserlauf ist kein Luxus
 
-Drei echte Fehler sind nur dort aufgefallen, nie in der Probe. Zwei davon
+Vier echte Fehler sind nur dort aufgefallen, nie in der Probe. Zwei davon
 stammen aus Reaktion und Kurven, die es seit dem 09.08.2026 nicht mehr gibt –
 sie stehen trotzdem hier, denn der Grund für den Browserlauf gilt unverändert:
 
@@ -36,6 +37,11 @@ sie stehen trotzdem hier, denn der Grund für den Browserlauf gilt unverändert:
   und Probe waren richtig, und die Flasche zeigte trotzdem eine Vierteldrehung
   daneben.
 - **Kurven:** der gemeinsame Punktestand überlappte die Steuerleiste.
+- **Cubes:** ein `+1` in Runde 3 wurde ohne Zahl gezeichnet. Die Beschriftung
+  hing am Wert („1 zeigt nichts") statt an der Rundenart. In Runde 3 ist die
+  Zahl aber das Einzige, was ein Plus- von einem Minusfeld unterscheidet – die
+  beiden sehen absichtlich gleich aus. Server und Probe waren die ganze Zeit
+  grün.
 
 Vorsicht bei eigenen Prüfskripten: `.overlay` ohne `.an` ist `display:none` –
 auf „sichtbar" zu warten geht nie auf. Stattdessen `{ state: 'hidden' }`. Und
