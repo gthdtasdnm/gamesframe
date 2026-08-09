@@ -7,6 +7,12 @@
 cd /var/www/html/<spiel>
 DENO_DIR=/tmp/deno-check WS_URL=wss://inf-zeus.de/<spiel>/ws deno task probe
 
+# Spiele ohne Server: reine Rechenprobe, kein Browser
+cd /var/www/html/<minenfeld|sudoku|patience> && deno task probe
+
+# Und dann doch im Browser, weil eine Rechenprobe keine Seite aufbaut
+cd /root/werkzeug-screenshots && node pruefe-statisch.mjs
+
 # Gemeinsame Teile noch überall gleich?
 cd /var/www/html && node werkzeug/verteilen.mjs --pruefen
 
@@ -16,11 +22,12 @@ node pruefe-startseite.mjs     # alle Kacheln, alle Dialoge, alle Bilder
 node pruefe-flasche.mjs        # zeigt die Flasche wirklich auf die Person?
 node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
+node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
 ```
 
 Ausgeführt werden sie in `/root/werkzeug-screenshots/` – dort liegen
-`node_modules` mit Playwright. **Versioniert ist bisher nur
-`pruefe-wortleger.mjs`** (in `werkzeug/`, wie `aufnehmen.mjs`); die drei
+`node_modules` mit Playwright. **Versioniert sind bisher nur `pruefe-wortleger.mjs` und
+`pruefe-statisch.mjs`** (in `werkzeug/`, wie `aufnehmen.mjs`); die drei
 älteren liegen ausschließlich in `/root` und wären bei einem Plattenschaden
 weg. Steht in `RISIKEN-TODO.md`. Wer eine ändert, kopiert sie wie
 `aufnehmen.mjs` nach `werkzeug/` zurück:
@@ -44,6 +51,47 @@ ohne Server und rechnet jede Punktzahl von Hand nach.
 
 Kein `probe.js` haben **Seconds** und **Lucky Reflex**. Solange das so ist,
 werden die beiden nicht umgebaut – es fehlt der Nachweis.
+
+## Die zwölf vom 09.08. haben jetzt auch eine
+
+Nachgezogen am 09.08.2026 abends. Bei allen acht Server-Spielen nach demselben
+Muster, und bei allen mit demselben Trick gegen den Zufall: **was der Server
+rechnet, rechnet die Probe mit derselben Datei nach.** Dafür sind aus den
+Servern eigene Regeldateien herausgelöst worden – `karten.js` (Schwimmen),
+`regeln.js` (Mau-Mau, Kings Cup hatte schon eine), `blatt.js` (Lügen),
+`gebote.js` (Becherbluff). Der erste Teil jeder Probe läuft dadurch ganz ohne
+Server.
+
+Die vier Spiele ohne Server prüfen dasselbe eine Stufe tiefer: `raetsel.js`
+(Sudoku), `feld.js` (Minenfeld), `regeln.js` (Patience) sind aus `app.js`
+herausgelöst, damit `deno task probe` sie ohne Browser rechnen lassen kann.
+Wortgitter hat keine Probe – dort ist die Wortliste erzeugt und wird von
+`pruefe-wortleger.mjs` mitgeprüft.
+
+Sechs echte Fehler hat das Schreiben der Proben gefunden, alle behoben:
+
+- **Nachtwache:** endete die Partie in der Nacht, ging der Bericht dieser Nacht
+  verloren – wer gestorben war und woran, erfuhr niemand.
+- **Lügen:** eine leergespielte Partie endete nie. Der Letzte legte sich selbst
+  weiter zu, und niemand konnte ihn stoppen.
+- **Becherbluff:** die Aufdeckung wurde erst gebaut, nachdem dem Verlierer der
+  Würfel genommen war – die Zahl daneben passte nicht zum Bild.
+- **Paare:** abgeräumte Karten galten weiter als offen.
+- **Kings Cup:** zweimal auf Ziehen tippen zog zwei Karten, die erste sah
+  niemand.
+- **Patience:** `neu()` hielt die alte Uhr erst an, als sie schon nicht mehr
+  erreichbar war.
+
+**Snake misst mit.** Bei sechs Spielern – der vollen Besetzung und damit dem
+teuersten Fall – sind es rund 7 KB/s je Spieler bei 7,7 Nachrichten/s. Die
+Probe wirft ab 25 KB/s. Das ist die Lehre aus Cubes, wo 148 KB/s je Spieler
+erst im Betrieb aufgefallen sind.
+
+**Bedenkzeit prüfen dauert sonst zu lange.** Paare und Kings Cup haben seit dem
+09.08. eine Frist je Zug. Ihre Proben starten dafür einen eigenen Server auf
+einem freien Port mit `ZUG_MS=1500` und sehen dem Ablauf wirklich zu. Gegen
+live (`WS_URL` gesetzt) fällt dieser Teil aus – dort steht die Frist auf ihrem
+echten Wert.
 
 ## Der Browserlauf ist kein Luxus
 

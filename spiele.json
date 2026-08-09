@@ -212,7 +212,8 @@
         "bremse": "bremse.js",
         "raum": "raum.js",
         "statisch": "statisch.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {
@@ -230,7 +231,8 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "schale": "public/schale.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {
@@ -248,7 +250,8 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "schale": "public/schale.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {
@@ -266,7 +269,8 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "schale": "public/schale.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {
@@ -284,7 +288,8 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "schale": "public/schale.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {
@@ -303,7 +308,8 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "schale": "public/schale.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {
@@ -321,7 +327,8 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "schale": "public/schale.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {
@@ -340,7 +347,8 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "schale": "public/schale.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     },
     {

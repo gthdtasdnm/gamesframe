@@ -17,7 +17,9 @@ geschlossen. Der Preis ist Drift – und genau die fängt das Verteilskript ab.
 | `bremse` | `gemeinsam/bremse.js` | Verbindungs- und Raumbremse je IP |
 | `raum` | `gemeinsam/raum.js` | Raumcode, Host, Bereit, Karenzzeit, Raumliste, Senden |
 | `statisch` | `gemeinsam/statisch.js` | statische Dateien, WebSocket-Annahme, Start |
+| `schale` | `gemeinsam/schale.js` | Client-Schale: Verbindung, Lobby, Bildschirme |
 | `lobbyCss` | `gemeinsam/lobby.css` | CSS-Block bis zum Endmarker |
+| `rahmenCss` | `werkzeug/rahmen.css` | CSS-Abschnitt zwischen zwei Markern |
 
 Welches Spiel welchen Teil bekommt und wohin, steht in `spiele.json` unter
 `gemeinsam`. Ein Spiel, das einen Teil nicht braucht, führt ihn dort nicht auf.
@@ -35,10 +37,28 @@ node werkzeug/verteilen.mjs                  # alle
 dafür gibt es `--nur`: ein Fehler im gemeinsamen Teil trifft dann eins statt
 neun. `--pruefen` gehört in jeden Abschluss einer Sitzung.
 
-`lobbyCss` ersetzt nur den Kopf bis zur Zeile mit dem Endmarker
-`Gemeinsame Lobby-Basis ══ Ende`; alles darunter gehört dem Spiel und bleibt
-unberührt. Die anderen drei ersetzen die ganze Datei und **legen sie an**, wenn
-sie fehlt – so kommt ein neues Spiel überhaupt erst an `raum.js`.
+Drei Arten, wie ein Teil in die Zieldatei kommt:
+
+| Modus | Was ersetzt wird | Wer |
+|---|---|---|
+| `ganz` | die ganze Datei; sie wird **angelegt**, wenn sie fehlt | `bremse`, `raum`, `statisch`, `schale` |
+| `block` | der Kopf bis zur Zeile mit dem Endmarker | `lobbyCss` |
+| `abschnitt` | das Stück zwischen Anfangs- und Endmarker | `rahmenCss` |
+
+`ganz` ist der Grund, warum ein neues Spiel überhaupt erst an `raum.js` kommt.
+Bei `block` gehört alles unter `Gemeinsame Lobby-Basis ══ Ende` dem Spiel und
+bleibt unberührt.
+
+`abschnitt` gibt es seit dem 09.08.2026 und nur für einen Fall: `rahmen.css`
+steht in `public/style.css` **zwischen** der Lobby-Basis und dem Eigenen des
+Spiels und ist von keiner Seite her zu fassen. Vorher wurde die Datei von
+`neuspiel.sh` einmal beim Anlegen hineinkopiert und danach nie wieder angefasst
+– eine dritte CSS-Ebene, die niemand pflegte. Jetzt trägt sie die Marker
+`Gemeinsamer Rahmen ══ Anfang` und `… Ende` und wird mitgeführt.
+
+**Nur die acht Spiele vom 09.08. führen `rahmenCss`.** Die älteren haben an
+derselben Stelle ihr eigenes, gewachsenes CSS; sie nachträglich auf den Rahmen
+zu ziehen hieße, ihr Aussehen anzufassen, und dafür gibt es keinen Grund.
 
 ## raum.js benutzen
 

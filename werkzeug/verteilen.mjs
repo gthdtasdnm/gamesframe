@@ -3,7 +3,7 @@
 //
 // Warum kopieren statt importieren: die Spiele sollen voneinander unabhaengig
 // bleiben. Wuerden alle zur Laufzeit dieselbe Datei laden, riesse ein Fehler
-// darin alle neun mit. So behaelt jedes Spiel eine vollstaendige eigene Kopie
+// darin alle mit. So behaelt jedes Spiel eine vollstaendige eigene Kopie
 // und laeuft auch dann weiter, wenn dieser Ordner verschwindet. Der Preis ist
 // Drift - und genau die faengt dieses Skript ab.
 //
@@ -37,9 +37,14 @@ const kurz = (text) => createHash("sha256").update(text).digest("hex").slice(0, 
 // ---------------------------------------------------------------------------
 // Die gemeinsamen Teile
 //
-// Jeder Eintrag sagt, wie er in eine Zieldatei kommt. `ganz` ersetzt die Datei
-// vollstaendig, `block` nur den Kopf bis zu einem Endmarker - so behaelt jedes
-// Spiel sein eigenes CSS unterhalb davon.
+// Jeder Eintrag sagt, wie er in eine Zieldatei kommt:
+//
+//   ganz       ersetzt die Datei vollstaendig
+//   block      nur den Kopf bis zu einem Endmarker - so behaelt jedes Spiel
+//              sein eigenes CSS unterhalb davon
+//   abschnitt  das Stueck zwischen zwei Markern mitten in der Datei. Der
+//              Rahmen steht in style.css zwischen der Lobby-Basis und dem
+//              Eigenen des Spiels und laesst sich anders nicht fassen.
 // ---------------------------------------------------------------------------
 
 const TEILE = {
@@ -51,6 +56,12 @@ const TEILE = {
     quelle: "gemeinsam/lobby.css",
     modus: "block",
     endmarker: /Gemeinsame Lobby-Basis .* Ende/,
+  },
+  rahmenCss: {
+    quelle: "werkzeug/rahmen.css",
+    modus: "abschnitt",
+    anfangmarker: /Gemeinsamer Rahmen .* Anfang/,
+    endmarker: /Gemeinsamer Rahmen .* Ende/,
   },
 };
 
@@ -70,6 +81,18 @@ function neuerInhalt(teil, alt) {
   const zeilen = alt.split("\n");
   const ende = zeilen.findIndex((z) => teil.endmarker.test(z));
   if (ende < 0) return { fehler: "Endmarker nicht gefunden" };
+
+  if (teil.modus === "abschnitt") {
+    const anfang = zeilen.findIndex((z) => teil.anfangmarker.test(z));
+    if (anfang < 0) return { fehler: "Anfangsmarker nicht gefunden" };
+    if (ende < anfang) return { fehler: "Endmarker steht vor dem Anfangsmarker" };
+    const neu = [
+      ...zeilen.slice(0, anfang),
+      ...teil.text.replace(/\n$/, "").split("\n"),
+      ...zeilen.slice(ende + 1),
+    ].join("\n");
+    return neu === alt ? null : neu;
+  }
 
   const neu = teil.text.replace(/\n$/, "") + "\n" +
     zeilen.slice(ende + 1).join("\n");
