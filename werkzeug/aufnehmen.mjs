@@ -1,12 +1,12 @@
 // Erzeugt die Vorschaubilder für die Spielekacheln auf /spiele/.
 //
-// Warum automatisch statt von Hand: die vier Spiele brauchen mindestens zwei
+// Warum automatisch statt von Hand: die meisten Spiele brauchen mindestens zwei
 // Spieler, um etwas herzugeben. Ein Bild von Hand hiesse zwei Geraete, eine
 // zweite Person und der richtige Moment - und beim naechsten Designwechsel
 // nochmal. Hier faehrt ein Skript zwei Browsersitzungen gleichzeitig, macht
 // einen echten Raum auf, tritt bei, startet die Runde und drueckt ab.
 //
-//   node aufnehmen.mjs                 alle vier
+//   node aufnehmen.mjs                 alle
 //   node aufnehmen.mjs cardchaos keep  nur diese
 //
 // Die Bilder landen in /var/www/html/spiele/bilder/.
@@ -28,9 +28,9 @@ const warte = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** Eigener Browser-Kontext je Spieler – sonst teilen sie sich sessionStorage
  *  und der Server haelt sie fuer dieselbe Person. */
-async function spieler(browser, name) {
+async function spieler(browser, name, hoehe = HOEHE) {
   const ctx = await browser.newContext({
-    viewport: { width: BREITE, height: HOEHE },
+    viewport: { width: BREITE, height: hoehe },
     deviceScaleFactor: 2,          // fuer scharfe Bilder auf feinen Displays
     locale: 'de-DE',
     reducedMotion: 'reduce',       // keine halb gelaufene Animation im Bild
@@ -786,9 +786,412 @@ function folgen(liste, n) {
   return raus;
 }
 
+
+// ═══════════════ Die zwoelf vom 09.08.2026 ═══════════════════════════════
+//
+// Acht Server-Spiele auf der gemeinsamen Schale (`schale.js`) und vier ohne
+// Server. Die Schale bringt ueberall dieselben Ids mit - deshalb reicht fuer
+// den Weg in den Raum eine einzige Hilfsfunktion, und die Rezepte darunter
+// bestehen nur noch aus dem, was das jeweilige Spiel ausmacht.
+
+/**
+ * Raum aufmachen, alle beitreten lassen, bereit melden, starten.
+ * Gibt die Seiten zurueck - die erste ist der Host.
+ */
+async function raumAuf(browser, spiel, namen, vorStart, hoehe) {
+  const seiten = [];
+  const host = await spieler(browser, 'host', hoehe);
+  seiten.push(host);
+  await host.goto(`${BASIS}/${spiel}/`, { waitUntil: 'networkidle' });
+  await host.fill('#name', namen[0]);
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const name of namen.slice(1)) {
+    const g = await spieler(browser, name, hoehe);
+    seiten.push(g);
+    await g.goto(`${BASIS}/${spiel}/`, { waitUntil: 'networkidle' });
+    await g.fill('#name', name);
+    await g.fill('#codeInput', code);
+    await g.click('#joinBtn');
+    await g.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await g.click('#readyBtn');
+  }
+
+  await warte(500);
+  if (vorStart) await vorStart(seiten);
+  await host.click('#startBtn');
+  for (const s of seiten) await s.waitForSelector('#screen-game.active', { timeout: 15000 });
+  await warte(500);
+  return seiten;
+}
+
+const zu = async (seiten) => { for (const s of seiten) await s.context().close(); };
+
+/**
+ * Erste passende Schaltflaeche anklicken, sonst nichts tun.
+ *
+ * Der `isEnabled`-Test ist kein Beiwerk: in den Rundenspielen sind die Knoepfe
+ * auf allen Bildschirmen da, aber nur bei dem gedrueckt, der am Zug ist. Ohne
+ * ihn wartet Playwright eine halbe Minute darauf, dass ein abgeschalteter Knopf
+ * anklickbar wird, und das Rezept steht.
+ */
+async function klickWenn(seite, wahl) {
+  const el = seite.locator(wahl).first();
+  if (!(await seite.locator(wahl).count())) return false;
+  if (!(await el.isEnabled().catch(() => false))) return false;
+  await el.click({ timeout: 4000 }).catch(() => {});
+  return true;
+}
+
+// ------------------------------------------------------------------ Nachtwache
+
+async function werwolf(browser) {
+  // Vier ist die kleinste Besetzung. Mehr braucht das Bild nicht: es lebt vom
+  // Wolfsbildschirm, und der sieht zu viert genauso aus wie zu zwoelft.
+  // Niedrigeres Fenster: der Nachtbildschirm ist kurz, und in einem 680 Pixel
+  // hohen Bild waere die untere Haelfte leerer Hintergrund.
+  const seiten = await raumAuf(browser, 'werwolf', ['Ata', 'Mira', 'Nuri', 'Jo'], null, 400);
+
+  // Alle bestaetigen ihre Rollenkarte - vorher geht es nicht weiter.
+  for (const s of seiten) await klickWenn(s, '#buehne .btn.primary.big');
+  await warte(800);
+
+  // Den Wolf suchen: nur auf seinem Bildschirm steht eine Aufgabe. Genau das
+  // ist der Punkt des Spiels, und genau das soll auf dem Bild zu sehen sein.
+  let wolf = null;
+  for (const s of seiten) {
+    if (await s.locator('.aufgabe .wahlgitter').count()) { wolf = s; break; }
+  }
+  if (!wolf) throw new Error('kein Bildschirm mit Nachtaufgabe gefunden');
+  await warte(400);
+  await knipsen(wolf, 'werwolf-spiel.png');
+  await zu(seiten);
+}
+
+// ------------------------------------------------------------------ Schwimmen
+
+async function schwimmen(browser) {
+  const seiten = await raumAuf(browser, 'schwimmen', ['Ata', 'Mira', 'Nuri']);
+
+  // Auf die Aufdeckung hinspielen: sie zeigt alle drei Blaetter samt Punkten
+  // und wer verliert. Das laufende Spiel zeigt nur die eigene Hand - als
+  // Kachel sagt das zu wenig.
+  for (let i = 0; i < 6; i++) {
+    let getan = false;
+    for (const s of seiten) {
+      if (await s.locator('.aufdeck').count()) { getan = true; break; }
+      // Klopfen, sobald es angeboten wird, sonst schieben.
+      if (await klickWenn(s, '#aktionen button:has-text("Ich klopfe")')) { getan = true; break; }
+      if (await klickWenn(s, '#aktionen button:has-text("Schieben")')) { getan = true; break; }
+    }
+    await warte(500);
+    if (!getan) break;
+    if (await seiten[0].locator('.aufdeck').count()) break;
+  }
+  await warte(500);
+  await knipsen(seiten[0], 'schwimmen-spiel.png');
+  await zu(seiten);
+}
+
+// -------------------------------------------------------------------- Mau-Mau
+
+async function maumau(browser) {
+  // Niedrigeres Fenster: der Spielbildschirm ist kurz, und in einem 680 Pixel
+  // hohen Bild waere die untere Haelfte leerer Hintergrund.
+  const seiten = await raumAuf(browser, 'maumau', ['Ata', 'Mira', 'Nuri'], null, 480);
+
+  // Ein paar echte Zuege, damit die Haende ungleich lang sind und oben nicht
+  // mehr die Startkarte liegt. Ein frisch gegebenes Blatt sieht aus wie ein
+  // Screenshot, den niemand angefasst hat.
+  for (let i = 0; i < 5; i++) {
+    for (const s of seiten) {
+      if (await klickWenn(s, '.karte.hand:not(.matt)')) { await warte(400); break; }
+    }
+    // Nach einem Buben muss eine Farbe gewaehlt werden, sonst steht alles.
+    for (const s of seiten) await klickWenn(s, '.farbwahl button');
+    await warte(250);
+  }
+  await warte(400);
+  await knipsen(seiten[0], 'maumau-spiel.png');
+  await zu(seiten);
+}
+
+// --------------------------------------------------------------------- Luegen
+
+async function luegen(browser) {
+  const seiten = await raumAuf(browser, 'luegen', ['Ata', 'Mira', 'Nuri']);
+
+  // Zweimal ablegen: dann liegt ein Stapel da, die Ansage ist gestiegen, und
+  // der "Luege!"-Knopf steht bei den anderen - das ist das Bild.
+  //
+  // Die Reihenfolge ist Pflicht: ist die Ansage frei, muss erst ein Rang
+  // gewaehlt werden, sonst bleibt "Legen" grau. Und gelegt wird nur, wo
+  // ueberhaupt ein Legen-Knopf steht - also beim Spieler am Zug.
+  for (let runde = 0; runde < 2; runde++) {
+    for (const s of seiten) {
+      const legen = s.locator('#aktionen button:has-text("Legen")');
+      if (!(await legen.count())) continue;
+      await klickWenn(s, '#aktionen .ansage .seg');   // nur da, wenn frei
+      await klickWenn(s, '.karte.hand');
+      await warte(250);
+      if (await legen.isEnabled()) {
+        await legen.click();
+        await warte(600);
+      }
+      break;
+    }
+  }
+  await warte(500);
+  await knipsen(seiten[0], 'luegen-spiel.png');
+  await zu(seiten);
+}
+
+// ---------------------------------------------------------------- Becherbluff
+
+async function becher(browser) {
+  const seiten = await raumAuf(browser, 'becher', ['Ata', 'Mira', 'Nuri']);
+
+  // Auf die Aufdeckung hinspielen: erst ein Gebot, dann zweifelt der Naechste.
+  // Nur dort liegen alle Becher offen - vorher sieht man nur den eigenen, und
+  // das ist als Kachel nichtssagend.
+  for (const s of seiten) {
+    if (!(await s.locator('#aktionen button:has-text("Ansagen")').count())) continue;
+    // Erst hochzaehlen: die Voreinstellung ist "1x die Zwei", und ein Gebot von
+    // eins erklaert niemandem, worum es hier geht.
+    for (let i = 0; i < 3; i++) {
+      await klickWenn(s, '.bieter .bz button:has-text("+")');
+      await warte(120);
+    }
+    await klickWenn(s, '.bieter .bz .augen:nth-child(4)');
+    await warte(150);
+    await klickWenn(s, '#aktionen button:has-text("Ansagen")');
+    break;
+  }
+  await warte(600);
+  for (const s of seiten) {
+    if (await klickWenn(s, '#aktionen button.zweifel')) break;
+  }
+  await seiten[0].waitForSelector('.aufdeck', { timeout: 15000 });
+  await warte(500);
+  await knipsen(seiten[0], 'becher-spiel.png');
+  await zu(seiten);
+}
+
+// ------------------------------------------------------------------ Kings Cup
+
+async function kingscup(browser) {
+  const seiten = await raumAuf(browser, 'kingscup', ['Ata', 'Mira', 'Nuri']);
+
+  // Eine Karte ziehen. Ohne sie liegt nur ein Ruecken da, und der Regeltext -
+  // das Einzige, was dieses Spiel ausmacht - stuende nirgends.
+  for (const s of seiten) {
+    if (await klickWenn(s, '#aktionen button:has-text("Karte ziehen")')) break;
+  }
+  await seiten[0].waitForSelector('.kk-gross:not(.ruecken)', { timeout: 15000 });
+  await warte(500);
+  await knipsen(seiten[0], 'kingscup-spiel.png');
+  await zu(seiten);
+}
+
+// ---------------------------------------------------------------------- Paare
+
+async function paare(browser) {
+  // Acht Paare: das kleinste Brett, damit die Karten auf dem Bild gross genug
+  // sind, um die Zeichen zu erkennen.
+  const seiten = await raumAuf(browser, 'paare', ['Ata', 'Mira'], async ([host]) => {
+    await klickWenn(host, '#hostExtra [data-p="8"]');
+    await warte(300);
+  });
+
+  // Ein volles, verdecktes Brett waere ein Bild von sechzehn grauen Kaesten -
+  // genau das kam beim ersten Versuch heraus. Es muessen also Paare gefunden
+  // werden, und zufaellig tippen findet in sechzehn Zuegen fast nie eines.
+  //
+  // Also merkt sich das Rezept, was schon offen lag: die aufgedeckte Karte
+  // traegt ihr Zeichen im Text. Damit ist ab dem zweiten Durchgang klar, wo ein
+  // Paar liegt - dasselbe, was ein Mensch am Tisch auch tut.
+  //
+  // Geklickt wird nur dort, wo die Karten anklickbar sind: der Client schaltet
+  // sie auf allen anderen Bildschirmen ab, und Playwright wartet sonst geduldig
+  // darauf, dass ein toter Knopf lebendig wird.
+  const bekannt = new Map();          // Feldnummer -> Zeichen
+
+  const lesen = async (seite) => {
+    const felder = await seite.$$eval('.brett .pk', (ks) =>
+      ks.map((k, i) => ({
+        i,
+        weg: k.classList.contains('weg'),
+        auf: k.classList.contains('auf'),
+        zeichen: k.textContent.trim(),
+        tot: k.disabled,
+      })));
+    for (const f of felder) if (f.zeichen) bekannt.set(f.i, f.zeichen);
+    return felder;
+  };
+
+  const tippen = async (seite, i) => {
+    await seite.locator('.brett .pk').nth(i).click({ timeout: 4000 }).catch(() => {});
+  };
+
+  for (let zug = 0; zug < 24; zug++) {
+    const weg = (await seiten[0].$$eval('.brett .pk.weg', (k) => k.length));
+    if (weg >= 6) break;
+
+    // Wer ist dran? Nur dort sind ueberhaupt Karten anklickbar.
+    let dran = null, felder = null;
+    for (const s of seiten) {
+      const f = await lesen(s);
+      if (f.some((x) => !x.tot)) { dran = s; felder = f; break; }
+    }
+    if (!dran) break;
+
+    const liegen = felder.filter((f) => !f.weg && !f.auf);
+    // Ein bekanntes Paar unter den noch liegenden Karten?
+    let paar = null;
+    for (const f of liegen) {
+      const z = bekannt.get(f.i);
+      if (!z) continue;
+      const g = liegen.find((x) => x.i !== f.i && bekannt.get(x.i) === z);
+      if (g) { paar = [f.i, g.i]; break; }
+    }
+    const unbekannt = liegen.filter((f) => !bekannt.has(f.i)).map((f) => f.i);
+    const wahl = paar ?? [unbekannt[0] ?? liegen[0]?.i, unbekannt[1] ?? liegen[1]?.i];
+    if (wahl[0] == null || wahl[1] == null) break;
+
+    await tippen(dran, wahl[0]);
+    await warte(300);
+    await lesen(dran);
+    await tippen(dran, wahl[1]);
+    await warte(paar ? 400 : 2100);   // ein falsches Paar liegt 1,8 s offen
+    await lesen(dran);
+  }
+
+  // Zum Schluss eine einzelne Karte offen stehen lassen: das Bild zeigt dann
+  // beides - abgeraeumte Paare und den Moment mitten im Zug.
+  for (const s of seiten) {
+    const f = await lesen(s);
+    const frei = f.find((x) => !x.tot);
+    if (!frei) continue;
+    await tippen(s, frei.i);
+    break;
+  }
+  await warte(500);
+
+  const weg = await seiten[0].locator('.brett .pk.weg').count();
+  if (!weg) throw new Error('kein einziges Paar gefunden - das Brett waere leer');
+  await knipsen(seiten[0], 'paare-spiel.png');
+  await zu(seiten);
+}
+
+// ---------------------------------------------------------------------- Snake
+
+async function snake(browser) {
+  const seiten = await raumAuf(browser, 'snake', ['Ata', 'Mira', 'Nuri', 'Jo']);
+
+  // Alle nach oben, und zwar alle dieselbe Richtung. Die Startplaetze liegen
+  // sich paarweise gegenueber; faehrt jemand geradeaus weiter, faehrt er dem
+  // Gegenueber in den Kopf, und im Bild stuende "Alle gleichzeitig - niemand".
+  // Fahren alle nach oben, behaelt jede Schlange ihre Spalte und keine kann
+  // eine andere treffen. Nach oben ist von einer waagerechten Fahrt aus immer
+  // erlaubt - eine Kehrtwende waere es nicht.
+  //
+  // Danach bleiben rund fuenf Schritte, bis die oberste die Wand erreicht.
+  // Genau dazwischen wird abgedrueckt.
+  for (const s of seiten) await s.keyboard.press('ArrowUp').catch(() => {});
+  await warte(650);
+
+  // Nur ein laufendes Feld taugt als Kachel: steht dort "Pause", ist die Runde
+  // schon vorbei und das Bild zeigt einen Endstand.
+  const stand = await seiten[0].textContent('#tbTag').catch(() => '');
+  if (!/l(ä|a)uft/i.test(stand ?? '')) throw new Error(`Runde laeuft nicht mehr (${stand})`);
+  await warte(200);
+  await knipsen(seiten[0], 'snake-spiel.png');
+  await zu(seiten);
+}
+
+// ═══════════════ Die vier ohne Server ════════════════════════════════════
+//
+// Kein Raum, keine zweite Sitzung: eine Seite aufmachen, ein bisschen spielen,
+// abdruecken. Genau das ist bei ihnen billiger - und der einzige Grund, warum
+// sie ueberhaupt Bilder ohne fremde Hilfe bekommen koennen.
+
+async function minenfeld(browser) {
+  const seite = await spieler(browser, 'solo');
+  await seite.goto(`${BASIS}/minenfeld/`, { waitUntil: 'networkidle' });
+  await seite.waitForSelector('.mfeld .mz');
+
+  // Erst in die Mitte: der erste Klick ist sicher und zieht eine Flaeche auf.
+  // Ein unberuehrtes Feld waere ein Bild von einundachtzig grauen Kaesten.
+  await seite.locator('.mfeld .mz').nth(40).click();
+  await warte(400);
+  // Zwei Fahnen dazu, damit auch die zweite Haelfte des Spiels im Bild ist.
+  for (const n of [0, 8]) {
+    const z = seite.locator('.mfeld .mz').nth(n);
+    if (await z.count()) await z.click({ button: 'right' }).catch(() => {});
+  }
+  await warte(400);
+  await knipsen(seite, 'minenfeld-spiel.png');
+  await seite.context().close();
+}
+
+async function sudoku(browser) {
+  const seite = await spieler(browser, 'solo');
+  await seite.goto(`${BASIS}/sudoku/`, { waitUntil: 'networkidle' });
+  await seite.waitForSelector('.sgitter .sz.vor', { timeout: 15000 });
+
+  // Ein leeres Feld anwaehlen und eine Zahl setzen: so ist im Bild zu sehen,
+  // dass man hier etwas tut, und nicht nur, dass ein Gitter dasteht.
+  const leer = seite.locator('.sgitter .sz:not(.vor)');
+  await leer.first().click();
+  await warte(200);
+  await seite.locator('.spad .zahl').first().click();
+  await warte(400);
+  await knipsen(seite, 'sudoku-spiel.png');
+  await seite.context().close();
+}
+
+async function wortgitter(browser) {
+  const seite = await spieler(browser, 'solo');
+  await seite.goto(`${BASIS}/wortgitter/`, { waitUntil: 'networkidle' });
+  await seite.waitForSelector('.wgitter .wk', { timeout: 15000 });
+
+  // Zwei geratene Woerter: erst danach ist ueberhaupt Farbe im Gitter, und
+  // die Farben sind das ganze Spiel.
+  for (const wort of ['REGEN', 'BLUME']) {
+    for (const b of wort) await seite.keyboard.press(b);
+    await seite.keyboard.press('Enter');
+    await warte(900);
+  }
+  await warte(400);
+  await knipsen(seite, 'wortgitter-spiel.png');
+  await seite.context().close();
+}
+
+async function patience(browser) {
+  const seite = await spieler(browser, 'solo');
+  await seite.goto(`${BASIS}/patience/`, { waitUntil: 'networkidle' });
+  await seite.waitForSelector('.ptisch .pk', { timeout: 15000 });
+
+  // Dreimal ziehen und aufraeumen: dann liegt etwas auf der Ablage, vielleicht
+  // ein Ass oben, und der Tisch sieht nach angefangener Partie aus.
+  for (let i = 0; i < 3; i++) {
+    await seite.locator('.poben .pk.platz').first().click();
+    await warte(250);
+  }
+  await klickWenn(seite, '#aktionen button:has-text("Aufräumen")');
+  await warte(500);
+  await knipsen(seite, 'patience-spiel.png');
+  await seite.context().close();
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
   flasche, cubes, wortleger,
+  // Die zwoelf vom 09.08.2026
+  werwolf, schwimmen, maumau, luegen, becher, kingscup, paare, snake,
+  minenfeld, sudoku, wortgitter, patience,
 };
 
 const gewaehlt = process.argv.slice(2);
