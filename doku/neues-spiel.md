@@ -8,6 +8,25 @@ Freien Port holen: `jq -r '.portsFrei[0]' spiele.json`. Danach den Port dort
 aus `portsFrei` entfernen und den neuen Eintrag unter `spiele` anlegen – sonst
 startet der zweite Dienst still nicht.
 
+## Der schnelle Weg
+
+```bash
+./werkzeug/neuspiel.sh <name> <port> "<Beschreibung>" "<Titel>" \
+    "<Logo1>" "<Logo2>" "<Untertitel>" "<Emoji>" <maxSpieler>
+```
+
+Das legt den Ordner an, kopiert die gemeinsamen Teile hinein, schreibt die
+immer gleiche HTML-Hülle (Home, Lobby, Spiel, Endstand, Hilfe), die
+systemd-Unit und den Apache-Block. Übrig bleiben drei Dateien, die wirklich
+dieses Spiel sind: `server.js`, `public/app.js` und ein CSS-Anhang unter dem
+Endmarker in `public/style.css`. Danach Eintrag in `spiele.json`, dann
+
+```bash
+chown -R www-data:www-data /var/www/html/<name>
+systemctl daemon-reload && systemctl enable --now <name>
+a2enconf <name> && apache2ctl configtest && systemctl reload apache2
+```
+
 ## Dateien
 
 ```
@@ -22,6 +41,7 @@ startet der zweite Dienst still nicht.
   public/style.css   gemeinsamer Block + Eigenes
   public/app.js
   bremse.js  raum.js  statisch.js      ← nicht schreiben, verteilen lassen
+  public/schale.js                     ← ebenso: Verbindung, Lobby, Bildschirme
 ```
 
 ## Reihenfolge, die funktioniert

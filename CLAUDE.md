@@ -3,11 +3,11 @@
 Diese Datei wird in **jeder** Sitzung gelesen. Deshalb steht hier nur, was in
 jeder Sitzung gebraucht wird: wo etwas liegt, und die drei Fallen, die sonst
 jedes Mal zuschlagen. Alles andere steht in `doku/` und wird **nur bei Bedarf**
-geöffnet. Stand: 08.08.2026.
+geöffnet. Stand: 09.08.2026.
 
 ## Was hier liegt
 
-`/var/www/html` ist der DocumentRoot. Darin: elf Browserspiele, die
+`/var/www/html` ist der DocumentRoot. Darin: achtzehn Browserspiele, die
 Spieleübersicht, ein Bugreport-Werkzeug, zwei Rechtstexte – und, damit nicht
 verwechselt, Nextcloud und zwei Tradingbots.
 
@@ -23,7 +23,7 @@ ausdrücklich danach gefragt wird.
 | Frage | Datei |
 |---|---|
 | Welche Spiele, welcher Port, welcher Dienst, welches Repo? | **`spiele.json`** – maschinenlesbar, einzige Quelle |
-| Neues Spiel bauen | `doku/neues-spiel.md` |
+| Neues Spiel bauen | `doku/neues-spiel.md` – Gerüst: `werkzeug/neuspiel.sh` |
 | Was ist gemeinsam, wie wird es verteilt? | `doku/gemeinsam.md` |
 | Prüfen, Proben, Screenshots | `doku/pruefen.md` |
 | Dienste, Apache, Rechte, Git-Ebenen | `doku/betrieb.md` |

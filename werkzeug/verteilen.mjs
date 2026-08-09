@@ -46,6 +46,7 @@ const TEILE = {
   bremse: { quelle: "gemeinsam/bremse.js", modus: "ganz" },
   raum: { quelle: "gemeinsam/raum.js", modus: "ganz" },
   statisch: { quelle: "gemeinsam/statisch.js", modus: "ganz" },
+  schale: { quelle: "gemeinsam/schale.js", modus: "ganz" },
   lobbyCss: {
     quelle: "gemeinsam/lobby.css",
     modus: "block",

@@ -103,3 +103,21 @@ der Spieler-Id, und `localStorage["spiele_name"]` – wer bei einem Spiel seinen
 Namen eintippt, findet ihn beim nächsten vor. Beides steckt im Client jedes
 Spiels. Der Client-Kern ist der nächste Kandidat fürs Verteilen; er ist noch
 nicht ausgelagert, weil er im Gegensatz zum Server pro Spiel stärker abweicht.
+
+## Die Client-Schale (`schale.js`)
+
+Seit dem 09.08.2026 liegt neben `bremse.js`, `raum.js` und `statisch.js` ein
+vierter Teil in `gemeinsam/`: **`schale.js`**, verteilt nach
+`<spiel>/public/schale.js`. Darin steht, was in jedem Client wortgleich stand –
+Verbindung samt Wiederaufbau, Raumliste, Beitreten per Code oder Link, die
+Lobby mit Sitzen und Bereit-Knopf, das Umschalten der vier Bildschirme, Toast
+und Hilfe-Dialog.
+
+Ein Spiel ruft `starteSchale({ key, zeichneSpiel })` auf und schreibt nur noch
+seinen eigenen Spielbildschirm. Optional: `zeichneRaum` (eigene Host-
+Einstellungen in `#hostExtra`), `zeichneFinal` (sonst Tabelle aus
+`{name, wert}`), `sonstige` (unbekannte Nachrichten), `raumOptionen`
+(Zusatzfelder für `create`).
+
+Wie bei den anderen Teilen gilt: **kopiert, nicht importiert.** Jedes Spiel
+behält seine vollständige Kopie und läuft auch ohne `gemeinsam/` weiter.

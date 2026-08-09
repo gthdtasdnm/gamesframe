@@ -1,10 +1,6 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
-  "portsFrei": [
-    8069,
-    8068,
-    8067
-  ],
+  "portsFrei": [],
   "portsFremd": {
     "3002": "Whiteboard (Nextcloud)",
     "5000": "Piper PDF Reader",
@@ -199,6 +195,132 @@
       "art": "werkzeug",
       "repo": "git@github.com:gthdtasdnm/bugreport.git",
       "gemeinsam": {
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "luegen",
+      "titel": "Lügen",
+      "pfad": "/luegen/",
+      "port": 8069,
+      "dienst": "systemd",
+      "leute": "3–6",
+      "kategorie": "Zug um Zug, in Ruhe",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "snake",
+      "titel": "Snake",
+      "pfad": "/snake/",
+      "port": 8068,
+      "dienst": "systemd",
+      "leute": "2–6",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "werwolf",
+      "titel": "Nachtwache",
+      "pfad": "/werwolf/",
+      "port": 8067,
+      "dienst": "systemd",
+      "leute": "4–12",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "maumau",
+      "titel": "Mau-Mau",
+      "pfad": "/maumau/",
+      "port": 8066,
+      "dienst": "systemd",
+      "leute": "2–6",
+      "kategorie": "Zug um Zug, in Ruhe",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "becher",
+      "titel": "Becherbluff",
+      "pfad": "/becher/",
+      "port": 8065,
+      "dienst": "systemd",
+      "leute": "2–6",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "kingscup",
+      "titel": "Kings Cup",
+      "pfad": "/kingscup/",
+      "port": 8064,
+      "dienst": "systemd",
+      "leute": "2–10",
+      "kategorie": "Reden und Raten",
+      "art": "server",
+      "repo": null,
+      "hinweis": "trinkfrei voreingestellt, Trinkmodus als Schalter",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "schwimmen",
+      "titel": "Schwimmen",
+      "pfad": "/schwimmen/",
+      "port": 8063,
+      "dienst": "systemd",
+      "leute": "2–6",
+      "kategorie": "Zug um Zug, in Ruhe",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
         "lobbyCss": "public/style.css"
       }
     }
