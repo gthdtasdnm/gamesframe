@@ -207,7 +207,7 @@
       "leute": "3–6",
       "kategorie": "Zug um Zug, in Ruhe",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/luegen.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",
@@ -225,7 +225,7 @@
       "leute": "2–6",
       "kategorie": "Tempo und Geschick",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/snake.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",
@@ -244,7 +244,7 @@
       "leute": "4–12",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/werwolf.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",
@@ -263,7 +263,7 @@
       "leute": "2–6",
       "kategorie": "Zug um Zug, in Ruhe",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/maumau.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",
@@ -282,7 +282,7 @@
       "leute": "2–6",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/becher.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",
@@ -301,7 +301,7 @@
       "leute": "2–10",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/kingscup.git",
       "hinweis": "trinkfrei voreingestellt, Trinkmodus als Schalter",
       "gemeinsam": {
         "bremse": "bremse.js",
@@ -321,7 +321,7 @@
       "leute": "2–6",
       "kategorie": "Zug um Zug, in Ruhe",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/schwimmen.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",
@@ -340,7 +340,7 @@
       "leute": "1–6",
       "kategorie": "Zug um Zug, in Ruhe",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/paare.git",
       "hinweis": "Memory-Prinzip; der Name ist Marke von Ravensburger",
       "gemeinsam": {
         "bremse": "bremse.js",
@@ -367,7 +367,7 @@
       "kategorie": "Allein spielen",
       "art": "statisch",
       "leute": "1",
-      "repo": null
+      "repo": "git@github.com:gthdtasdnm/sudoku.git"
     },
     {
       "name": "wortgitter",
@@ -376,7 +376,7 @@
       "kategorie": "Allein spielen",
       "art": "statisch",
       "leute": "1",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/wortgitter.git",
       "hinweis": "Wortliste aus wortleger/woerter.txt erzeugt; Name Wordle ist NYT-Marke"
     },
     {
@@ -386,7 +386,7 @@
       "kategorie": "Allein spielen",
       "art": "statisch",
       "leute": "1",
-      "repo": null
+      "repo": "git@github.com:gthdtasdnm/patience.git"
     }
   ]
 }
