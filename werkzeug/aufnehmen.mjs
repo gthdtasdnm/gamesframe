@@ -465,6 +465,89 @@ async function imposter(browser) {
   for (const s of seiten) await s.context().close();
 }
 
+// --------------------------------------------------------------------- Cubes
+
+async function cubes(browser) {
+  // Vier Sitzungen: das Bild lebt davon, dass mehrere Farben gleichzeitig im
+  // Raster liegen. Zu zweit sieht man nicht, worum es geht.
+  const namen = ['Ata', 'Mira', 'Nuri', 'Jo'];
+  const seiten = [];
+  for (const name of namen) {
+    const p = await spieler(browser, name);
+    await p.goto(`${BASIS}/cubes/`, { waitUntil: 'networkidle' });
+    await p.fill('#name', name);
+    seiten.push(p);
+  }
+  const [host, ...gaeste] = seiten;
+
+  await host.click('#createBtn');
+  await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+  const code = (await host.textContent('#roomCode')).trim();
+
+  for (const g of gaeste) {
+    await g.fill('#codeInput', code);
+    await g.click('#joinBtn');
+    await g.waitForSelector('#screen-lobby.active', { timeout: 15000 });
+    await g.click('#readyBtn');
+  }
+  await warte(600);
+  await knipsen(host, 'cubes-raum.png');
+
+  await host.click('#startBtn');
+  await host.waitForSelector('#screen-game.active', { timeout: 15000 });
+
+  // Eine Weile wirklich mitspielen. Ohne das steht in der Punkteleiste
+  // viermal die Null, und das Bild behauptet, hier passiere nichts.
+  const spielen = async (ms) => {
+    const ende = Date.now() + ms;
+    while (Date.now() < ende) {
+      for (const s of seiten) {
+        // Das Quadrat kann zwischen Finden und Klicken ablaufen - dann eben
+        // nicht. Ein Fehlschlag darf die Aufnahme nicht abbrechen.
+        await s.locator('.zelle.mein').first().click({ timeout: 400 })
+          .catch(() => {});
+      }
+      await warte(120);
+    }
+  };
+
+  /** Host-Knopf im Fussbereich, ueber seine Beschriftung gefunden. */
+  const hostKnopf = async (text) => {
+    const b = host.locator('#aktionen button', { hasText: text }).first();
+    await b.waitFor({ timeout: 20000 });
+    await b.click();
+  };
+
+  await spielen(4000);
+
+  // Auf Runde 3 vorspulen. Sie ist die einzige mit Zahlen in den Quadraten und
+  // damit die einzige, der man auf einem Standbild ansieht, worum es geht:
+  // Plus antippen, Minus liegen lassen.
+  for (let runde = 1; runde <= 2; runde++) {
+    await hostKnopf('Runde beenden');
+    await hostKnopf('Weiter');
+    await host.waitForSelector('#raster:not([hidden])', { timeout: 15000 });
+    if (runde === 1) await spielen(2500);
+  }
+
+  // Warten, bis das Feld die ganze Regel zeigt: ein eigenes Plusquadrat (das
+  // man antippen soll), ein eigenes Minusquadrat (das man liegen lassen soll)
+  // und fremde daneben. Ohne die erste Bedingung erwischt die Aufnahme leicht
+  // einen Moment, in dem dem Host nur ein Minusfeld gehoert - dann behauptet
+  // das Bild, die eigene Farbe sei die, die man meidet.
+  await host.waitForFunction(
+    () => document.querySelectorAll('.zelle.an').length >= 4 &&
+      document.querySelectorAll('.zelle.mein:not(.minus)').length >= 1 &&
+      document.querySelectorAll('.zelle.mein.minus').length >= 1,
+    null,
+    { timeout: 25000 },
+  );
+  await warte(200);
+  await knipsen(host, 'cubes-spiel.png');
+
+  for (const s of seiten) await s.context().close();
+}
+
 // ------------------------------------------------------------ Flaschendrehen
 
 async function flasche(browser) {
@@ -533,7 +616,7 @@ async function flasche(browser) {
 
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
-  flasche,
+  flasche, cubes,
 };
 
 const gewaehlt = process.argv.slice(2);

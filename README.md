@@ -4,7 +4,7 @@ Alles, was auf inf-zeus.de nicht zu einem einzelnen Spiel gehört: die
 Spieleübersicht, Impressum und Datenschutzerklärung, der gemeinsame Stil der
 Rechtstexte und die Apache-Regeln des DocumentRoot.
 
-Die neun Spiele und der Bugreport liegen in eigenen Repos und werden hier
+Die zehn Spiele und der Bugreport liegen in eigenen Repos und werden hier
 bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
 mitreißen.
 
@@ -12,11 +12,11 @@ mitreißen.
 
 | Pfad | Was |
 |---|---|
-| `spiele/index.html` | Startseite mit den neun Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
+| `spiele/index.html` | Startseite mit den zehn Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
-| `spiele/bilder/` | Vorschaubilder der neun Spiele (WebP) |
+| `spiele/bilder/` | Vorschaubilder der zehn Spiele (WebP) |
 | `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
 | `spiele.json` | Pfade, Ports, Dienste und Repos aller Spiele – einzige Quelle |
@@ -44,9 +44,11 @@ Welches Spiel wohin gehört, steht in `spiele.json` unter `repo`:
 jq -r '.spiele[] | "\(.titel)\t\(.repo // "– noch keins")"' spiele.json
 ```
 
-Seit dem 09.08.2026 hat **jedes** Spiel ein Remote; bei den fünf neueren
-heißt das Repo wie der Ordner. Kein Spiel liegt mehr ausschließlich auf diesem
-Server.
+Seit dem 09.08.2026 hat jedes Spiel ein Remote; bei den neueren heißt das Repo
+wie der Ordner. **Ausnahme: Cubes**, am 09.08.2026 gebaut – lokal versioniert,
+aber noch ohne Remote, weil das Anlegen eines GitHub-Repos außerhalb dieses
+Servers passiert. Steht in `RISIKEN-TODO.md`; `spiele.json` hat dort `repo:
+null`, das ist die verlässliche Auskunft.
 
 ## Nur eine Art von Spiel
 
@@ -103,11 +105,12 @@ Sitzungen: Ich hab noch nie und Maexchen brauchen drei, Wer am ehesten vier,
 Imposter fuenf – sonst haetten Aufloesungsliste, Punkteleiste, Balken bzw.
 Hinweisreihe nur eine Zeile. (Imposter startet unter vier Leuten gar nicht.)
 Flaschendrehen bekommt fuenf – der Kreis lebt davon, dass Namen darauf
-verteilt sind.
+verteilt sind. Cubes bekommt vier: das Bild lebt davon, dass mehrere Farben
+gleichzeitig im Raster liegen.
 
 ```bash
 cd /root/werkzeug-screenshots
-node aufnehmen.mjs                 # alle neun
+node aufnehmen.mjs                 # alle zehn
 node aufnehmen.mjs cardchaos       # nur eins
 ```
 

@@ -1,6 +1,6 @@
 # Die Startseite
 
-`spiele/index.html` ist eine einzelne Datei mit Inline-CSS. Drei Kategorien,
+`spiele/index.html` ist eine einzelne Datei mit Inline-CSS. Zwei Kategorien,
 danach je ein `<main class="raster">`.
 
 **Jedes Spiel steht genau einmal in der Datei.** Die Kachel trägt ihre

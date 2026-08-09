@@ -1,7 +1,6 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
   "portsFrei": [
-    8071,
     8070,
     8069,
     8068,
@@ -152,6 +151,23 @@
       "repo": "git@github.com:gthdtasdnm/flasche.git",
       "gemeinsam": {
         "bremse": "bremse.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "cubes",
+      "titel": "Cubes",
+      "pfad": "/cubes/",
+      "port": 8071,
+      "dienst": "systemd",
+      "leute": "2–6",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
         "lobbyCss": "public/style.css"
       }
     },
