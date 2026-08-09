@@ -156,36 +156,6 @@
       }
     },
     {
-      "name": "reaktion",
-      "titel": "Reaktion",
-      "pfad": "/reaktion/",
-      "port": null,
-      "dienst": null,
-      "leute": "2–4",
-      "kategorie": "Am Tisch, ein Gerät",
-      "art": "tisch",
-      "repo": "git@github.com:gthdtasdnm/reaktion.git",
-      "hinweis": "soll auf Raum-Modell umgestellt werden, siehe SPIELE-IDEEN.md",
-      "gemeinsam": {
-        "lobbyCss": "style.css"
-      }
-    },
-    {
-      "name": "kurven",
-      "titel": "Kurven",
-      "pfad": "/kurven/",
-      "port": null,
-      "dienst": null,
-      "leute": "2–4",
-      "kategorie": "Am Tisch, ein Gerät",
-      "art": "tisch",
-      "repo": "git@github.com:gthdtasdnm/kurven.git",
-      "hinweis": "soll auf Raum-Modell umgestellt werden, siehe SPIELE-IDEEN.md",
-      "gemeinsam": {
-        "lobbyCss": "style.css"
-      }
-    },
-    {
       "name": "bugreport",
       "titel": "Bugreport",
       "pfad": "/bugreport/",

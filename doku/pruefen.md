@@ -10,11 +10,9 @@ DENO_DIR=/tmp/deno-check WS_URL=wss://inf-zeus.de/<spiel>/ws deno task probe
 # Gemeinsame Teile noch überall gleich?
 cd /var/www/html && node werkzeug/verteilen.mjs --pruefen
 
-# Spiele am Tisch und die Startseite: im echten Browser
+# Startseite und Einzelheiten, die man sehen muss: im echten Browser
 cd /root/werkzeug-screenshots
 node pruefe-startseite.mjs     # alle Kacheln, alle Dialoge, alle Bilder
-node pruefe-reaktion.mjs
-node pruefe-kurven.mjs
 node pruefe-flasche.mjs        # zeigt die Flasche wirklich auf die Person?
 ```
 
@@ -29,7 +27,9 @@ werden die beiden nicht umgebaut – es fehlt der Nachweis.
 
 ## Der Browserlauf ist kein Luxus
 
-Drei echte Fehler sind nur dort aufgefallen, nie in der Probe:
+Drei echte Fehler sind nur dort aufgefallen, nie in der Probe. Zwei davon
+stammen aus Reaktion und Kurven, die es seit dem 09.08.2026 nicht mehr gibt –
+sie stehen trotzdem hier, denn der Grund für den Browserlauf gilt unverändert:
 
 - **Reaktion:** verpasste niemand das grüne Signal, endete die Runde nie.
 - **Flaschendrehen:** der Client hatte einen `-90`-Versatz; Namen, Markierung

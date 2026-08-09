@@ -4,7 +4,7 @@ Alles, was auf inf-zeus.de nicht zu einem einzelnen Spiel gehört: die
 Spieleübersicht, Impressum und Datenschutzerklärung, der gemeinsame Stil der
 Rechtstexte und die Apache-Regeln des DocumentRoot.
 
-Die elf Spiele und der Bugreport liegen in eigenen Repos und werden hier
+Die neun Spiele und der Bugreport liegen in eigenen Repos und werden hier
 bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
 mitreißen.
 
@@ -12,11 +12,11 @@ mitreißen.
 
 | Pfad | Was |
 |---|---|
-| `spiele/index.html` | Startseite mit den elf Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
+| `spiele/index.html` | Startseite mit den neun Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
-| `spiele/bilder/` | Vorschaubilder der elf Spiele (WebP) |
+| `spiele/bilder/` | Vorschaubilder der neun Spiele (WebP) |
 | `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
 | `spiele.json` | Pfade, Ports, Dienste und Repos aller Spiele – einzige Quelle |
@@ -44,28 +44,20 @@ Welches Spiel wohin gehört, steht in `spiele.json` unter `repo`:
 jq -r '.spiele[] | "\(.titel)\t\(.repo // "– noch keins")"' spiele.json
 ```
 
-Seit dem 09.08.2026 hat **jedes** Spiel ein Remote; bei den sieben neueren
+Seit dem 09.08.2026 hat **jedes** Spiel ein Remote; bei den fünf neueren
 heißt das Repo wie der Ordner. Kein Spiel liegt mehr ausschließlich auf diesem
 Server.
 
-## Zwei Arten von Spiel
+## Nur eine Art von Spiel
 
-Seit Reaktion und Kurven gibt es hier zwei technisch grundverschiedene Sorten,
-und der Unterschied entscheidet fast alles am Betrieb:
+Jedes Spiel hier ist ein **Server-Spiel**: eigener Dienst, eigener Port, ein
+`Location`-Block in Apache mit Proxy und WebSocket, `bremse.js`, geprüft mit
+`deno task probe`. Jeder spielt auf seinem eigenen Gerät.
 
-| | Server-Spiele | Spiele am Tisch |
-|---|---|---|
-| welche | `jq -r '.spiele[]\|select(.art=="server").titel' spiele.json` | **Reaktion, Kurven** |
-| Geräte | eines je Person | **eines für alle** |
-| Dienst | je einer (systemd) | **keiner** |
-| Port | je einer | **keiner** |
-| Apache | `Location` mit Proxy und WebSocket | **nichts** – statische Dateien |
-| `bremse.js` | ja | **nein**, es gibt keine Verbindung |
-| Prüfung | `deno task probe` gegen den Server | `node pruefe-<name>.mjs` im Browser |
-
-Die zweite Sorte kann nicht abstürzen, hält keinen Zustand und braucht keine
-Wartung. Wer ein neues Spiel plant: falls es ohne Server geht, geht es auch
-ohne alles andere in der Tabelle.
+Die beiden Spiele am Tisch (Reaktion, Kurven), die auf einem Gerät für alle
+liefen, sind am 09.08.2026 gelöscht worden – der Quelltext liegt noch auf
+GitHub. Wer ein neues Spiel plant, baut es als Server-Spiel, auch dann, wenn es
+ohne Server ginge.
 
 ## Ports
 
@@ -111,12 +103,11 @@ Sitzungen: Ich hab noch nie und Maexchen brauchen drei, Wer am ehesten vier,
 Imposter fuenf – sonst haetten Aufloesungsliste, Punkteleiste, Balken bzw.
 Hinweisreihe nur eine Zeile. (Imposter startet unter vier Leuten gar nicht.)
 Flaschendrehen bekommt fuenf – der Kreis lebt davon, dass Namen darauf
-verteilt sind. Reaktion und Kurven brauchen umgekehrt nur **eine** Sitzung:
-dort spielen alle auf demselben Geraet.
+verteilt sind.
 
 ```bash
 cd /root/werkzeug-screenshots
-node aufnehmen.mjs                 # alle elf
+node aufnehmen.mjs                 # alle neun
 node aufnehmen.mjs cardchaos       # nur eins
 ```
 

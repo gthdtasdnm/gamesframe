@@ -76,10 +76,3 @@ Danach kommt nur noch, was dieses Spiel ausmacht:
 Beide stehen in `CLAUDE.md` unter „Die drei Fallen": die Steuerzeichen-Regex
 und deutsche Anführungszeichen in JS-Strings. Nach dem Schreiben prüfen, nicht
 vorher darauf vertrauen.
-
-## Wann es kein Server-Spiel sein muss
-
-Geht ein Spiel ohne Server, geht es auch ohne Dienst, Port, Apache-Block und
-Bremse. Achtung: laut Richtungsentscheidung in `SPIELE-IDEEN.md` soll **jedes**
-Spiel auf ein Gerät pro Person umgestellt werden – neue Spiele deshalb direkt
-als Server-Spiel bauen.
