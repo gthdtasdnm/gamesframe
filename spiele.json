@@ -358,7 +358,7 @@
       "kategorie": "Allein spielen",
       "art": "statisch",
       "leute": "1",
-      "repo": null
+      "repo": "git@github.com:gthdtasdnm/minenfeld.git"
     },
     {
       "name": "sudoku",
