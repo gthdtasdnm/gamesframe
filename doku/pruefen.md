@@ -26,15 +26,15 @@ node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
 ```
 
 Ausgeführt werden sie in `/root/werkzeug-screenshots/` – dort liegen
-`node_modules` mit Playwright. **Versioniert sind bisher nur `pruefe-wortleger.mjs` und
-`pruefe-statisch.mjs`** (in `werkzeug/`, wie `aufnehmen.mjs`); die drei
-älteren liegen ausschließlich in `/root` und wären bei einem Plattenschaden
-weg. Steht in `RISIKEN-TODO.md`. Wer eine ändert, kopiert sie wie
-`aufnehmen.mjs` nach `werkzeug/` zurück:
+`node_modules` mit Playwright. **Seit dem 09.08.2026 sind sie alle versioniert** – sie liegen in `werkzeug/`,
+wie `aufnehmen.mjs`. Wer eine ändert, kopiert sie zurück:
 
 ```bash
-cp /root/werkzeug-screenshots/pruefe-wortleger.mjs /var/www/html/werkzeug/
+cp /root/werkzeug-screenshots/pruefe-startseite.mjs /var/www/html/werkzeug/
 ```
+
+Nicht versioniert sind `probe.mjs` und `pruefen.mjs`: Wegwerf-Skripte aus
+einzelnen Sitzungen, kein Werkzeug.
 
 `probe.js` ist kein Testrahmen: ein Skript, das wirft, wenn etwas nicht stimmt,
 und sonst mitschreibt, was passiert ist. Es prüft Geheimhaltung (wer darf was
