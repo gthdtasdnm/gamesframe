@@ -7,7 +7,7 @@ geöffnet. Stand: 09.08.2026.
 
 ## Was hier liegt
 
-`/var/www/html` ist der DocumentRoot. Darin: achtzehn Browserspiele, die
+`/var/www/html` ist der DocumentRoot. Darin: dreiundzwanzig Browserspiele, die
 Spieleübersicht, ein Bugreport-Werkzeug, zwei Rechtstexte – und, damit nicht
 verwechselt, Nextcloud und zwei Tradingbots.
 
@@ -23,7 +23,7 @@ ausdrücklich danach gefragt wird.
 | Frage | Datei |
 |---|---|
 | Welche Spiele, welcher Port, welcher Dienst, welches Repo? | **`spiele.json`** – maschinenlesbar, einzige Quelle |
-| Neues Spiel bauen | `doku/neues-spiel.md` – Gerüst: `werkzeug/neuspiel.sh` |
+| Neues Spiel bauen | `doku/neues-spiel.md` – Gerüst: `werkzeug/neuspiel.sh`, solo: `werkzeug/neusolo.sh` |
 | Was ist gemeinsam, wie wird es verteilt? | `doku/gemeinsam.md` |
 | Prüfen, Proben, Screenshots | `doku/pruefen.md` |
 | Dienste, Apache, Rechte, Git-Ebenen | `doku/betrieb.md` |
@@ -31,6 +31,7 @@ ausdrücklich danach gefragt wird.
 | Startseite ändern | `doku/startseite.md` |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |
+| Was bei den neuen Spielen noch fehlt | `OFFEN-NACHZIEHEN.md` (nicht im Repo, 403) |
 
 Ports und Pfade **nicht** aus einer Tabelle in einer Markdown-Datei abschreiben
 – es gibt `spiele.json`:
@@ -70,7 +71,7 @@ node werkzeug/verteilen.mjs --pruefen        # gemeinsame Teile noch gleich?
 jq -r '.spiele[].name' spiele.json | while read p; do
   printf "  /%-12s %s\n" "$p/" "$(curl -s -o /dev/null -w '%{http_code}' https://inf-zeus.de/$p/)"
 done
-for f in RISIKEN-TODO.md SPIELE-IDEEN.md spiele.json CLAUDE.md; do
-  printf "  %-18s %s\n" "$f" "$(curl -s -o /dev/null -w '%{http_code}' https://inf-zeus.de/$f)"
-done   # alle vier müssen 403 sein
+for f in RISIKEN-TODO.md SPIELE-IDEEN.md OFFEN-NACHZIEHEN.md spiele.json CLAUDE.md; do
+  printf "  %-20s %s\n" "$f" "$(curl -s -o /dev/null -w '%{http_code}' https://inf-zeus.de/$f)"
+done   # alle fünf müssen 403 sein
 ```

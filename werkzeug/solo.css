@@ -1,0 +1,19 @@
+
+/* ── Allein spielen: gemeinsamer Rahmen der Solo-Spiele ───────────────── */
+.solo {
+  width: 100%; max-width: 560px; margin: 0 auto; padding: 16px 12px 30px;
+  display: flex; flex-direction: column; gap: 12px; min-height: 100%;
+}
+.solokopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.solometa { display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; }
+#stand { font-size: 15px; color: var(--muted); }
+#stand b { color: var(--ink); }
+.tag.klein { font-size: 12px; margin: 0; text-align: left; letter-spacing: .08em; }
+.soloeinstellung { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.solobuehne { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.zurueck { color: var(--muted); }
+.fertigbox {
+  background: var(--panel); border: 1px solid var(--akzent); border-radius: var(--r);
+  padding: 14px; text-align: center; width: 100%;
+}
+.fertigbox h2 { font-size: 22px; margin-bottom: 6px; }

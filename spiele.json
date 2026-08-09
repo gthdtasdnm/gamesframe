@@ -323,6 +323,62 @@
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css"
       }
+    },
+    {
+      "name": "paare",
+      "titel": "Paare",
+      "pfad": "/paare/",
+      "port": 8062,
+      "dienst": "systemd",
+      "leute": "1–6",
+      "kategorie": "Zug um Zug, in Ruhe",
+      "art": "server",
+      "repo": null,
+      "hinweis": "Memory-Prinzip; der Name ist Marke von Ravensburger",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
+        "lobbyCss": "public/style.css"
+      }
+    },
+    {
+      "name": "minenfeld",
+      "titel": "Minenfeld",
+      "pfad": "/minenfeld/",
+      "kategorie": "Allein spielen",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null
+    },
+    {
+      "name": "sudoku",
+      "titel": "Sudoku",
+      "pfad": "/sudoku/",
+      "kategorie": "Allein spielen",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null
+    },
+    {
+      "name": "wortgitter",
+      "titel": "Wortgitter",
+      "pfad": "/wortgitter/",
+      "kategorie": "Allein spielen",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null,
+      "hinweis": "Wortliste aus wortleger/woerter.txt erzeugt; Name Wordle ist NYT-Marke"
+    },
+    {
+      "name": "patience",
+      "titel": "Patience",
+      "pfad": "/patience/",
+      "kategorie": "Allein spielen",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null
     }
   ]
 }
