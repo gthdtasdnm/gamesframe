@@ -7,9 +7,12 @@ geöffnet. Stand: 08.08.2026.
 
 ## Was hier liegt
 
-`/var/www/html` ist der DocumentRoot. Darin: zwölf Browserspiele, die
+`/var/www/html` ist der DocumentRoot. Darin: elf Browserspiele, die
 Spieleübersicht, ein Bugreport-Werkzeug, zwei Rechtstexte – und, damit nicht
 verwechselt, Nextcloud und zwei Tradingbots.
+
+Wie viele es gerade sind, sagt `spiele.json` – nicht dieser Satz:
+`jq '[.spiele[]|select(.art!="werkzeug")]|length' spiele.json`
 
 **Arbeitsbereich sind die Spiele.** `nextcloud`, `tradingbot_value`,
 `tradingbot_momentum`, `/reader/` und `_alt-tot-20260807` nur anfassen, wenn

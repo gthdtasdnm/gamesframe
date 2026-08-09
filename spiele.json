@@ -85,7 +85,7 @@
       "leute": "2–8",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/nochnie.git",
       "hinweis": "einziges Spiel mit 18+-Stapel",
       "gemeinsam": {
         "bremse": "bremse.js",
@@ -101,7 +101,7 @@
       "leute": "2–8",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/maexchen.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "lobbyCss": "public/style.css"
@@ -116,7 +116,7 @@
       "leute": "3–10",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/amehesten.git",
       "hinweis": "beste Vorlage für ein neues Spiel",
       "gemeinsam": {
         "bremse": "bremse.js",
@@ -134,7 +134,7 @@
       "leute": "4–10",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/imposter.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "lobbyCss": "public/style.css"
@@ -149,7 +149,7 @@
       "leute": "3–10",
       "kategorie": "Reden und Raten",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/flasche.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "lobbyCss": "public/style.css"
@@ -164,7 +164,7 @@
       "leute": "2–4",
       "kategorie": "Am Tisch, ein Gerät",
       "art": "tisch",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/reaktion.git",
       "hinweis": "soll auf Raum-Modell umgestellt werden, siehe SPIELE-IDEEN.md",
       "gemeinsam": {
         "lobbyCss": "style.css"
@@ -179,7 +179,7 @@
       "leute": "2–4",
       "kategorie": "Am Tisch, ein Gerät",
       "art": "tisch",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/kurven.git",
       "hinweis": "soll auf Raum-Modell umgestellt werden, siehe SPIELE-IDEEN.md",
       "gemeinsam": {
         "lobbyCss": "style.css"

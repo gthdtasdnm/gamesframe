@@ -44,10 +44,9 @@ Welches Spiel wohin gehört, steht in `spiele.json` unter `repo`:
 jq -r '.spiele[] | "\(.titel)\t\(.repo // "– noch keins")"' spiele.json
 ```
 
-Die sieben neueren Spiele haben je ein **lokales** Repo, aber noch kein
-`origin`; bis es eins gibt, liegt ihr Quelltext nur auf diesem Server. Deshalb
-fehlen sie in der Aktualisierungsschleife unten – ohne Remote gibt es nichts zu
-ziehen.
+Seit dem 09.08.2026 hat **jedes** Spiel ein Remote; bei den sieben neueren
+heißt das Repo wie der Ordner. Kein Spiel liegt mehr ausschließlich auf diesem
+Server.
 
 ## Zwei Arten von Spiel
 
@@ -165,8 +164,12 @@ ist der einzige Teil dieser Seite, der auch ohne JS etwas wert ist.
 
 ## Alles auf einmal aktualisieren
 
+Seit alle Spiele ein Remote haben, kommt die Liste aus `spiele.json` statt aus
+einer Aufzählung, die beim nächsten Spiel wieder vergessen wird:
+
 ```bash
-for d in /var/www/html /var/www/html/{keep,cardchaos,seconds,luckyreflex,bugreport}; do
-  printf '%-34s ' "$d"; git -C "$d" pull --ff-only
+cd /var/www/html
+{ echo .; jq -r '.spiele[].name' spiele.json; } | while read d; do
+  printf '%-14s ' "$d"; git -C "/var/www/html/$d" pull --ff-only
 done
 ```
