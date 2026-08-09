@@ -75,3 +75,7 @@ for f in RISIKEN-TODO.md SPIELE-IDEEN.md OFFEN-NACHZIEHEN.md spiele.json CLAUDE.
   printf "  %-20s %s\n" "$f" "$(curl -s -o /dev/null -w '%{http_code}' https://inf-zeus.de/$f)"
 done   # alle fünf müssen 403 sein
 ```
+
+Wurde irgendwo **committet**, kommt der Repo-Abgleich dazu – ein `push` allein
+sagt nicht, dass der Stand auch oben liegt. Befehl in `doku/betrieb.md`
+(„Nach dem Committen: kam es auch oben an?").

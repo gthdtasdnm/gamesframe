@@ -103,6 +103,27 @@ Am Ende:
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 ```
 
+### Nach dem Committen: kam es auch oben an?
+
+Ein erfolgreicher `push` sagt das nicht, und `repo` in `spiele.json` erst recht
+nicht – das heißt nur „es gibt eine Gegenstelle". Am 09.08.2026 hatten fünf
+Repos je einen Commit, der seit Wochen nur lokal lag. Verglichen wird deshalb
+der Commit selbst:
+
+```bash
+cd /var/www/html
+jq -r '.spiele[] | select(.repo != null) | "\(.name) \(.repo)"' spiele.json |
+while read name url; do
+  lokal=$(git -C "/var/www/html/$name" rev-parse HEAD)
+  fern=$(git ls-remote "$url" refs/heads/main | cut -f1)
+  [ "$lokal" = "$fern" ] || echo "  $name weicht ab"
+done
+```
+
+Keine Ausgabe heißt: alle gleich. Der Lauf dauert eine halbe Minute (eine
+Netzabfrage je Repo) und gehört in jede Sitzung, in der irgendwo committet
+wurde – sonst fällt so etwas erst beim nächsten Plattenschaden auf.
+
 **`git checkout -- <datei>` stellt aus dem Index wieder her**, nicht aus HEAD.
 Nach einem `git add` ist das nicht, was man will – `git checkout HEAD -- <datei>`
 nehmen.
