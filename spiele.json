@@ -158,7 +158,7 @@
       "leute": "2–6",
       "kategorie": "Tempo und Geschick",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/cubes.git",
       "gemeinsam": {
         "bremse": "bremse.js",
         "raum": "raum.js",
@@ -175,7 +175,7 @@
       "leute": "2–4",
       "kategorie": "Zug um Zug",
       "art": "server",
-      "repo": null,
+      "repo": "git@github.com:gthdtasdnm/wortleger.git",
       "hinweis": "einziges Spiel mit einer Wortliste (woerter.txt, CC0)",
       "gemeinsam": {
         "bremse": "bremse.js",

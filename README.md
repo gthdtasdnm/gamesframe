@@ -4,19 +4,19 @@ Alles, was auf inf-zeus.de nicht zu einem einzelnen Spiel gehört: die
 Spieleübersicht, Impressum und Datenschutzerklärung, der gemeinsame Stil der
 Rechtstexte und die Apache-Regeln des DocumentRoot.
 
-Die elf Spiele und der Bugreport liegen in eigenen Repos und werden hier
-bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
+Die dreiundzwanzig Spiele und der Bugreport liegen in eigenen Repos und werden
+hier bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
 mitreißen.
 
 ## Inhalt
 
 | Pfad | Was |
 |---|---|
-| `spiele/index.html` | Startseite mit den elf Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
+| `spiele/index.html` | Startseite mit den dreiundzwanzig Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
-| `spiele/bilder/` | Vorschaubilder der elf Spiele (WebP) |
+| `spiele/bilder/` | Vorschaubilder aller Spiele (WebP) |
 | `werkzeug/aufnehmen.mjs` | erzeugt genau diese Bilder |
 | `index.php` | Weiterleitung auf die Startseite |
 | `spiele.json` | Pfade, Ports, Dienste und Repos aller Spiele – einzige Quelle |
@@ -44,22 +44,29 @@ Welches Spiel wohin gehört, steht in `spiele.json` unter `repo`:
 jq -r '.spiele[] | "\(.titel)\t\(.repo // "– noch keins")"' spiele.json
 ```
 
-Seit dem 09.08.2026 hat jedes Spiel ein Remote; bei den neueren heißt das Repo
-wie der Ordner. **Ausnahmen: Cubes und Wortleger**, beide am 09.08.2026 gebaut
-– lokal versioniert, aber noch ohne Remote, weil das Anlegen eines GitHub-Repos
-außerhalb dieses Servers passiert. Steht in `RISIKEN-TODO.md`; `spiele.json`
-hat dort `repo: null`, das ist die verlässliche Auskunft.
+Seit dem 09.08.2026 hat **jedes** Spiel ein Remote, ohne Ausnahme; bei den
+neueren heißt das Repo wie der Ordner. Die vier ältesten tragen abweichende
+Altnamen (`PickUp`, `magictowers`, `double`, `reflex`) – `spiele.json` ist die
+verlässliche Auskunft, nicht der Ordnername.
 
-## Nur eine Art von Spiel
+## Zwei Arten von Spiel
 
-Jedes Spiel hier ist ein **Server-Spiel**: eigener Dienst, eigener Port, ein
+Die meisten sind **Server-Spiele**: eigener Dienst, eigener Port, ein
 `Location`-Block in Apache mit Proxy und WebSocket, `bremse.js`, geprüft mit
 `deno task probe`. Jeder spielt auf seinem eigenen Gerät.
 
+Seit dem 09.08.2026 gibt es daneben die Sparte **Allein spielen** – Minenfeld,
+Sudoku, Wortgitter, Patience. Die haben keinen Dienst und keinen Port; Apache
+liefert sie als statische Dateien aus. Ein Server wäre dort kein Gewinn: es gibt
+niemanden, mit dem etwas abzugleichen wäre.
+
+Was für beide gilt: **ein Gerät je Person.** Kein Spiel wird herumgereicht.
+
 Die beiden Spiele am Tisch (Reaktion, Kurven), die auf einem Gerät für alle
 liefen, sind am 09.08.2026 gelöscht worden – der Quelltext liegt noch auf
-GitHub. Wer ein neues Spiel plant, baut es als Server-Spiel, auch dann, wenn es
-ohne Server ginge.
+GitHub. Wer ein neues Spiel für mehrere plant, baut es als Server-Spiel, auch
+dann, wenn es ohne Server ginge: sonst sehen zwei Geräte verschiedene Spiele.
+Wer eins für eine Person baut, braucht keinen.
 
 ## Ports
 
@@ -78,9 +85,11 @@ Wer einen Port nimmt, streicht ihn dort aus `portsFrei`. Alle Spiele binden auf
 
 ## Gemeinsame Teile
 
-Vier Dinge sind in allen Spielen gleich: die Bremse, die Raumverwaltung, der
-statische Einstieg und der obere CSS-Block. Sie liegen in `gemeinsam/` und
-werden von dort in jedes Spiel **kopiert** – nicht importiert.
+Sechs Dinge sind in den Server-Spielen gleich: die Bremse, die Raumverwaltung,
+der statische Einstieg, die Client-Schale, der obere CSS-Block und der
+CSS-Rahmen darunter. Sie liegen in `gemeinsam/` (der Rahmen in `werkzeug/`) und
+werden von dort in jedes Spiel **kopiert** – nicht importiert. Welches Spiel
+welchen Teil führt, steht in `spiele.json` unter `gemeinsam`.
 
 Der Grund ist dieselbe Linie wie bei den getrennten Repos: würden alle Spiele
 zur Laufzeit dieselbe Datei laden, risse ein Fehler darin alle gleichzeitig
@@ -116,9 +125,20 @@ Bild bleibt am Ende ein Wort **halb gelegt** liegen: die frischen Steine tragen
 den orangen Rand, der Knopf „Legen“ wartet. Erst damit zeigt das Bild, wie man
 spielt, und nicht nur, was dabei herauskommt.
 
+Die zwölf vom 09.08.2026 liegen alle auf der gemeinsamen Client-Schale, deshalb
+reicht für den Weg in den Raum eine einzige Hilfsfunktion; die Rezepte darunter
+bestehen nur noch aus dem, was das jeweilige Spiel ausmacht. Auch dort steckt
+die Arbeit im Motiv: Nachtwache sucht sich den Bildschirm des Wolfs – nur dort
+steht eine Aufgabe. Schwimmen und Becherbluff spielen auf die Aufdeckung hin,
+weil nur dort alle Blätter bzw. Becher offen liegen. Paare merkt sich, was schon
+offen lag, und findet damit echte Paare; zufällig tippen findet in sechzehn
+Zügen fast keines, und das erste Bild war ein Raster aus sechzehn grauen Kästen.
+Snake lenkt alle Schlangen nach oben, weil sie sonst paarweise frontal
+ineinanderfahren.
+
 ```bash
 cd /root/werkzeug-screenshots
-node aufnehmen.mjs                 # alle elf
+node aufnehmen.mjs                 # alle
 node aufnehmen.mjs cardchaos       # nur eins
 ```
 
@@ -142,8 +162,8 @@ PNG-Groesse) und die PNG geloescht.
 Seit dem Umbau auf Kategorien liest der Anleitungsdialog seinen Inhalt aus der
 Kachel selbst (`data-kurz`, `data-bild` und ein `<template class="ablauf">`).
 Damit steht jedes Spiel **einmal** in der Datei statt zweimal – vorher gab es
-zusätzlich ein JS-Objekt `SPIELE`, und bei elf Spielen laufen zwei Fassungen
-unweigerlich auseinander.
+zusätzlich ein JS-Objekt `SPIELE`, und bei dreiundzwanzig Spielen laufen zwei
+Fassungen unweigerlich auseinander.
 
 Die Kehrseite: ein leerer Dialog fällt niemandem auf, weil die Seite ohne ihn
 normal aussieht. Deshalb gibt es dafür einen Prüflauf:
