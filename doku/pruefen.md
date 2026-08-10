@@ -23,8 +23,26 @@ node pruefe-flasche.mjs        # zeigt die Flasche wirklich auf die Person?
 node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
 node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
+node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
+node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Ueberlauf
 ```
+
+`pruefe-rahmen.mjs` (10.08.2026) ist die einzige Probe, die **jede** Seite
+einmal im Browser öffnet – auch die zwanzig, für die es sonst nur eine
+WebSocket-Probe gibt. Sie hört der Konsole zu, zählt Anfragen mit, die nicht
+ankommen, und misst bei 390 px nach, ob etwas seitlich herausläuft. Ein
+fehlendes Bild oder ein 404 auf eine JS-Datei fällt sonst nirgends auf: die
+Seite steht ja trotzdem da, nur eben halb.
+
+`pruefe-statisch-tief.mjs` (10.08.2026) setzt fort, wo `pruefe-statisch.mjs`
+aufhört. Ihr wichtigster Griff ist der **Uhrentest**: nach viermal „Neues
+Spiel" muss die Anzeige in drei Sekunden um drei Sekunden weiterlaufen. Ein
+vergessener `clearInterval` ließe sie doppelt so schnell laufen – von außen
+unsichtbar, aber jede Bestzeit wäre verdorben. Für Wortgitter, das einzige
+Spiel ohne `probe.js`, prüft sie zusätzlich die Wortlisten, den Tageswechsel,
+einen kaputten Speichereintrag und die Bewertung doppelter Buchstaben gegen
+eine zweite, unabhängig geschriebene Fassung derselben Regel.
 
 ## Die Lobby-Probe
 
