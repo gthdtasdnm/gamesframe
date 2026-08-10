@@ -444,6 +444,19 @@ dialog form {
 }
 .btn-spielen:hover, .btn-spielen:focus-visible { filter: brightness(1.1); outline: none; }
 
+/* Der Weg zum Bugreport steht bewusst leise unter dem Spielen-Knopf: gesucht
+   wird er erst, wenn etwas kaputt ist. Das Spiel haengt er selbst an. */
+.dialog-melden {
+  align-self: center;
+  margin-top: 2px;
+  font-size: 13.5px;
+  color: var(--dim);
+  text-decoration: none;
+}
+.dialog-melden:hover, .dialog-melden:focus-visible {
+  color: var(--accent2, #29e7ff); outline: none;
+}
+
 dialog h2 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
 dialog p { color: var(--dim); font-size: 15px; text-wrap: pretty; }
 dialog .klein { font-size: 13.5px; }
@@ -1188,6 +1201,7 @@ footer a { color: inherit; }
     <h3>So läuft eine Runde</h3>
     <ol id="spielSchritte"></ol>
     <a class="btn-spielen" id="spielLink" href="/">Jetzt spielen →</a>
+    <a class="dialog-melden" id="spielMelden" href="/bugreport/">🐞 Fehler in diesem Spiel melden</a>
   </div>
 </dialog>
 
@@ -1282,6 +1296,11 @@ for (const knopf of document.querySelectorAll(".info")) {
     const liste = document.getElementById("spielSchritte");
     liste.replaceChildren(...s.schritte.map((li) => li.cloneNode(true)));
     document.getElementById("spielLink").href = s.pfad;
+    // Der Bugreport nimmt den Kurznamen als ?spiel= entgegen und waehlt ihn
+    // im Formular vor. Er kommt aus dem Pfad der Kachel, damit auch hier
+    // keine zweite Spielliste entsteht.
+    document.getElementById("spielMelden").href =
+      "/bugreport/?spiel=" + encodeURIComponent(s.pfad.replaceAll("/", ""));
     spielDialog.showModal();
     spielDialog.scrollTop = 0;
   });

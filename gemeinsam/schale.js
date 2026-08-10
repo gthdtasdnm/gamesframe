@@ -213,8 +213,11 @@ export function starteSchale({
 
   const gespeichert = JSON.parse(sessionStorage.getItem(key) ?? "null");
   const hash = location.hash.replace("#", "").toUpperCase();
-  $("name").value = localStorage.getItem("spielername") ?? "";
-  $("name").onchange = () => localStorage.setItem("spielername", nameFeld());
+  // Der Schluessel heisst in allen dreiundzwanzig Spielen gleich - nur so
+  // findet man seinen Namen beim naechsten Spiel wieder vor, ohne ihn neu zu
+  // tippen. Wer ihn hier aendert, trennt die Schale von den uebrigen Spielen.
+  $("name").value = localStorage.getItem("spiele_name") ?? "";
+  $("name").onchange = () => localStorage.setItem("spiele_name", nameFeld());
   verbinde(() => {
     if (hash && gespeichert?.code === hash) {
       schicke({ t: "join", code: hash, token: gespeichert.token, name: nameFeld() });

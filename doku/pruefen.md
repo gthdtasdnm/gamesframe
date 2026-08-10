@@ -23,7 +23,41 @@ node pruefe-flasche.mjs        # zeigt die Flasche wirklich auf die Person?
 node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
 node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
+node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
 ```
+
+## Die Lobby-Probe
+
+`werkzeug/lobbyprobe.mjs` (10.08.2026) prüft nicht das Spiel, sondern den Weg
+**hinein und wieder hinaus** – das, was kein `probe.js` tut: neu laden, das
+Netz verlieren, einen zweiten Tab aufmachen, einer laufenden Runde beitreten,
+Müll schicken. Sechzehn Tests (L01–L16) gegen die sechzehn Spiele mit
+gemeinsamem Lobby-Protokoll.
+
+```bash
+cd /var/www/html
+node werkzeug/lobbyprobe.mjs                     # alle sechzehn
+node werkzeug/lobbyprobe.mjs --nur paare
+node werkzeug/lobbyprobe.mjs --nur paare --test L07
+node werkzeug/lobbyprobe.mjs --lang              # auch der 60-s-Test (L08)
+node werkzeug/lobbyprobe.mjs --live              # gegen die Live-Fassung
+```
+
+**Sie startet sich pro Test eine eigene Fassung** auf Port 8101 – anders als
+alle anderen Proben, und mit Grund: die Bremse lässt je IP zwölf neue Räume in
+zehn Minuten zu, und die Probe macht rund vierzehn je Spiel auf. Gegen live
+fiel sie deshalb ab dem zwölften Test aus dem falschen Grund durch und brauchte
+nebenbei das Kontingent echter Leute auf. Ein frischer Dienst je Test setzt
+Raum- und Verbindungszähler zurück; dass der Weg durch Apache und TLS stimmt,
+weisen die `probe.js` nach, die gegen live laufen.
+
+Node braucht dafür kein Paket – `WebSocket` ist seit Node 21 eingebaut.
+
+Was sie gefunden hat, steht in `PRUEFPLAN.md` (nicht im Repo, 403). Der
+schwerste Fund war nicht in der Lobby, sondern daneben: bei `seconds` und
+`cardchaos` reichte die öffentliche Spieler-Id, um den Platz eines
+Mitspielers zu übernehmen. Die Lehre für jede neue Stelle mit Wiedereinstieg:
+**was im Spielstand steht, ist kein Ausweis.**
 
 Ausgeführt werden sie in `/root/werkzeug-screenshots/` – dort liegen
 `node_modules` mit Playwright. **Seit dem 09.08.2026 sind sie alle versioniert** – sie liegen in `werkzeug/`,
@@ -50,7 +84,12 @@ und was sie verbietet, muss er ablehnen. Der erste Teil der Probe läuft ganz
 ohne Server und rechnet jede Punktzahl von Hand nach.
 
 Kein `probe.js` haben **Seconds** und **Lucky Reflex**. Solange das so ist,
-werden die beiden nicht umgebaut – es fehlt der Nachweis.
+werden die beiden nicht umgebaut – es fehlt der Nachweis. **Lucky Reflex** wird
+inzwischen wenigstens von `lobbyprobe.mjs` abgedeckt (Lobby und Rückkehr, nicht
+die Spiellogik); **Seconds** spricht ein eigenes Protokoll und fällt auch dort
+heraus. Am 10.08.2026 ist bei Seconds von Hand ein Loch im Wiedereinstieg
+gefunden und geschlossen worden – genau die Sorte Fund, die eine Probe
+verhindert hätte.
 
 ## Die zwölf vom 09.08. haben jetzt auch eine
 
