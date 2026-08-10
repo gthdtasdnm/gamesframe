@@ -26,7 +26,36 @@ node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
 node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
 node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Ueberlauf
+node pruefe-durchlauf.mjs      # zwei Handys: Startseite -> Lobby -> Runde -> Endstand
 ```
+
+Ohne Browser, aus `/var/www/html` heraus:
+
+```bash
+node werkzeug/grenzprobe.mjs       # Abschnitt G: die Bremse und was der Client daraus macht
+node werkzeug/pruefe-seconds.mjs   # ganze Partie Seconds
+node werkzeug/pruefe-cardchaos.mjs # ganze Partie Card Chaos
+node werkzeug/pruefe-keep.mjs      # ganze Partie Keep
+```
+
+Die drei letzten sind die Spiele der **Gruppe D**: eigenes Protokoll, kein
+`probe.js`, und sie fallen auch aus `lobbyprobe.mjs` heraus. Seit dem
+10.08.2026 spielt jede von ihnen eine ganze Partie bis zum Endstand durch.
+Sie starten dafuer immer eine **eigene Fassung** auf einem freien Port
+(8103/8104/8105): eine Partie kostet viele Zuege und Raeume, und bei Keep
+schreibt sie in die Bestenliste - die der Live-Fassung gehoert den Leuten,
+die dort spielen.
+
+Zwei Kniffe, die man kennen muss, wenn man sie aendert:
+
+- **Card Chaos** kann mitgespielt werden, weil das Brett deterministisch aus
+  dem `seed` entsteht: die Probe baut es mit der echten `shared/engine.js`
+  nach, statt eine zweite Fassung der Regeln zu erfinden.
+- **Keep** spricht als einziges Spiel Socket.IO, und `socket.io-client` liegt
+  nicht in seinem `node_modules`. Statt eine Abhaengigkeit in ein laufendes
+  Spiel zu legen, spricht die Probe Engine.IO ueber eine gewoehnliche
+  WebSocket-Verbindung - vier Rahmentypen genuegen (`0`, `40`, `42[...]`,
+  Ping `2`/Pong `3`).
 
 `pruefe-rahmen.mjs` (10.08.2026) ist die einzige Probe, die **jede** Seite
 einmal im Browser öffnet – auch die zwanzig, für die es sonst nur eine
@@ -100,6 +129,9 @@ die auch der Server benutzt, einen gültigen Zug – und prüft damit genau das,
 worauf es ankommt: was die gemeinsame Logik erlaubt, muss der Server annehmen,
 und was sie verbietet, muss er ablehnen. Der erste Teil der Probe läuft ganz
 ohne Server und rechnet jede Punktzahl von Hand nach.
+
+**Stand 10.08.2026: jedes der 24 Spiele hat einen Nachweis.** Der Absatz
+darunter ist ueberholt und bleibt nur als Verlauf stehen.
 
 Kein `probe.js` haben **Seconds** und **Lucky Reflex**. Solange das so ist,
 werden die beiden nicht umgebaut – es fehlt der Nachweis. **Lucky Reflex** wird
