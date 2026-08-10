@@ -101,13 +101,22 @@ export function starteSchale({
   // abgewiesen, immer wieder.
   const WARTE_ANFANG = 500;
   const WARTE_MAX = 8000;
+  // Zurueckgesetzt wird erst, wenn die Verbindung sich bewaehrt hat. Ein
+  // `onopen` allein reicht nicht: ein Dienst in der Absturzschleife nimmt die
+  // Verbindung an und wirft sie sofort wieder ab. Wer dann bei jedem `open`
+  // auf 500 ms zuruecksetzt, haemmert schneller als mit dem festen Takt, den
+  // dieser Rueckzug ersetzen soll - nachgemessen mit `pruefe-durchlauf.mjs`
+  // B08, Betriebsart "flapp": 32 Versuche in 20 Sekunden.
+  const BEWAEHRT_NACH = 3000;
   let warte = WARTE_ANFANG;
+  let bewaehrung = null;
 
   function verbinde(dann) {
     if (S.ws && S.ws.readyState === WebSocket.OPEN) return dann?.();
     S.ws = new WebSocket(wsUrl());
     S.ws.onopen = () => {
-      warte = WARTE_ANFANG;
+      clearTimeout(bewaehrung);
+      bewaehrung = setTimeout(() => { warte = WARTE_ANFANG; }, BEWAEHRT_NACH);
       $("status").textContent = "";
       dann?.();
     };
@@ -117,6 +126,7 @@ export function starteSchale({
       empfange(m);
     };
     S.ws.onclose = () => {
+      clearTimeout(bewaehrung);
       $("status").textContent = "Verbindung weg – neu verbinden …";
       const gleich = warte * (0.8 + Math.random() * 0.4);
       warte = Math.min(warte * 1.8, WARTE_MAX);
