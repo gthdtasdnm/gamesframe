@@ -83,10 +83,34 @@ export function starteSchale({
     }
   }
 
+  // Wartezeit bis zum naechsten Versuch. Sie waechst mit jedem Fehlschlag und
+  // faellt beim ersten Erfolg zurueck - genau so, wie es die neun eigenen
+  // Clients (nochnie, maexchen, imposter, flasche, luckyreflex, amehesten,
+  // cubes, wortleger, luegen) schon immer gemacht haben.
+  //
+  // Vorher stand hier ein fester Takt von 1500 ms. Das sind **genau 40 neue
+  // Verbindungen je Minute** - und `bremse.js` laesst 40 je Minute und IP zu.
+  // Ein einzelner Tab lag damit exakt auf der Grenze, zwei Tabs oder zwei
+  // Leute an einem Anschluss darueber: wem der Dienst kurz wegbrach, der
+  // sperrte sich selbst aus und kam auch dann nicht zurueck, als der Dienst
+  // laengst wieder lief. Beim Ausrollen eines Updates traefe es alle
+  // gleichzeitig, und alle im selben Takt.
+  //
+  // Der Zufallsanteil ist kein Beiwerk: ohne ihn kommen nach einem Neustart
+  // alle Clients in derselben Millisekunde wieder - und werden gemeinsam
+  // abgewiesen, immer wieder.
+  const WARTE_ANFANG = 500;
+  const WARTE_MAX = 8000;
+  let warte = WARTE_ANFANG;
+
   function verbinde(dann) {
     if (S.ws && S.ws.readyState === WebSocket.OPEN) return dann?.();
     S.ws = new WebSocket(wsUrl());
-    S.ws.onopen = () => { $("status").textContent = ""; dann?.(); };
+    S.ws.onopen = () => {
+      warte = WARTE_ANFANG;
+      $("status").textContent = "";
+      dann?.();
+    };
     S.ws.onmessage = (ev) => {
       let m;
       try { m = JSON.parse(ev.data); } catch { return; }
@@ -94,10 +118,12 @@ export function starteSchale({
     };
     S.ws.onclose = () => {
       $("status").textContent = "Verbindung weg – neu verbinden …";
+      const gleich = warte * (0.8 + Math.random() * 0.4);
+      warte = Math.min(warte * 1.8, WARTE_MAX);
       setTimeout(() => verbinde(() => {
         if (S.code) schicke({ t: "join", code: S.code, token: S.token, name: nameFeld() });
         else schicke({ t: "browse" });
-      }), 1500);
+      }), gleich);
     };
   }
 
