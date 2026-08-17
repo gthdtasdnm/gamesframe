@@ -75,6 +75,57 @@ h1 {
   text-wrap: balance;
 }
 
+/* --- Suche --------------------------------------------------------------- */
+/* Fünfundzwanzig Kacheln sind viel zu scrollen, wenn man schon weiß, was man
+   sucht. Das Feld steht auf `display: none` und wird erst vom Skript
+   eingeblendet: ohne JS filtert es nichts, dann soll es auch nichts
+   versprechen. */
+.suche {
+  display: none;
+  width: 100%;
+  max-width: 880px;
+}
+.suche.an { display: block; }
+
+.suchfeld {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  transition: border-color .18s ease;
+}
+.suchfeld:focus-within { border-color: rgba(160, 120, 255, .5); }
+.suchfeld .lupe { opacity: .65; }
+
+#suche {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+}
+#suche:focus { outline: none; }
+#suche::placeholder { color: var(--dim); }
+#suche::-webkit-search-cancel-button { filter: grayscale(1) invert(1) opacity(.55); }
+
+.such-info {
+  margin-top: 10px;
+  text-align: center;
+  color: var(--dim);
+  font-size: 14px;
+  min-height: 1.3em;
+}
+
+/* Gefilterte Kacheln und leere Kategorien tragen `hidden`. Ohne !important
+   gewinnt das `display: flex` der Kachel gegen das Attribut. */
+[hidden] { display: none !important; }
+
 /* --- Kacheln ------------------------------------------------------------- */
 
 /* --- Kategorien ---------------------------------------------------------- */
@@ -121,6 +172,9 @@ h1 {
      allein und wirkt wie abgeschnitten. Über beide Spalten gezogen sieht sie
      gewollt aus. */
   .raster > .game:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  /* Beim Suchen zählt der CSS-Selektor oben die versteckten Kacheln mit. Wer
+     wirklich als Letzter sichtbar ist, weiß nur das Skript – es setzt .breit. */
+  .raster > .game.breit { grid-column: 1 / -1; }
 }
 
 /* Die Anleitung im <template> wird nie angezeigt, nur geklont – der Browser
@@ -520,6 +574,16 @@ footer a { color: inherit; }
   <p class="sub">Fünfundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
+
+<div class="suche" id="sucheBox">
+  <label class="suchfeld">
+    <span class="lupe" aria-hidden="true">🔍</span>
+    <input id="suche" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Spiel suchen – Name, Stichwort, Anzahl"
+           aria-label="Spiele durchsuchen">
+  </label>
+  <p class="such-info" id="suchErgebnis" role="status" aria-live="polite"></p>
+</div>
 
 <section class="gruppe" aria-labelledby="gruppe-runde">
   <h2 class="gruppe-titel" id="gruppe-runde">In der Runde, jeder sein Handy</h2>
@@ -1298,6 +1362,82 @@ footer a { color: inherit; }
 </footer>
 
 <script>
+// --- Suche ----------------------------------------------------------------
+// Gesucht wird in dem, was ohnehin auf der Kachel steht: Titel, Beschreibung,
+// die Marken (Spielerzahl, Kategorie), der Einzeiler aus data-kurz, der
+// Pfad und die Überschrift der Kategorie. Damit findet „allein" die
+// Solospiele und „schnaps" das Kartenspiel, ohne dass hier eine zweite
+// Spielliste entsteht, die auseinanderläuft.
+{
+  const kacheln = [...document.querySelectorAll(".game")];
+  const feld = document.getElementById("suche");
+  const info = document.getElementById("suchErgebnis");
+
+  // Umlaute und Akzente fallen weg, damit „wurfel" auch „Würfel" findet.
+  // Beide Seiten laufen durch dieselbe Funktion, deshalb trifft „wuerfel"
+  // ebenso.
+  const norm = (s) =>
+    s.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/ß/g, "ss")
+      .replace(/ae|oe|ue/g, (m) => m[0]);
+
+  const text = new Map(kacheln.map((k) => {
+    const link = k.querySelector(".game-link");
+    const gruppe = k.closest(".raster")?.previousElementSibling;
+    return [k, norm([
+      k.querySelector("h3")?.textContent ?? "",
+      k.querySelector(".game-link p")?.textContent ?? "",
+      [...k.querySelectorAll(".tag")].map((t) => t.textContent).join(" "),
+      k.dataset.kurz ?? "",
+      link?.getAttribute("href").replaceAll("/", "") ?? "",
+      // Nur die Überschrift der Kategorie, nicht ihr Untertitel: der ist ein
+      // ganzer Absatz und zog sonst die halbe Seite in jeden Treffer.
+      gruppe?.querySelector(".gruppe-titel")?.textContent ?? "",
+    ].join(" "))];
+  }));
+
+  function filtern() {
+    const worte = norm(feld.value.trim()).split(/\s+/).filter(Boolean);
+    let treffer = 0;
+    for (const k of kacheln) {
+      const passt = worte.every((w) => text.get(k).includes(w));
+      k.hidden = !passt;
+      if (passt) treffer++;
+    }
+
+    // Eine Kategorie ohne Treffer verschwindet samt Überschrift, sonst steht
+    // eine Zwischenüberschrift über einer Lücke.
+    for (const raster of document.querySelectorAll(".raster")) {
+      const sichtbar = [...raster.children].filter((k) => !k.hidden);
+      raster.hidden = sichtbar.length === 0;
+      const kopf = raster.previousElementSibling;
+      if (kopf?.classList.contains("gruppe")) kopf.hidden = raster.hidden;
+      for (const k of sichtbar) k.classList.remove("breit");
+      if (sichtbar.length % 2) sichtbar[sichtbar.length - 1].classList.add("breit");
+    }
+
+    info.textContent = !worte.length
+      ? ""
+      : treffer === 0
+      ? "Kein Spiel gefunden. Vielleicht anders geschrieben?"
+      : treffer === 1
+      ? "Ein Spiel – die Eingabetaste öffnet es."
+      : `${treffer} von ${kacheln.length} Spielen.`;
+  }
+
+  feld.addEventListener("input", filtern);
+  feld.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { feld.value = ""; filtern(); return; }
+    if (e.key !== "Enter") return;
+    const uebrig = kacheln.filter((k) => !k.hidden);
+    if (uebrig.length === 1) uebrig[0].querySelector(".game-link")?.click();
+  });
+
+  document.getElementById("sucheBox").classList.add("an");
+  filtern();
+}
+
 // Erreichbarkeit der Spiele anzeigen. Rein kosmetisch – ohne JS bleibt der
 // Punkt unsichtbar und die Links funktionieren trotzdem.
 for (const card of document.querySelectorAll(".game")) {

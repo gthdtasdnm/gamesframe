@@ -33,6 +33,16 @@ GAST=<wort> node pruefe-hochzeit-upload.mjs   # 150 Bilder am Handy auswaehlen: 
 node pruefe-durchlauf.mjs      # zwei Handys: Startseite -> Lobby -> Runde -> Endstand
 node pruefe-ausgang.mjs        # fuehrt aus jedem Spiel ein Weg zurueck?
 node pruefe-cardchaos-tippen.mjs  # Karten mit dem Finger, schnell hintereinander
+node pruefe-cardchaos-ende.mjs    # Wartebildschirm: Fahne ruhig, Muenze vor dem Gewinn
+```
+
+Eine eigene Fassung braucht nur diese hier – sie verbraucht Raeume und Zuege:
+
+```bash
+cd /var/www/html/paare
+PORT=8456 HOST=127.0.0.1 deno run --allow-net --allow-read --allow-env --allow-sys server.js &
+cd /root/werkzeug-screenshots && node pruefe-paare-tippen.mjs   # Tipp bricht die Wartezeit ab
+ss -tlnp | grep ':8456 '   # danach ueber den Port beenden, nie per pkill
 ```
 
 Ohne Browser, aus `/var/www/html` heraus:

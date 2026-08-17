@@ -145,6 +145,32 @@ async function sudoku() {
   });
   pruefe("sudoku", "E03", uhr.schritt >= 2 && uhr.schritt <= 4,
     `Uhr nach 4× Neu: ${uhr.von}s → ${uhr.bis}s in 3,2 s (Schritt ${uhr.schritt})`);
+  // E04 (Bugreport 6): ein falscher Eintrag wird nicht mehr rot. Damit der
+  // Eintrag sicher falsch ist, kommt eine Zahl in die Reihe, in der sie schon
+  // vorgegeben steht - zweimal dieselbe Zahl in einer Reihe geht nie auf.
+  const ziel = await seite.evaluate(() => {
+    const zellen = [...document.querySelectorAll(".sgitter .sz")];
+    for (let r = 0; r < 9; r++) {
+      const reihe = zellen.slice(r * 9, r * 9 + 9);
+      const vor = reihe.find((z) => z.classList.contains("vor") && z.textContent.trim());
+      const leer = reihe.find((z) => !z.classList.contains("vor") && !z.textContent.trim());
+      if (vor && leer) return { i: zellen.indexOf(leer), zahl: vor.textContent.trim() };
+    }
+    return null;
+  });
+  pruefe("sudoku", "E04", !!ziel, "Reihe mit Vorgabe und Lücke gefunden");
+  if (ziel) {
+    await seite.locator(".sgitter .sz").nth(ziel.i).click();
+    await seite.locator(".spad .zahl", { hasText: new RegExp(`^${ziel.zahl}$`) }).click();
+    await seite.waitForTimeout(150);
+    const steht = await seite.locator(".sgitter .sz").nth(ziel.i).textContent();
+    pruefe("sudoku", "E04", steht.trim() === ziel.zahl,
+      `Die falsche ${ziel.zahl} steht im Feld`);
+    const rot = await seite.locator(".sgitter .sz.falsch").count();
+    pruefe("sudoku", "E04", rot === 0,
+      `Kein Feld ist als falsch markiert (${rot}) - klassisch wie im Zeitungsraetsel`);
+  }
+
   pruefe("sudoku", "E01", seite.konsole.length === 0,
     `Konsole still (${seite.konsole.join(" | ")})`);
   await seite.close();

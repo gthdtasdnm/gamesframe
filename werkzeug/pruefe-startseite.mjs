@@ -94,6 +94,56 @@ if (!punkte.every((c) => c.includes('up'))) {
 }
 console.log(`ok  alle ${punkte.length} Statuspunkte grün`);
 
+// --- Suche ------------------------------------------------------------------
+// Bugreport 12: bei fuenfundzwanzig Kacheln will man tippen statt scrollen.
+// Geprueft wird, dass gefiltert wird, dass leere Kategorien mitsamt
+// Ueberschrift verschwinden, und dass ein Treffer per Eingabetaste aufgeht.
+
+const sichtbare = () => page.locator('.game:not([hidden])').count();
+
+if (!await page.locator('#sucheBox.an').count()) {
+  throw new Error('Das Suchfeld ist nicht eingeblendet – lief das Skript?');
+}
+
+await page.fill('#suche', 'wurfel');   // ohne Umlaut: muss „Würfel" finden
+const mitWurfel = await sichtbare();
+if (mitWurfel === 0) throw new Error('„wurfel" findet kein Spiel – die Umlautfalte greift nicht');
+if (mitWurfel === kacheln) throw new Error('„wurfel" filtert gar nichts weg');
+
+// Keine Kategorie darf ohne Kacheln dastehen.
+const leereKoepfe = await page.$$eval('.raster', (rs) => rs.filter((r) => {
+  const sichtbar = [...r.children].some((k) => !k.hidden);
+  const kopf = r.previousElementSibling;
+  return !sichtbar && (!r.hidden || (kopf?.classList.contains('gruppe') && !kopf.hidden));
+}).length);
+if (leereKoepfe) throw new Error(`${leereKoepfe} Kategorie(n) stehen leer über einer Lücke`);
+console.log(`ok  Suche „wurfel": ${mitWurfel} von ${kacheln} Kacheln, keine leere Kategorie`);
+
+await page.fill('#suche', 'gibtesnichtxy');
+if (await sichtbare() !== 0) throw new Error('Unsinn als Suche lässt Kacheln stehen');
+if (!(await page.textContent('#suchErgebnis')).trim()) {
+  throw new Error('Ohne Treffer sagt die Seite nichts');
+}
+console.log('ok  ohne Treffer bleibt nichts stehen und die Seite sagt es');
+
+await page.fill('#suche', '');
+if (await sichtbare() !== kacheln) throw new Error('Nach dem Leeren fehlen Kacheln');
+if (!await page.locator('.gruppe:not([hidden])').count()) {
+  throw new Error('Nach dem Leeren fehlen die Kategorien');
+}
+console.log('ok  leeres Feld zeigt wieder alles');
+
+// Ein einziger Treffer: die Eingabetaste öffnet das Spiel.
+const ersterTitel = (await page.locator('.game h3').first().textContent()).trim();
+const ersterPfad = await page.locator('.game .game-link').first().getAttribute('href');
+await page.fill('#suche', ersterTitel);
+if (await sichtbare() !== 1) throw new Error(`„${ersterTitel}" ist nicht eindeutig`);
+await page.press('#suche', 'Enter');
+await page.waitForURL((u) => u.pathname === ersterPfad, { timeout: 5000 });
+console.log(`ok  Eingabetaste beim einzigen Treffer führt nach ${ersterPfad}`);
+
+await page.goto(`${BASIS}/spiele/`, { waitUntil: 'networkidle' });
+
 // --- Jeder Anleitungsdialog -------------------------------------------------
 
 for (let i = 0; i < kacheln; i++) {

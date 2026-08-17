@@ -12,14 +12,29 @@ seite.on('console', (m) => { if (m.type() === 'error') fehler.push(m.text()); })
 seite.on('pageerror', (e) => fehler.push(String(e)));
 
 const soll = await (await fetch(ZIEL + '/bugreport/api/spiele')).json();
-console.log('api/spiele:', soll.spiele.length, 'Spiele,', soll.alt.length, 'abgeschaltete');
+// `orte` sind die festen Ziele, die zu keinem Spiel gehoeren (Startseite,
+// Bugreport selbst, Allgemein) - Bugreport 17.
+const sollAlle = [...soll.spiele, ...soll.orte];
+console.log('api/spiele:', soll.spiele.length, 'Spiele,', soll.orte.length, 'Orte,',
+            soll.alt.length, 'abgeschaltete');
+if (!soll.orte.length) throw new Error('Die Auswahl kennt nur Spiele, keine anderen Orte');
 
 // --- Formular -------------------------------------------------------------
 await seite.goto(ZIEL + '/bugreport/?spiel=snake', { waitUntil: 'networkidle' });
 const optionen = await seite.$$eval('#spiel option', (o) => o.map((x) => x.value));
-console.log('Auswahlfeld:', optionen.length - 1, 'Spiele + Platzhalter');
+console.log('Auswahlfeld:', optionen.length - 1, 'Eintraege + Platzhalter');
 console.log('?spiel=snake vorgewaehlt:', await seite.inputValue('#spiel'));
-if (optionen.length - 1 !== soll.spiele.length) throw new Error('Formular und API sind nicht gleich lang');
+if (optionen.length - 1 !== sollAlle.length) throw new Error('Formular und API sind nicht gleich lang');
+// Die Orte stehen in einem eigenen Block unter den Spielen, nicht dazwischen.
+const inGruppe = await seite.$$eval('#spiel optgroup option', (o) => o.map((x) => x.value));
+if (inGruppe.join() !== soll.orte.map((o) => o.name).join()) {
+  throw new Error('Die Orte stehen nicht als eigener Block im Formular: ' + inGruppe.join(', '));
+}
+console.log('Eigener Block „Kein Spiel“:', inGruppe.join(', '));
+// Bugreport 16: von hier muss ein Weg zurueck fuehren.
+const zurueck = await seite.getAttribute('.zurueck', 'href');
+if (zurueck !== '/spiele/') throw new Error('Kein Weg zurueck zur Uebersicht: ' + zurueck);
+console.log('Weg zurueck:', zurueck);
 await seite.screenshot({ path: AUS + '/bugreport-formular.png', fullPage: true });
 
 // --- Liste und Filter -----------------------------------------------------
