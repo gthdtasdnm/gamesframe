@@ -168,13 +168,13 @@ h1 {
 
 @media (min-width: 720px) {
   .raster { grid-template-columns: 1fr 1fr; gap: 20px; }
-  /* Bei ungerader Kachelzahl innerhalb einer Kategorie steht die letzte sonst
-     allein und wirkt wie abgeschnitten. Über beide Spalten gezogen sieht sie
-     gewollt aus. */
-  .raster > .game:last-child:nth-child(odd) { grid-column: 1 / -1; }
-  /* Beim Suchen zählt der CSS-Selektor oben die versteckten Kacheln mit. Wer
-     wirklich als Letzter sichtbar ist, weiß nur das Skript – es setzt .breit. */
-  .raster > .game.breit { grid-column: 1 / -1; }
+  /* Eine allein stehende letzte Kachel wurde hier früher über beide Spalten
+     gezogen, damit sie nicht abgeschnitten wirkt. Seit die Kachel einen
+     Screenshot trägt, geht das nicht mehr auf: doppelt so breit wäre das Bild
+     bei 16:9 ein halber Bildschirm hoch, und mit fester Höhe bleibt ein
+     gequetschter Streifen aus der Bildmitte übrig. Eine Lücke neben der
+     Kachel sieht besser aus als ein schlechtes Bild – deshalb behalten alle
+     Kacheln dieselbe Breite. */
 }
 
 /* Die Anleitung im <template> wird nie angezeigt, nur geklont – der Browser
@@ -199,15 +199,46 @@ h1 {
 
 /* Der Link traegt den Innenabstand, nicht die Kachel: so bleibt die ganze
    Flaeche klickbar, und der Info-Knopf kann trotzdem daneben liegen. Ein
-   Knopf im Inneren eines <a> waere ungueltiges Markup. */
+   Knopf im Inneren eines <a> waere ungueltiges Markup.
+   Oben kein Abstand: dort sitzt der Screenshot randlos. */
 .game-link {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 20px 20px 18px;
+  padding: 0 18px 16px;
   color: inherit;
   text-decoration: none;
+}
+
+/* --- Screenshot auf der Kachel -------------------------------------------
+   Die Namen der Spiele sagen Fremden wenig – „Revier", „Keep", „Nachtwache"
+   muss man kennen. Ein Bild des laufenden Spiels sagt in einer halben Sekunde
+   mehr als der Absatz, der hier vorher stand. Der Absatz ist nicht weg, er
+   steht im Anleitungsdialog hinter dem Knopf oben rechts.
+   Geladen wird eine 640px breite Fassung aus bilder/klein/ (zusammen ~200 KB
+   statt ~950 KB), das grosse Bild bleibt dem Dialog vorbehalten. */
+.schnappschuss {
+  margin: 0 -18px;
+  width: calc(100% + 36px);
+  /* Ohne height:auto gewinnt das height-Attribut aus dem Markup (das dort
+     gegen Umbrueche beim Laden steht) und aspect-ratio bliebe wirkungslos. */
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  /* Oben steht bei diesen Aufnahmen das, woran man das Spiel erkennt. */
+  object-position: center top;
+  background: rgba(0, 0, 0, .35);
+  border-bottom: 1px solid var(--line);
+}
+
+/* Symbol und Titel in eine Zeile: das Symbol war als eigene Zeile eine
+   Kopfleiste, neben dem Titel ist es eine Marke. */
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
 }
 
 /* Farbiger Schimmer je Spiel, liegt hinter dem Inhalt */
@@ -246,26 +277,43 @@ h1 {
 
 /* --- Info-Knopf ---------------------------------------------------------- */
 
+/* Der Knopf haelt jetzt den ganzen Text, der vorher auf der Kachel stand –
+   also bekommt er auch eine Beschriftung. Ein nacktes „i" auf einem
+   Screenshot uebersieht man. */
 .info {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 12px;
+  right: 12px;
   z-index: 2;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px 5px 7px;
+  border-radius: 999px;
   border: 1px solid var(--line);
-  background: rgba(10, 7, 19, .55);
+  background: rgba(10, 7, 19, .72);
+  backdrop-filter: blur(8px);
   color: var(--dim);
-  font: 700 15px/1 Georgia, "Times New Roman", serif;
-  font-style: italic;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
   transition: color .18s ease, border-color .18s ease, background .18s ease;
+}
+.info > span {
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  font: italic 700 11px/1 Georgia, "Times New Roman", serif;
 }
 .info:hover, .info:focus-visible {
   color: var(--ink);
   border-color: var(--accent2);
-  background: rgba(10, 7, 19, .85);
+  background: rgba(10, 7, 19, .92);
   outline: none;
 }
 
@@ -279,17 +327,29 @@ h1 {
   filter: drop-shadow(0 4px 14px rgba(0, 0, 0, .5));
 }
 
+.kopf .icon {
+  font-size: 25px;
+  flex: none;
+}
+
 .game h3 {
-  font-size: clamp(21px, 5.5vw, 25px);
+  font-size: clamp(19px, 4.6vw, 22px);
   font-weight: 700;
+  line-height: 1.15;
   letter-spacing: -.01em;
 }
 
-.game p {
+/* Ein Satz, was das Spiel ist. Mehr steht im Dialog. */
+.game .kurz {
   color: var(--dim);
-  font-size: 15px;
+  font-size: 14.5px;
   text-wrap: pretty;
 }
+
+/* Der lange Text bleibt in der Kachel stehen – aber unsichtbar. Er ist die
+   Quelle fuer den Dialog und fuer die Suche, damit jedes Spiel weiterhin
+   genau einmal in dieser Datei beschrieben ist. */
+.game .lang { display: none; }
 
 .meta {
   margin-top: auto;
@@ -442,7 +502,15 @@ dialog form {
   padding-right: 34px;   /* laesst dem Schliessen-Knopf Platz */
 }
 
-.dialog-kurz { color: var(--dim); font-size: 15px; text-wrap: pretty; }
+/* Der Einzeiler von der Kachel, hier als Vorspann hervorgehoben … */
+.dialog-kurz {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 600;
+  text-wrap: pretty;
+}
+/* … und darunter der Absatz, der bis zum Umbau auf der Kachel stand. */
+.dialog-lang { color: var(--dim); font-size: 15px; text-wrap: pretty; }
 
 .schau { margin: 4px 0 2px; }
 .schau img {
@@ -593,13 +661,17 @@ footer a { color: inherit; }
 <main class="raster">
 
   <article class="game" style="--accent:#ff9f1c; --accent2:#ff2e88;;"
-           data-spiel="nochnie" data-bild="bilder/nochnie-spiel.webp"
-           data-kurz="Einer gesteht, der Rest wird ertappt. Das einzige Spiel hier, bei dem geredet statt gedrückt wird.">
-    <button class="info" type="button" aria-label="Wie Ich hab noch nie gespielt wird">i</button>
+           data-spiel="nochnie" data-bild="bilder/nochnie-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Ich hab noch nie gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/nochnie/">
-      <div class="icon">🙈</div>
-      <h3>Ich hab noch nie</h3>
-      <p>Das Spiel für die Runde am Tisch: Einer gesteht, alle anderen werden ertappt. Kein Zeitdruck, keine Reaktion – nur reden. Harmlose Karten sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
+      <img class="schnappschuss" src="bilder/klein/nochnie-spiel.webp" alt="Bildschirmfoto aus einer Partie Ich hab noch nie"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🙈</span>
+        <h3>Ich hab noch nie</h3>
+      </div>
+      <p class="kurz">Einer gesteht, der Rest wird ertappt. Das einzige Spiel hier, bei dem geredet statt gedrückt wird.</p>
+      <p class="lang">Das Spiel für die Runde am Tisch: Einer gesteht, alle anderen werden ertappt. Kein Zeitdruck, keine Reaktion – nur reden. Harmlose Karten sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–8 Spieler</span>
@@ -622,13 +694,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#ffd447; --accent2:#ff8a3d;;"
-           data-spiel="amehesten" data-bild="bilder/amehesten-spiel.webp"
-           data-kurz="Eine Frage, alle zeigen gleichzeitig. Die Auflösung ist der Gesprächsanlass.">
-    <button class="info" type="button" aria-label="Wie Wer am ehesten gespielt wird">i</button>
+           data-spiel="amehesten" data-bild="bilder/amehesten-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Wer am ehesten gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/amehesten/">
-      <div class="icon">👉</div>
-      <h3>Wer am ehesten?</h3>
-      <p>Eine Frage, und alle zeigen gleichzeitig auf eine Person. Aufgedeckt wird erst, wenn jeder gewählt hat – dann zeigen Balken, wer wie oft gemeint war und von wem. Der schnellste Einstieg von allen.</p>
+      <img class="schnappschuss" src="bilder/klein/amehesten-spiel.webp" alt="Bildschirmfoto aus einer Partie Wer am ehesten?"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">👉</span>
+        <h3>Wer am ehesten?</h3>
+      </div>
+      <p class="kurz">Eine Frage, alle zeigen gleichzeitig. Die Auflösung ist der Gesprächsanlass.</p>
+      <p class="lang">Eine Frage, und alle zeigen gleichzeitig auf eine Person. Aufgedeckt wird erst, wenn jeder gewählt hat – dann zeigen Balken, wer wie oft gemeint war und von wem. Der schnellste Einstieg von allen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">3–10 Spieler</span>
@@ -650,13 +726,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#a06bff; --accent2:#35e6ff;;"
-           data-spiel="imposter" data-bild="bilder/imposter-spiel.webp"
-           data-kurz="Alle kennen das Wort. Bis auf einen – und der muss so tun, als ob.">
-    <button class="info" type="button" aria-label="Wie Imposter gespielt wird">i</button>
+           data-spiel="imposter" data-bild="bilder/imposter-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Imposter gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/imposter/">
-      <div class="icon">🕵️</div>
-      <h3>Imposter</h3>
-      <p>Alle bekommen dasselbe Wort – bis auf einen. Der kennt nur die Gruppe und muss so tun, als wüsste er Bescheid. Reihum ein Hinweis, dann wird abgestimmt. Der längste Abend von allen.</p>
+      <img class="schnappschuss" src="bilder/klein/imposter-spiel.webp" alt="Bildschirmfoto aus einer Partie Imposter"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🕵️</span>
+        <h3>Imposter</h3>
+      </div>
+      <p class="kurz">Alle kennen das Wort. Bis auf einen – und der muss so tun, als ob.</p>
+      <p class="lang">Alle bekommen dasselbe Wort – bis auf einen. Der kennt nur die Gruppe und muss so tun, als wüsste er Bescheid. Reihum ein Hinweis, dann wird abgestimmt. Der längste Abend von allen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">4–10 Spieler</span>
@@ -679,13 +759,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;;"
-           data-spiel="maexchen" data-bild="bilder/maexchen-spiel.webp"
-           data-kurz="Gewürfelt wird, damit man lügen kann. Zwei Würfel, ein Becher, und nur du siehst darunter.">
-    <button class="info" type="button" aria-label="Wie Mäxchen gespielt wird">i</button>
+           data-spiel="maexchen" data-bild="bilder/maexchen-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Mäxchen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/maexchen/">
-      <div class="icon">🎲</div>
-      <h3>Mäxchen</h3>
-      <p>Zwei Würfel unter dem Becher, und nur du siehst sie. Sag an, was du angeblich hast – höher als der vor dir. Der Nächste glaubt es oder deckt auf. Einer verliert dabei immer ein Leben.</p>
+      <img class="schnappschuss" src="bilder/klein/maexchen-spiel.webp" alt="Bildschirmfoto aus einer Partie Mäxchen"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🎲</span>
+        <h3>Mäxchen</h3>
+      </div>
+      <p class="kurz">Gewürfelt wird, damit man lügen kann. Zwei Würfel, ein Becher, und nur du siehst darunter.</p>
+      <p class="lang">Zwei Würfel unter dem Becher, und nur du siehst sie. Sag an, was du angeblich hast – höher als der vor dir. Der Nächste glaubt es oder deckt auf. Einer verliert dabei immer ein Leben.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–8 Spieler</span>
@@ -708,13 +792,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#ff2e88;"
-           data-spiel="flasche" data-bild="bilder/flasche-spiel.webp"
-           data-kurz="Die Flasche entscheidet, wer dran ist – auf allen Handys gleichzeitig.">
-    <button class="info" type="button" aria-label="Wie Flaschendrehen gespielt wird">i</button>
+           data-spiel="flasche" data-bild="bilder/flasche-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Flaschendrehen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/flasche/">
-      <div class="icon">🍾</div>
-      <h3>Flaschendrehen</h3>
-      <p>Reihum dreht einer die Flasche – sie dreht sich auf allen Bildschirmen
+      <img class="schnappschuss" src="bilder/klein/flasche-spiel.webp" alt="Bildschirmfoto aus einer Partie Flaschendrehen"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🍾</span>
+        <h3>Flaschendrehen</h3>
+      </div>
+      <p class="kurz">Die Flasche entscheidet, wer dran ist – auf allen Handys gleichzeitig.</p>
+      <p class="lang">Reihum dreht einer die Flasche – sie dreht sich auf allen Bildschirmen
         gleichzeitig und bleibt bei allen auf derselben Person stehen. Danach
         Wahrheit oder Pflicht. Oder nur die Flasche, wenn euch das reicht.</p>
       <div class="meta">
@@ -740,13 +828,17 @@ footer a { color: inherit; }
 
 
   <article class="game" style="--accent:#a06bff; --accent2:#ffd447;"
-           data-spiel="werwolf" data-bild="bilder/werwolf-spiel.webp"
-           data-kurz="Nachts holen sich die Wölfe einen. Tagsüber redet das Dorf – und irrt sich.">
-    <button class="info" type="button" aria-label="Wie Nachtwache gespielt wird">i</button>
+           data-spiel="werwolf" data-bild="bilder/werwolf-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Nachtwache gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/werwolf/">
-      <div class="icon">🐺</div>
-      <h3>Nachtwache</h3>
-      <p>Vier bis zwölf Leute, fünf Rollen: Werwolf, Dorfbewohner, Seherin, Hexe, Amor. Den Erzähler macht der Server, ihr müsst nur reden und euch gegenseitig verdächtigen.</p>
+      <img class="schnappschuss" src="bilder/klein/werwolf-spiel.webp" alt="Bildschirmfoto aus einer Partie Nachtwache"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🐺</span>
+        <h3>Nachtwache</h3>
+      </div>
+      <p class="kurz">Nachts holen sich die Wölfe einen. Tagsüber redet das Dorf – und irrt sich.</p>
+      <p class="lang">Vier bis zwölf Leute, fünf Rollen: Werwolf, Dorfbewohner, Seherin, Hexe, Amor. Den Erzähler macht der Server, ihr müsst nur reden und euch gegenseitig verdächtigen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">4–12 Spieler</span>
@@ -767,13 +859,17 @@ footer a { color: inherit; }
 
 
   <article class="game" style="--accent:#35e6ff; --accent2:#ffd447;"
-           data-spiel="becher" data-bild="bilder/becher-spiel.webp"
-           data-kurz="Jeder fünf Würfel unter dem Becher. Geboten wird auf alles, was am Tisch liegen könnte.">
-    <button class="info" type="button" aria-label="Wie Becherbluff gespielt wird">i</button>
+           data-spiel="becher" data-bild="bilder/becher-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Becherbluff gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/becher/">
-      <div class="icon">🎲</div>
-      <h3>Becherbluff</h3>
-      <p>Verwandt mit Mäxchen, aber jeder hat seine eigenen Würfel: „vier Fünfen“ heißt, es liegen mindestens vier Fünfen – egal bei wem. Einser sind Joker. Wer nicht glaubt, zweifelt, und einer verliert einen Würfel.</p>
+      <img class="schnappschuss" src="bilder/klein/becher-spiel.webp" alt="Bildschirmfoto aus einer Partie Becherbluff"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🎲</span>
+        <h3>Becherbluff</h3>
+      </div>
+      <p class="kurz">Jeder fünf Würfel unter dem Becher. Geboten wird auf alles, was am Tisch liegen könnte.</p>
+      <p class="lang">Verwandt mit Mäxchen, aber jeder hat seine eigenen Würfel: „vier Fünfen“ heißt, es liegen mindestens vier Fünfen – egal bei wem. Einser sind Joker. Wer nicht glaubt, zweifelt, und einer verliert einen Würfel.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–6 Spieler</span>
@@ -793,13 +889,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#ffd447; --accent2:#ff8a3d;"
-           data-spiel="kingscup" data-bild="bilder/kingscup-spiel.webp"
-           data-kurz="Eine Karte, eine Regel, die ganze Runde macht mit. Trinkfrei voreingestellt.">
-    <button class="info" type="button" aria-label="Wie Kings Cup gespielt wird">i</button>
+           data-spiel="kingscup" data-bild="bilder/kingscup-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Kings Cup gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/kingscup/">
-      <div class="icon">👑</div>
-      <h3>Kings Cup</h3>
-      <p>Reihum zieht einer eine Karte, und alle sehen dieselbe Regel auf ihrem Handy. Voreingestellt ist die trinkfreie Fassung: dieselben Karten, statt Schlucken kleine Aufgaben. Beim vierten König ist Schluss.</p>
+      <img class="schnappschuss" src="bilder/klein/kingscup-spiel.webp" alt="Bildschirmfoto aus einer Partie Kings Cup"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">👑</span>
+        <h3>Kings Cup</h3>
+      </div>
+      <p class="kurz">Eine Karte, eine Regel, die ganze Runde macht mit. Trinkfrei voreingestellt.</p>
+      <p class="lang">Reihum zieht einer eine Karte, und alle sehen dieselbe Regel auf ihrem Handy. Voreingestellt ist die trinkfreie Fassung: dieselben Karten, statt Schlucken kleine Aufgaben. Beim vierten König ist Schluss.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–10 Spieler</span>
@@ -828,13 +928,17 @@ footer a { color: inherit; }
 <main class="raster">
 
   <article class="game" style="--accent:#ffb02e; --accent2:#52ffa8;"
-           data-spiel="wortleger" data-bild="bilder/wortleger-spiel.webp"
-           data-kurz="Buchstaben mit Werten auf ein Brett mit Bonusfeldern. Geprüft wird gegen eine Wortliste, nicht gegen die Geduld der Mitspieler.">
-    <button class="info" type="button" aria-label="Wie Wortleger gespielt wird">i</button>
+           data-spiel="wortleger" data-bild="bilder/wortleger-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Wortleger gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/wortleger/">
-      <div class="icon">🔤</div>
-      <h3>Wortleger</h3>
-      <p>Sieben Steine auf dem Regal, ein 13×13-Brett mit Bonusfeldern. Legt Wörter, kreuzt die der anderen und nehmt die dreifachen Felder mit, bevor es jemand anders tut.</p>
+      <img class="schnappschuss" src="bilder/klein/wortleger-spiel.webp" alt="Bildschirmfoto aus einer Partie Wortleger"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🔤</span>
+        <h3>Wortleger</h3>
+      </div>
+      <p class="kurz">Buchstaben mit Werten auf ein Brett mit Bonusfeldern. Geprüft wird gegen eine Wortliste, nicht gegen die Geduld der Mitspieler.</p>
+      <p class="lang">Sieben Steine auf dem Regal, ein 13×13-Brett mit Bonusfeldern. Legt Wörter, kreuzt die der anderen und nehmt die dreifachen Felder mit, bevor es jemand anders tut.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–4 Spieler</span>
@@ -857,13 +961,17 @@ footer a { color: inherit; }
 
 
   <article class="game" style="--accent:#ff2e88; --accent2:#35e6ff;"
-           data-spiel="luegen" data-bild="bilder/luegen-spiel.webp"
-           data-kurz="Verdeckt ablegen und ansagen. Wer nicht glaubt, deckt auf – einer nimmt den Stapel.">
-    <button class="info" type="button" aria-label="Wie Lügen gespielt wird">i</button>
+           data-spiel="luegen" data-bild="bilder/luegen-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Lügen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/luegen/">
-      <div class="icon">🤥</div>
-      <h3>Lügen</h3>
-      <p>Das ganze Deck wird verteilt, alle wollen ihre Karten loswerden. Abgelegt wird verdeckt, die Ansage steigt jede Runde um einen Rang. Ob du wirklich drei Achten gelegt hast, sieht niemand.</p>
+      <img class="schnappschuss" src="bilder/klein/luegen-spiel.webp" alt="Bildschirmfoto aus einer Partie Lügen"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🤥</span>
+        <h3>Lügen</h3>
+      </div>
+      <p class="kurz">Verdeckt ablegen und ansagen. Wer nicht glaubt, deckt auf – einer nimmt den Stapel.</p>
+      <p class="lang">Das ganze Deck wird verteilt, alle wollen ihre Karten loswerden. Abgelegt wird verdeckt, die Ansage steigt jede Runde um einen Rang. Ob du wirklich drei Achten gelegt hast, sieht niemand.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">3–6 Spieler</span>
@@ -883,13 +991,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#ffd447; --accent2:#52ffa8;"
-           data-spiel="maumau" data-bild="bilder/maumau-spiel.webp"
-           data-kurz="Farbe oder Zahl bedienen. Sieben zieht, Acht setzt aus, Bube wünscht.">
-    <button class="info" type="button" aria-label="Wie Mau-Mau gespielt wird">i</button>
+           data-spiel="maumau" data-bild="bilder/maumau-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Mau-Mau gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/maumau/">
-      <div class="icon">🃏</div>
-      <h3>Mau-Mau</h3>
-      <p>Der gemeinfreie Klassiker mit 32 Karten. Welche Sonderregeln gelten, stellt der Host vorher ein – und wer auf eine Karte kommt, muss „Mau“ sagen, sonst kostet es zwei.</p>
+      <img class="schnappschuss" src="bilder/klein/maumau-spiel.webp" alt="Bildschirmfoto aus einer Partie Mau-Mau"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🃏</span>
+        <h3>Mau-Mau</h3>
+      </div>
+      <p class="kurz">Farbe oder Zahl bedienen. Sieben zieht, Acht setzt aus, Bube wünscht.</p>
+      <p class="lang">Der gemeinfreie Klassiker mit 32 Karten. Welche Sonderregeln gelten, stellt der Host vorher ein – und wer auf eine Karte kommt, muss „Mau“ sagen, sonst kostet es zwei.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–6 Spieler</span>
@@ -910,13 +1022,17 @@ footer a { color: inherit; }
 
 
   <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;"
-           data-spiel="schwimmen" data-bild="bilder/schwimmen-spiel.webp"
-           data-kurz="Drei Karten, drei Leben. Wer am wenigsten hat, verliert eins.">
-    <button class="info" type="button" aria-label="Wie Schwimmen gespielt wird">i</button>
+           data-spiel="schwimmen" data-bild="bilder/schwimmen-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Schwimmen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/schwimmen/">
-      <div class="icon">🏊</div>
-      <h3>Schwimmen</h3>
-      <p>31 in einer Farbe, drei Karten auf der Hand, drei offen in der Mitte. Tauschen, schieben oder klopfen – und hoffen, dass jemand anders weniger hat als du.</p>
+      <img class="schnappschuss" src="bilder/klein/schwimmen-spiel.webp" alt="Bildschirmfoto aus einer Partie Schwimmen"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🏊</span>
+        <h3>Schwimmen</h3>
+      </div>
+      <p class="kurz">Drei Karten, drei Leben. Wer am wenigsten hat, verliert eins.</p>
+      <p class="lang">31 in einer Farbe, drei Karten auf der Hand, drei offen in der Mitte. Tauschen, schieben oder klopfen – und hoffen, dass jemand anders weniger hat als du.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–6 Spieler</span>
@@ -937,13 +1053,17 @@ footer a { color: inherit; }
 
 
   <article class="game" style="--accent:#52ffa8; --accent2:#a06bff;"
-           data-spiel="paare" data-bild="bilder/paare-spiel.webp"
-           data-kurz="Ein Brett, alle schauen zu, dran ist einer. Wer zwei gleiche findet, darf noch mal.">
-    <button class="info" type="button" aria-label="Wie Paare gespielt wird">i</button>
+           data-spiel="paare" data-bild="bilder/paare-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Paare gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/paare/">
-      <div class="icon">🧠</div>
-      <h3>Paare</h3>
-      <p>Das Merkspiel für die Runde: ein gemeinsames Feld, jeder sieht es auf seinem eigenen Handy. Verdeckte Karten kennt auch dein Browser nicht – nachschauen im Quelltext bringt nichts. Acht, fünfzehn oder vierundzwanzig Paare, allein geht es auch.</p>
+      <img class="schnappschuss" src="bilder/klein/paare-spiel.webp" alt="Bildschirmfoto aus einer Partie Paare"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🧠</span>
+        <h3>Paare</h3>
+      </div>
+      <p class="kurz">Ein Brett, alle schauen zu, dran ist einer. Wer zwei gleiche findet, darf noch mal.</p>
+      <p class="lang">Das Merkspiel für die Runde: ein gemeinsames Feld, jeder sieht es auf seinem eigenen Handy. Verdeckte Karten kennt auch dein Browser nicht – nachschauen im Quelltext bringt nichts. Acht, fünfzehn oder vierundzwanzig Paare, allein geht es auch.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">1–6 Spieler</span>
@@ -972,13 +1092,17 @@ footer a { color: inherit; }
 <main class="raster">
 
   <article class="game" style="--accent:#35e6ff; --accent2:#a06bff;"
-           data-spiel="cubes" data-bild="bilder/cubes-spiel.webp"
-           data-kurz="Ein volles Raster, deine Farbe darin. Die der anderen kannst du nicht antippen.">
-    <button class="info" type="button" aria-label="Wie Cubes gespielt wird">i</button>
+           data-spiel="cubes" data-bild="bilder/cubes-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Cubes gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/cubes/">
-      <div class="icon">🟪</div>
-      <h3>Cubes</h3>
-      <p>Jeder bekommt eine Farbe. Das Raster ist immer voll und wechselt ständig – triff deine eigenen, bevor sie weg sind. Drei Runden, jede mit einer neuen Gemeinheit.</p>
+      <img class="schnappschuss" src="bilder/klein/cubes-spiel.webp" alt="Bildschirmfoto aus einer Partie Cubes"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🟪</span>
+        <h3>Cubes</h3>
+      </div>
+      <p class="kurz">Ein volles Raster, deine Farbe darin. Die der anderen kannst du nicht antippen.</p>
+      <p class="lang">Jeder bekommt eine Farbe. Das Raster ist immer voll und wechselt ständig – triff deine eigenen, bevor sie weg sind. Drei Runden, jede mit einer neuen Gemeinheit.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–6 Spieler</span>
@@ -1003,13 +1127,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#37e2a4; --accent2:#7c6cff;;"
-           data-spiel="seconds" data-bild="bilder/seconds-spiel.webp"
-           data-kurz="Zwei Karten, immer genau ein gemeinsames Symbol. Finde es zuerst.">
-    <button class="info" type="button" aria-label="Wie Seconds gespielt wird">i</button>
+           data-spiel="seconds" data-bild="bilder/seconds-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Seconds gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/seconds/">
-      <div class="icon">🎯</div>
-      <h3>Seconds</h3>
-      <p>Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es zuerst antippt, bekommt den Punkt.</p>
+      <img class="schnappschuss" src="bilder/klein/seconds-spiel.webp" alt="Bildschirmfoto aus einer Partie Seconds"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🎯</span>
+        <h3>Seconds</h3>
+      </div>
+      <p class="kurz">Zwei Karten, immer genau ein gemeinsames Symbol. Finde es zuerst.</p>
+      <p class="lang">Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es zuerst antippt, bekommt den Punkt.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–4 Spieler</span>
@@ -1030,13 +1158,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#8e2de2; --accent2:#29e7ff;;"
-           data-spiel="luckyreflex" data-bild="bilder/luckyreflex-spiel.webp"
-           data-kurz="Schnell sein reicht nicht – du musst auch richtig liegen.">
-    <button class="info" type="button" aria-label="Wie Lucky Reflex gespielt wird">i</button>
+           data-spiel="luckyreflex" data-bild="bilder/luckyreflex-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Lucky Reflex gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/luckyreflex/">
-      <div class="icon">⚡</div>
-      <h3>Lucky Reflex</h3>
-      <p>Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen und Fallen für alle, die einfach dauerdrücken.</p>
+      <img class="schnappschuss" src="bilder/klein/luckyreflex-spiel.webp" alt="Bildschirmfoto aus einer Partie Lucky Reflex"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">⚡</span>
+        <h3>Lucky Reflex</h3>
+      </div>
+      <p class="kurz">Schnell sein reicht nicht – du musst auch richtig liegen.</p>
+      <p class="lang">Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen und Fallen für alle, die einfach dauerdrücken.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–4 Spieler</span>
@@ -1057,13 +1189,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#ff2e88; --accent2:#ffd447;;"
-           data-spiel="cardchaos" data-bild="bilder/cardchaos-spiel.webp"
-           data-kurz="Drei Kartenpyramiden, zehn Runden, und am Ende darfst du zocken.">
-    <button class="info" type="button" aria-label="Wie Card Chaos gespielt wird">i</button>
+           data-spiel="cardchaos" data-bild="bilder/cardchaos-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Card Chaos gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/cardchaos/">
-      <div class="icon">🃏</div>
-      <h3>Card Chaos</h3>
-      <p>Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut, räumt die Türme ab.</p>
+      <img class="schnappschuss" src="bilder/klein/cardchaos-spiel.webp" alt="Bildschirmfoto aus einer Partie Card Chaos"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🃏</span>
+        <h3>Card Chaos</h3>
+      </div>
+      <p class="kurz">Drei Kartenpyramiden, zehn Runden, und am Ende darfst du zocken.</p>
+      <p class="lang">Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut, räumt die Türme ab.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–4 Spieler</span>
@@ -1084,13 +1220,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#8a6cff; --accent2:#f5c542;;"
-           data-spiel="keep" data-bild="bilder/keep-spiel.webp"
-           data-kurz="Ein Automat, fünf Runden, und die Uhr wird jedes Mal knapper.">
-    <button class="info" type="button" aria-label="Wie Keep gespielt wird">i</button>
+           data-spiel="keep" data-bild="bilder/keep-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Keep gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/keep/">
-      <div class="icon">🎰</div>
-      <h3>Keep</h3>
-      <p>Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die wertvollste Kombination legt, räumt ab.</p>
+      <img class="schnappschuss" src="bilder/klein/keep-spiel.webp" alt="Bildschirmfoto aus einer Partie Keep"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🎰</span>
+        <h3>Keep</h3>
+      </div>
+      <p class="kurz">Ein Automat, fünf Runden, und die Uhr wird jedes Mal knapper.</p>
+      <p class="lang">Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die wertvollste Kombination legt, räumt ab.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–4 Spieler</span>
@@ -1112,13 +1252,17 @@ footer a { color: inherit; }
 
 
   <article class="game" style="--accent:#52ffa8; --accent2:#35e6ff;"
-           data-spiel="snake" data-bild="bilder/snake-spiel.webp"
-           data-kurz="Alle Schlangen auf einem Feld. Die Bewegung läuft auf dem Server, nicht im Handy.">
-    <button class="info" type="button" aria-label="Wie Snake gespielt wird">i</button>
+           data-spiel="snake" data-bild="bilder/snake-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Snake gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/snake/">
-      <div class="icon">🐍</div>
-      <h3>Snake</h3>
-      <p>Zwei bis sechs Schlangen auf einem gemeinsamen Raster. Äpfel machen länger, Wände und fremde Schwänze sind tödlich. Gewischt wird auf dem eigenen Handy, gerechnet wird zentral – damit alle denselben Zusammenstoß sehen.</p>
+      <img class="schnappschuss" src="bilder/klein/snake-spiel.webp" alt="Bildschirmfoto aus einer Partie Snake"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🐍</span>
+        <h3>Snake</h3>
+      </div>
+      <p class="kurz">Alle Schlangen auf einem Feld. Die Bewegung läuft auf dem Server, nicht im Handy.</p>
+      <p class="lang">Zwei bis sechs Schlangen auf einem gemeinsamen Raster. Äpfel machen länger, Wände und fremde Schwänze sind tödlich. Gewischt wird auf dem eigenen Handy, gerechnet wird zentral – damit alle denselben Zusammenstoß sehen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">2–6 Spieler</span>
@@ -1138,13 +1282,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#ff8a3d; --accent2:#ff2e88;"
-           data-spiel="revier" data-bild="bilder/revier-spiel.webp"
-           data-kurz="Eine Welt, die nie aufhört. Reingehen und sofort mitfahren – Fläche einkreisen und behalten.">
-    <button class="info" type="button" aria-label="Wie Revier gespielt wird">i</button>
+           data-spiel="revier" data-bild="bilder/revier-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Revier gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/revier/">
-      <div class="icon">🐾</div>
-      <h3>Revier</h3>
-      <p>Kein Raum, kein Code, kein Rundenende: Seite auf, und du fährst mit. Außerhalb des eigenen Gebiets ziehst du eine Spur – zurück im Eigenen wird alles Umschlossene deins. Wer eine fremde Spur kreuzt, schaltet sie aus. Der Daumen tippt irgendwohin, und genau dort sitzt der Joystick.</p>
+      <img class="schnappschuss" src="bilder/klein/revier-spiel.webp" alt="Bildschirmfoto aus einer Partie Revier"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🐾</span>
+        <h3>Revier</h3>
+      </div>
+      <p class="kurz">Eine Welt, die nie aufhört. Reingehen und sofort mitfahren – Fläche einkreisen und behalten.</p>
+      <p class="lang">Kein Raum, kein Code, kein Rundenende: Seite auf, und du fährst mit. Außerhalb des eigenen Gebiets ziehst du eine Spur – zurück im Eigenen wird alles Umschlossene deins. Wer eine fremde Spur kreuzt, schaltet sie aus. Der Daumen tippt irgendwohin, und genau dort sitzt der Joystick.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">1–20 Spieler</span>
@@ -1165,13 +1313,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;"
-           data-spiel="wurm" data-bild="bilder/wurm-spiel.webp"
-           data-kurz="Energie sammeln, wachsen, niemandem in den Weg kriechen. Die Welt läuft immer.">
-    <button class="info" type="button" aria-label="Wie Wurm gespielt wird">i</button>
+           data-spiel="wurm" data-bild="bilder/wurm-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Wurm gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/wurm/">
-      <div class="icon">🪱</div>
-      <h3>Wurm</h3>
-      <p>Anmelden und sofort mitkriechen: überall liegen Energiebälle, jeder macht dich länger und dicker. Fährst du in einen anderen hinein, zerfällst du zu Energie – er nicht. Zweiter Finger gibt Turbo, fast dreimal so schnell und entsprechend teuer. Nach oben ist nichts zugemacht.</p>
+      <img class="schnappschuss" src="bilder/klein/wurm-spiel.webp" alt="Bildschirmfoto aus einer Partie Wurm"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🪱</span>
+        <h3>Wurm</h3>
+      </div>
+      <p class="kurz">Energie sammeln, wachsen, niemandem in den Weg kriechen. Die Welt läuft immer.</p>
+      <p class="lang">Anmelden und sofort mitkriechen: überall liegen Energiebälle, jeder macht dich länger und dicker. Fährst du in einen anderen hinein, zerfällst du zu Energie – er nicht. Zweiter Finger gibt Turbo, fast dreimal so schnell und entsprechend teuer. Nach oben ist nichts zugemacht.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">1–20 Spieler</span>
@@ -1201,13 +1353,17 @@ footer a { color: inherit; }
 <main class="raster">
 
   <article class="game" style="--accent:#ff8a3d; --accent2:#ffd447;"
-           data-spiel="minenfeld" data-bild="bilder/minenfeld-spiel.webp"
-           data-kurz="Zahlen lesen, Fahnen setzen, nicht raten. Der erste Klick ist immer sicher.">
-    <button class="info" type="button" aria-label="Wie Minenfeld gespielt wird">i</button>
+           data-spiel="minenfeld" data-bild="bilder/minenfeld-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Minenfeld gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/minenfeld/">
-      <div class="icon">💣</div>
-      <h3>Minenfeld</h3>
-      <p>Der Klassiker, aufs Handy gebracht: tippen deckt auf, langer Druck setzt eine Fahne. Drei Größen, Bestzeit pro Größe. Läuft ganz im Browser, ohne Konto und ohne Server.</p>
+      <img class="schnappschuss" src="bilder/klein/minenfeld-spiel.webp" alt="Bildschirmfoto aus einer Partie Minenfeld"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">💣</span>
+        <h3>Minenfeld</h3>
+      </div>
+      <p class="kurz">Zahlen lesen, Fahnen setzen, nicht raten. Der erste Klick ist immer sicher.</p>
+      <p class="lang">Der Klassiker, aufs Handy gebracht: tippen deckt auf, langer Druck setzt eine Fahne. Drei Größen, Bestzeit pro Größe. Läuft ganz im Browser, ohne Konto und ohne Server.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">allein</span>
@@ -1227,13 +1383,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#a06bff;"
-           data-spiel="sudoku" data-bild="bilder/sudoku-spiel.webp"
-           data-kurz="Neun mal neun, drei Stufen – und jedes Rätsel hat genau eine Lösung.">
-    <button class="info" type="button" aria-label="Wie Sudoku gespielt wird">i</button>
+           data-spiel="sudoku" data-bild="bilder/sudoku-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Sudoku gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/sudoku/">
-      <div class="icon">🔢</div>
-      <h3>Sudoku</h3>
-      <p>Der Generator baut jedes Rätsel frisch und zählt beim Aushöhlen nach: findet der Löser zwei Lösungen, kommt die Zahl zurück. Raten ist also nie nötig. Mit Notizmodus, Fehleranzeige und Bestzeit.</p>
+      <img class="schnappschuss" src="bilder/klein/sudoku-spiel.webp" alt="Bildschirmfoto aus einer Partie Sudoku"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🔢</span>
+        <h3>Sudoku</h3>
+      </div>
+      <p class="kurz">Neun mal neun, drei Stufen – und jedes Rätsel hat genau eine Lösung.</p>
+      <p class="lang">Der Generator baut jedes Rätsel frisch und zählt beim Aushöhlen nach: findet der Löser zwei Lösungen, kommt die Zahl zurück. Raten ist also nie nötig. Mit Notizmodus, Fehleranzeige und Bestzeit.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">allein</span>
@@ -1253,13 +1413,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#52ffa8; --accent2:#ffd447;"
-           data-spiel="wortgitter" data-bild="bilder/wortgitter-spiel.webp"
-           data-kurz="Fünf Buchstaben, sechs Versuche, ein Wort pro Tag – für alle dasselbe.">
-    <button class="info" type="button" aria-label="Wie Wortgitter gespielt wird">i</button>
+           data-spiel="wortgitter" data-bild="bilder/wortgitter-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Wortgitter gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/wortgitter/">
-      <div class="icon">🔠</div>
-      <h3>Wortgitter</h3>
-      <p>Grün heißt richtig, gelb heißt woanders, grau heißt gar nicht. Geprüft wird gegen dieselbe CC0-Wortliste wie bei Wortleger; gelöst wird nur mit Wörtern, die man auch kennt. Serie und Statistik bleiben in deinem Browser.</p>
+      <img class="schnappschuss" src="bilder/klein/wortgitter-spiel.webp" alt="Bildschirmfoto aus einer Partie Wortgitter"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🔠</span>
+        <h3>Wortgitter</h3>
+      </div>
+      <p class="kurz">Fünf Buchstaben, sechs Versuche, ein Wort pro Tag – für alle dasselbe.</p>
+      <p class="lang">Grün heißt richtig, gelb heißt woanders, grau heißt gar nicht. Geprüft wird gegen dieselbe CC0-Wortliste wie bei Wortleger; gelöst wird nur mit Wörtern, die man auch kennt. Serie und Statistik bleiben in deinem Browser.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">allein</span>
@@ -1279,13 +1443,17 @@ footer a { color: inherit; }
   </article>
 
   <article class="game" style="--accent:#52ffa8; --accent2:#ffd447;"
-           data-spiel="patience" data-bild="bilder/patience-spiel.webp"
-           data-kurz="Klondike mit sieben Reihen und vier Assen. Antippen statt ziehen.">
-    <button class="info" type="button" aria-label="Wie Patience gespielt wird">i</button>
+           data-spiel="patience" data-bild="bilder/patience-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Patience gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/patience/">
-      <div class="icon">🂡</div>
-      <h3>Patience</h3>
-      <p>Der Solitär-Klassiker, so gebaut, dass er auf dem Handy funktioniert: erst die Karte antippen, dann das Ziel – Drag & Drop trifft in einer Kartenspalte niemand. Eine oder drei Karten ziehen, „Aufräumen“ für den Schluss.</p>
+      <img class="schnappschuss" src="bilder/klein/patience-spiel.webp" alt="Bildschirmfoto aus einer Partie Patience"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🂡</span>
+        <h3>Patience</h3>
+      </div>
+      <p class="kurz">Klondike mit sieben Reihen und vier Assen. Antippen statt ziehen.</p>
+      <p class="lang">Der Solitär-Klassiker, so gebaut, dass er auf dem Handy funktioniert: erst die Karte antippen, dann das Ziel – Drag & Drop trifft in einer Kartenspalte niemand. Eine oder drei Karten ziehen, „Aufräumen“ für den Schluss.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">allein</span>
@@ -1312,6 +1480,7 @@ footer a { color: inherit; }
   <div class="dialog-inhalt">
     <h2 id="spielTitel"></h2>
     <p class="dialog-kurz" id="spielKurz"></p>
+    <p class="dialog-lang" id="spielLang"></p>
     <figure class="schau">
       <img id="spielBild" alt="" width="1000" height="680">
       <figcaption>Echter Screenshot aus einer laufenden Partie.</figcaption>
@@ -1364,7 +1533,7 @@ footer a { color: inherit; }
 <script>
 // --- Suche ----------------------------------------------------------------
 // Gesucht wird in dem, was ohnehin auf der Kachel steht: Titel, Beschreibung,
-// die Marken (Spielerzahl, Kategorie), der Einzeiler aus data-kurz, der
+// die Marken (Spielerzahl, Kategorie), der ausgeblendete Langtext, der
 // Pfad und die Überschrift der Kategorie. Damit findet „allein" die
 // Solospiele und „schnaps" das Kartenspiel, ohne dass hier eine zweite
 // Spielliste entsteht, die auseinanderläuft.
@@ -1387,9 +1556,12 @@ footer a { color: inherit; }
     const gruppe = k.closest(".raster")?.previousElementSibling;
     return [k, norm([
       k.querySelector("h3")?.textContent ?? "",
-      k.querySelector(".game-link p")?.textContent ?? "",
+      // Beide Absätze: der sichtbare Einzeiler und der ausgeblendete
+      // Langtext, der seit dem Umbau nur noch im Dialog steht. Gesucht wird
+      // weiterhin in beidem – sonst fände „Schnauz" das Kartenspiel nicht
+      // mehr, nur weil das Wort von der Kachel verschwunden ist.
+      [...k.querySelectorAll(".game-link p")].map((p) => p.textContent).join(" "),
       [...k.querySelectorAll(".tag")].map((t) => t.textContent).join(" "),
-      k.dataset.kurz ?? "",
       link?.getAttribute("href").replaceAll("/", "") ?? "",
       // Nur die Überschrift der Kategorie, nicht ihr Untertitel: der ist ein
       // ganzer Absatz und zog sonst die halbe Seite in jeden Treffer.
@@ -1413,8 +1585,9 @@ footer a { color: inherit; }
       raster.hidden = sichtbar.length === 0;
       const kopf = raster.previousElementSibling;
       if (kopf?.classList.contains("gruppe")) kopf.hidden = raster.hidden;
-      for (const k of sichtbar) k.classList.remove("breit");
-      if (sichtbar.length % 2) sichtbar[sichtbar.length - 1].classList.add("breit");
+      // Hier stand einmal .breit für die allein stehende letzte Kachel. Die
+      // Klasse ist weg: seit dem Screenshot behalten alle Kacheln dieselbe
+      // Breite, und dann muss beim Filtern auch nichts nachgerechnet werden.
     }
 
     info.textContent = !worte.length
@@ -1462,7 +1635,11 @@ function anleitungAus(kachel) {
   const ablauf = kachel.querySelector("template.ablauf");
   return {
     titel: kachel.querySelector("h3").textContent.trim(),
-    kurz: kachel.dataset.kurz ?? "",
+    kurz: kachel.querySelector(".kurz")?.textContent.trim() ?? "",
+    // Der Langtext stand bis zum Umbau auf der Kachel und wird nur noch hier
+    // gezeigt. Er kommt aus der Kachel, nicht aus einer zweiten Liste.
+    lang: kachel.querySelector(".lang")?.textContent.trim() ?? "",
+    // Im Dialog das grosse Bild, auf der Kachel die kleine Fassung.
     bild: kachel.dataset.bild ?? "",
     pfad: link ? link.getAttribute("href") : "/",
     // Aus dem <template> kommen fertige <li> – sie müssen nicht neu gebaut
@@ -1484,6 +1661,9 @@ for (const knopf of document.querySelectorAll(".info")) {
     spielDialog.style.cssText = kachel.getAttribute("style") ?? "";
     document.getElementById("spielTitel").textContent = s.titel;
     document.getElementById("spielKurz").textContent = s.kurz;
+    const lang = document.getElementById("spielLang");
+    lang.textContent = s.lang;
+    lang.hidden = !s.lang;
     spielBild.hidden = !s.bild;
     if (s.bild) spielBild.src = s.bild;
     spielBild.alt = `Bildschirmfoto aus einer laufenden Partie ${s.titel}`;

@@ -71,6 +71,89 @@ const proRaster = await page.$$eval('.raster', (rs) => rs.map((r) => r.querySele
 if (proRaster.some((n) => n === 0)) throw new Error('Eine Kategorie ist leer: ' + proRaster);
 console.log(`ok  Spiele je Kategorie: ${proRaster.join(', ')}`);
 
+// --- Bild statt Textwand ----------------------------------------------------
+// Seit dem Umbau traegt jede Kachel einen Screenshot und einen Satz; der lange
+// Absatz steht nur noch im Dialog. Faellt ein Bild aus, bleibt eine graue
+// Flaeche stehen – und weil der erklaerende Text weg ist, sagt die Kachel dann
+// gar nichts mehr. Deshalb wird hier jedes einzelne Bild geprueft, nicht nur
+// das im Dialog.
+
+// Die Bilder haengen an loading="lazy": ohne einmal durchzuscrollen laedt nur
+// das obere Drittel, und der Rest saehe faelschlich fehlerfrei aus.
+await page.evaluate(async () => {
+  for (let y = 0; y < document.body.scrollHeight; y += 700) {
+    window.scrollTo(0, y);
+    await new Promise((r) => setTimeout(r, 60));
+  }
+  window.scrollTo(0, 0);
+});
+
+const ohneBild = await page.$$eval('.game',
+  (gs) => gs.filter((g) => !g.querySelector('.schnappschuss')).map((g) => g.dataset.spiel));
+if (ohneBild.length) throw new Error('Kacheln ohne Screenshot: ' + ohneBild.join(', '));
+
+// Die Kachel nimmt die kleine Fassung (zusammen ~200 KB), der Dialog das grosse
+// Bild. Rutscht hier das grosse hinein, laedt die Seite das Fuenffache.
+const gross = await page.$$eval('.schnappschuss',
+  (is) => is.filter((i) => !i.getAttribute('src').startsWith('bilder/klein/'))
+            .map((i) => i.getAttribute('src')));
+if (gross.length) throw new Error('Kacheln laden das grosse Bild: ' + gross.join(', '));
+
+await page.waitForFunction(
+  () => [...document.querySelectorAll('.schnappschuss')].every((i) => i.complete && i.naturalWidth > 0),
+  { timeout: 20000 },
+).catch(async () => {
+  const kaputt = await page.$$eval('.schnappschuss',
+    (is) => is.filter((i) => !i.complete || !i.naturalWidth).map((i) => i.getAttribute('src')));
+  throw new Error('Kachelbilder laden nicht: ' + kaputt.join(', '));
+});
+console.log(`ok  ${await page.locator('.schnappschuss').count()} Kachelbilder aus bilder/klein/ geladen`);
+
+// Der Einzeiler ist das Einzige, was an Text bleibt – er darf nirgends fehlen.
+const ohneKurz = await page.$$eval('.game', (gs) => gs.filter((g) => {
+  const k = g.querySelector('.kurz');
+  return !k || !k.textContent.trim();
+}).map((g) => g.dataset.spiel));
+if (ohneKurz.length) throw new Error('Kacheln ohne Einzeiler: ' + ohneKurz.join(', '));
+
+// Und der lange Absatz darf nicht doch wieder auf der Kachel auftauchen –
+// genau das war der Grund fuer den Umbau. Erst zaehlen, dann messen: ohne die
+// erste Zeile waere die zweite auch dann gruen, wenn es die Absaetze gar nicht
+// mehr gaebe.
+const langAnzahl = await page.locator('.game .lang').count();
+if (langAnzahl !== kacheln) {
+  throw new Error(`${langAnzahl} Langtexte bei ${kacheln} Kacheln – da fehlt einer`);
+}
+const langSichtbar = await page.$$eval('.game .lang',
+  (ps) => ps.filter((p) => p.offsetParent !== null).length);
+if (langSichtbar) throw new Error(`${langSichtbar} Langtexte stehen wieder auf der Kachel`);
+console.log('ok  jede Kachel: ein Satz sichtbar, der lange Text nur im Dialog');
+
+// Alle Kacheln einer Kategorie gleich breit. Die allein stehende letzte wurde
+// hier frueher ueber beide Spalten gezogen – mit einem Screenshot darauf wird
+// daraus ein gequetschter Streifen aus der Bildmitte. Geprueft wird die
+// gemessene Breite, nicht die Klasse: nur so faellt auch auf, wenn die Regel
+// ueber einen anderen Weg zurueckkommt.
+const masse = await page.$$eval('.raster', (rs) => rs.map((r) => {
+  const k = [...r.querySelectorAll('.game')];
+  return {
+    kacheln: k.length,
+    breiten: [...new Set(k.map((g) => Math.round(g.getBoundingClientRect().width)))],
+    bildhoehen: [...new Set(k.map((g) => Math.round(
+      g.querySelector('.schnappschuss').getBoundingClientRect().height)))],
+  };
+}));
+for (const m of masse) {
+  if (m.breiten.length > 1) {
+    throw new Error(`Kategorie mit ${m.kacheln} Kacheln: Breiten ${m.breiten.join('/')} px`);
+  }
+  if (m.bildhoehen.length > 1) {
+    throw new Error(`Kategorie mit ${m.kacheln} Kacheln: Bildhöhen ${m.bildhoehen.join('/')} px`);
+  }
+}
+console.log(`ok  alle Kacheln gleich breit (${masse.map((m) => m.breiten[0]).join('/')} px),`
+  + ` keine wird allein in der Zeile gestreckt`);
+
 // --- Ueberschriftenebenen ---------------------------------------------------
 
 const ebenen = await page.$$eval('h1, h2, h3', (hs) => hs
@@ -154,12 +237,17 @@ for (let i = 0; i < kacheln; i++) {
 
   const titel = (await page.textContent('#spielTitel')).trim();
   const kurz = (await page.textContent('#spielKurz')).trim();
+  // Der Absatz, der bis zum Umbau auf der Kachel stand. Er ist jetzt nur noch
+  // hier zu sehen – bleibt der Dialog leer, ist der Text ersatzlos verloren.
+  const lang = (await page.textContent('#spielLang')).trim();
   const schritte = await page.locator('#spielSchritte li').count();
   const bild = await page.getAttribute('#spielBild', 'src');
   const link = await page.getAttribute('#spielLink', 'href');
 
   if (titel !== name) throw new Error(`Dialog zeigt „${titel}" statt „${name}"`);
   if (!kurz) throw new Error(`${name}: keine Kurzbeschreibung im Dialog`);
+  if (lang.length < 40) throw new Error(`${name}: der lange Text fehlt im Dialog`);
+  if (lang === kurz) throw new Error(`${name}: langer und kurzer Text sind derselbe`);
   if (schritte < 4) throw new Error(`${name}: nur ${schritte} Schritte`);
   if (!bild || !bild.includes('.webp')) throw new Error(`${name}: kein Vorschaubild`);
   if (!link || link === '/') throw new Error(`${name}: Spielen-Link zeigt ins Leere`);
