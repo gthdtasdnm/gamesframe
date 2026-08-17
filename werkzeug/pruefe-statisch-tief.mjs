@@ -169,6 +169,9 @@ async function sudoku() {
     const rot = await seite.locator(".sgitter .sz.falsch").count();
     pruefe("sudoku", "E04", rot === 0,
       `Kein Feld ist als falsch markiert (${rot}) - klassisch wie im Zeitungsraetsel`);
+    // Ein Fehlerzaehler waere dasselbe in Zahlen: oben steht nur die Uhr.
+    const stand = (await seite.textContent("#stand")).trim();
+    pruefe("sudoku", "E04", !/fehler/i.test(stand), `oben steht nur die Uhr (${stand})`);
   }
 
   pruefe("sudoku", "E01", seite.konsole.length === 0,
