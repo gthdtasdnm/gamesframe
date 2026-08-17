@@ -7,7 +7,7 @@ geöffnet. Stand: 09.08.2026.
 
 ## Was hier liegt
 
-`/var/www/html` ist der DocumentRoot. Darin: dreiundzwanzig Browserspiele, die
+`/var/www/html` ist der DocumentRoot. Darin: fünfundzwanzig Browserspiele, die
 Spieleübersicht, ein Bugreport-Werkzeug, zwei Rechtstexte – und, damit nicht
 verwechselt, Nextcloud und zwei Tradingbots.
 
@@ -15,8 +15,11 @@ Wie viele es gerade sind, sagt `spiele.json` – nicht dieser Satz:
 `jq '[.spiele[]|select(.art!="werkzeug")]|length' spiele.json`
 
 **Arbeitsbereich sind die Spiele.** `nextcloud`, `tradingbot_value`,
-`tradingbot_momentum`, `/reader/` und `_alt-tot-20260807` nur anfassen, wenn
-ausdrücklich danach gefragt wird.
+`tradingbot_momentum`, `/reader/`, `hochzeit` und `_alt-tot-20260807` nur
+anfassen, wenn ausdrücklich danach gefragt wird.
+
+`hochzeit` ist eine private Bildergalerie hinter einem Zugangswort – kein
+Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
 
 ## Wohin zum Nachlesen
 
@@ -29,6 +32,7 @@ ausdrücklich danach gefragt wird.
 | Dienste, Apache, Rechte, Git-Ebenen | `doku/betrieb.md` |
 | Was darf inhaltlich auf die Seite? | `doku/inhalte.md` |
 | Startseite ändern | `doku/startseite.md` |
+| Hochzeitsseite (`/hochzeit/`, kein Spiel) | `doku/hochzeit.md` |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |
 | Was bei den neuen Spielen noch fehlt | `OFFEN-NACHZIEHEN.md` (nicht im Repo, 403) |
@@ -51,7 +55,7 @@ deshalb **kopiert, nicht importiert** – siehe `doku/gemeinsam.md`.
 Zu jedem neuen Spiel gehören: Anleitung, Screenshot und eine Kachel auf
 `spiele/`. Ohne grünen Prüflauf gilt nichts als fertig.
 
-## Die drei Fallen
+## Die vier Fallen
 
 1. **Steuerzeichen-Regex.** `cleanName` enthält `/[\u0000-\u001f\u007f]/g`.
    Wird sie als Literal getippt, landen echte Steuerzeichen in der Datei und
@@ -62,6 +66,12 @@ Zu jedem neuen Spiel gehören: Anleitung, Screenshot und eine Kachel auf
    ``grep -n '„[^“`]*"' *.js``
 3. **`pkill -f "<name>"` trifft die eigene Shell.** Testserver über den Port
    beenden: `ss -tlnp | grep ':PORT '` → `kill <pid>`.
+4. **`deno check` findet keine vergessenen Importe.** In reinem JS (ohne
+   Typannotationen) geht ein unbekannter Name glatt durch – der Dienst startet
+   und stirbt erst beim ersten Aufruf der Stelle. Nachgewiesen am 16.08.2026:
+   eine Datei mit `return gibtsGarNicht(x)` prüft mit Exitcode 0 durch. Nach
+   jedem Herauslösen einer Datei deshalb **`deno task probe` laufen lassen**,
+   nicht nur `check` – und `systemctl status <spiel>` ansehen.
 
 ## Zum Schluss immer
 

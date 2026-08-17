@@ -14,12 +14,13 @@
 !/.htaccess
 !/README.md
 !/CLAUDE.md
-!/index.php
+!/index.html
 !/recht.css
 !/spiele.json
 !/spiele/
 !/impressum/
 !/datenschutz/
+!/recht/
 !/werkzeug/
 !/gemeinsam/
 !/doku/

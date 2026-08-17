@@ -1186,12 +1186,181 @@ async function patience(browser) {
   await seite.context().close();
 }
 
+// ═══════════════ Das Dauerspiel ══════════════════════════════════════════
+//
+// Revier braucht als einziges Spiel keinen Raum und keine zweite Sitzung: die
+// Welt laeuft ohnehin, und die Bots haben sie schon eingefaerbt. Zu tun bleibt,
+// selbst eine Flaeche zu holen - ein Bild, auf dem nur fremdes Revier zu sehen
+// waere, zeigt nicht, worum es geht.
+
+async function revier(browser) {
+  const seite = await spieler(browser, 'revier');
+  await seite.goto(`${BASIS}/revier/`, { waitUntil: 'networkidle' });
+  await seite.fill('#name', 'Ata');
+  await seite.click('#losBtn');
+  await seite.waitForFunction(
+    () => !document.getElementById('hud').hasAttribute('hidden'),
+    null, { timeout: 10000 },
+  );
+  await warte(800);
+
+  // app.js ist ein gewoehnliches Skript, seine obersten `const` und
+  // Funktionen liegen damit im globalen Namensraum - von hier aus erreichbar.
+  const eigenes = () => seite.evaluate(() => stand.get(S.du)?.felder ?? 0);
+
+  // Wer beitritt, faehrt sofort los, und zwar in eine zufaellige Richtung.
+  // Nach ein paar Sekunden steht man also irgendwo mit offener Spur - eine
+  // Schleife von dort schliesst sich nirgends. Erst nach Hause.
+  const heimfahren = async () => {
+    for (let n = 0; n < 90; n++) {
+      const stand = await seite.evaluate(() => {
+        const k = koepfe.get(S.du);
+        if (!k) return null;
+        let sx = 0, sy = 0, m = 0, spur = 0;
+        for (let i = 0; i < S.boden.length; i++) {
+          if (S.spur[i] === S.du) spur++;
+          if (S.boden[i] !== S.du) continue;
+          const x = i % S.w;
+          sx += x; sy += (i - x) / S.w; m++;
+        }
+        if (!m) return null;
+        const drin = S.boden[Math.floor(k.y) * S.w + Math.floor(k.x)] === S.du;
+        schicke({
+          t: 'dir',
+          a: Math.round(Math.atan2(sy / m - k.y, sx / m - k.x) * 180 / Math.PI),
+        });
+        return { drin, spur };
+      });
+      if (stand && stand.drin && stand.spur === 0) return true;
+      await warte(150);
+    }
+    return false;
+  };
+
+  let geschafft = false;
+  for (let versuch = 0; versuch < 3 && !geschafft; versuch++) {
+    if (!await heimfahren()) continue;
+    const wo = await seite.evaluate(() => {
+      const k = koepfe.get(S.du);
+      return k ? { x: k.x, y: k.y, w: S.w, h: S.h } : null;
+    });
+    if (!wo) break;
+    // In die Haelfte fahren, in der mehr Platz ist - die Aussenwand ist toedlich.
+    const runde = [
+      wo.x < wo.w / 2 ? 'ArrowRight' : 'ArrowLeft',
+      wo.y < wo.h / 2 ? 'ArrowDown' : 'ArrowUp',
+      wo.x < wo.w / 2 ? 'ArrowLeft' : 'ArrowRight',
+      wo.y < wo.h / 2 ? 'ArrowUp' : 'ArrowDown',
+    ];
+    for (const taste of runde) {
+      await seite.keyboard.press(taste);
+      await warte(1700);
+    }
+    await warte(1200);
+    geschafft = (await eigenes()) > 400;
+  }
+  if (!geschafft) throw new Error('keine Flaeche zustande gekommen');
+
+  await knipsen(seite, 'revier-spiel.png');
+  await seite.context().close();
+}
+
+// Wurm ist wie Revier eine Welt ohne Raum. Das Bild muss zwei Dinge zeigen,
+// die eine frisch angemeldete Schlange beide nicht hat: eine gewachsene
+// Laenge und jemanden, dem man begegnet. Beides wird deshalb abgewartet -
+// erst gefressen, dann gesucht.
+
+async function wurm(browser) {
+  const seite = await spieler(browser, 'wurm');
+  await seite.goto(`${BASIS}/wurm/`, { waitUntil: 'networkidle' });
+  await seite.fill('#name', 'Ata');
+  await seite.click('#losBtn');
+  await seite.waitForFunction(
+    () => !document.getElementById('hud').hasAttribute('hidden'),
+    null, { timeout: 10000 },
+  );
+
+  // app.js ist ein gewoehnliches Skript, seine obersten `const` und Funktionen
+  // liegen damit im globalen Namensraum - von hier aus erreichbar.
+  const schritt = () => seite.evaluate(() => {
+    const ich = schlangen.get(S.du);
+    if (!ich) return null;
+    const winkel = (dx, dy) => Math.round((Math.atan2(dy, dx) * 180) / Math.PI);
+
+    // Fremder Koerper voraus? Dann nichts wie weg - das hat Vorrang vor allem
+    // anderen. Ohne diesen Absatz kroch die Aufnahme stur zum naechsten Ball
+    // und war nach achtzig Sekunden immer noch bei achtzehn Energie, weil sie
+    // jedem Bot in den Bauch gefahren war.
+    let gefahr = false;
+    for (const sn of schlangen.values()) {
+      if (sn.id === S.du) continue;
+      for (const [x, y] of sn.punkte) {
+        const dx = x - ich.kx, dy = y - ich.ky;
+        if (dx * dx + dy * dy > 260 * 260) continue;
+        // Nur was vor einem liegt, ist gefaehrlich.
+        if (Math.cos(ich.rot) * dx + Math.sin(ich.rot) * dy > 0) { gefahr = true; break; }
+      }
+      if (gefahr) { schicke({ t: 'dir', a: Math.round((ich.rot * 180) / Math.PI) + 90 }); break; }
+    }
+    // Wer schon gross genug ist, sucht Gesellschaft: ein Bild von einer
+    // einzelnen Schlange im Leeren zeigt nicht, worum es geht.
+    let naechste = null, weit = Infinity;
+    for (const sn of schlangen.values()) {
+      if (sn.id === S.du) continue;
+      const d = Math.hypot(sn.kx - ich.kx, sn.ky - ich.ky);
+      if (d < weit) { weit = d; naechste = sn; }
+    }
+    const gross = Number(document.getElementById('eigenMasse').textContent) >= 110;
+
+    if (gefahr) {
+      // schon gelenkt
+    } else if (ich.kx < 420 || ich.ky < 420 || ich.kx > S.w - 420 || ich.ky > S.h - 420) {
+      // Die Aussenwand ist toedlich und hat Vorrang vor jedem Ball.
+      schicke({ t: 'dir', a: winkel(S.w / 2 - ich.kx, S.h / 2 - ich.ky) });
+    } else if (gross && naechste && weit > 420) {
+      schicke({ t: 'dir', a: winkel(naechste.kx - ich.kx, naechste.ky - ich.ky) });
+    } else {
+      let ziel = null, kurz = Infinity;
+      for (const b of baelle.values()) {
+        const d = (b.x - ich.kx) ** 2 + (b.y - ich.ky) ** 2;
+        if (d < kurz) { kurz = d; ziel = b; }
+      }
+      if (ziel) schicke({ t: 'dir', a: winkel(ziel.x - ich.kx, ziel.y - ich.ky) });
+    }
+
+    let nah = Infinity;
+    for (const sn of schlangen.values()) {
+      if (sn.id === S.du) continue;
+      nah = Math.min(nah, Math.hypot(sn.kx - ich.kx, sn.ky - ich.ky));
+    }
+    return {
+      masse: Number(document.getElementById('eigenMasse').textContent),
+      glieder: ich.punkte.length,
+      nah,
+    };
+  });
+
+  let lage = null;
+  for (let n = 0; n < 600; n++) {
+    lage = await schritt();
+    // Lang genug fuer eine erkennbare Schlange, und jemand mit im Bild.
+    if (lage && lage.masse >= 110 && lage.nah < 700) break;
+    await warte(200);
+  }
+  console.log(`    Energie ${lage?.masse}, ${lage?.glieder} Glieder, naechster ${Math.round(lage?.nah ?? 0)}`);
+
+  await warte(400);
+  await knipsen(seite, 'wurm-spiel.png');
+  await seite.context().close();
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
   flasche, cubes, wortleger,
   // Die zwoelf vom 09.08.2026
   werwolf, schwimmen, maumau, luegen, becher, kingscup, paare, snake,
   minenfeld, sudoku, wortgitter, patience,
+  revier, wurm,
 };
 
 const gewaehlt = process.argv.slice(2);

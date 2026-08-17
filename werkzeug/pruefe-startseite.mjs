@@ -48,7 +48,10 @@ const ZAHLWORT = {
   siebenundzwanzig: 27, achtundzwanzig: 28, neunundzwanzig: 29, dreißig: 30,
 };
 const sub = await page.textContent('.sub');
-const wort = (sub.match(/(\w+) Browserspiele/) ?? [])[1]?.toLowerCase();
+// Umlaute gehoeren in die Klasse: `\w` kennt sie nicht, und aus
+// „Fünfundzwanzig" wurde damit „nfundzwanzig" – der Lauf schlug beim
+// fuenfundzwanzigsten Spiel fehl, obwohl die Seite richtig war.
+const wort = (sub.match(/([\wÄÖÜäöüß]+) Browserspiele/) ?? [])[1]?.toLowerCase();
 const genannt = ZAHLWORT[wort];
 if (!genannt) throw new Error(`Unbekanntes Zahlwort im Untertitel: „${wort}"`);
 if (genannt !== kacheln) {

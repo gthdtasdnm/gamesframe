@@ -27,6 +27,16 @@
     Require all denied
 </FilesMatch>
 
+# Die Hochzeitsseite laeuft als eigener Dienst; Apache reicht /hochzeit/
+# vollstaendig an ihn weiter und kommt normalerweise gar nicht ans
+# Dateisystem. Diese Regel ist die zweite Reihe fuer den Fall, dass der
+# Apache-Block einmal fehlt: dann liegen dort Originalbilder, das Gaestebuch
+# und die Zugangswoerter offen im DocumentRoot.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule "^hochzeit/(daten|medien|pakete)(/|$)" - [F,L]
+</IfModule>
+
 # Versionsverwaltung sperren. Seit hier ein Repo liegt, wuerde Apache
 # /.git/ sonst ganz normal als Verzeichnis ausliefern – und damit die
 # komplette Historie inklusive geloeschter Dateien.

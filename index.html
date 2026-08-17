@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>inf-zeus.de</title>
+<meta name="description" content="Startseite von inf-zeus.de: Nextcloud für den Jahrgang, zwei Auswertungswerkzeuge für Aktien und eine Sammlung Browserspiele.">
+<meta name="theme-color" content="#f4f5f7">
+<meta name="robots" content="index, follow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231f3a5f'/><text x='16' y='22' font-family='system-ui,sans-serif' font-size='17' font-weight='700' fill='%23ffffff' text-anchor='middle'>Z</text></svg>">
+<style>
+/* Bewusst helles, ruhiges Layout: diese Seite ist die Visitenkarte vor den
+   drei Anwendungen, nicht selbst eine Anwendung. Eine Akzentfarbe, Haarlinien
+   statt Verlaeufe. Alles inline, damit die Startseite ohne einen einzigen
+   weiteren Request steht. */
+:root {
+  --grund:   #f4f5f7;
+  --flaeche: #ffffff;
+  --linie:   #e3e6ea;
+  --linie-stark: #c8d0da;
+  --schrift: #16202c;
+  --leise:   #5c6875;
+  --akzent:  #1f3a5f;
+  --akzent-hell: #eef2f7;
+  --radius: 10px;
+  --hoehe: 236px;   /* Hoehe einer vollen Kachel; die Trading-Spalte teilt sie */
+  --spalt: 18px;    /* Abstand im Raster – die Trading-Spalte nutzt denselben */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100dvh;
+  background: var(--grund);
+  color: var(--schrift);
+  font: 400 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(40px, 8vw, 96px) 20px calc(48px + env(safe-area-inset-bottom));
+  gap: clamp(32px, 5vw, 52px);
+}
+
+/* --- Kopf ---------------------------------------------------------------- */
+
+header { width: 100%; max-width: 900px; }
+
+.marke {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--leise);
+  margin-bottom: 18px;
+}
+
+.marke .zeichen {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--akzent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: clamp(30px, 6vw, 42px);
+  line-height: 1.15;
+  letter-spacing: -.022em;
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+.sub {
+  margin-top: 12px;
+  max-width: 58ch;
+  color: var(--leise);
+  font-size: clamp(15px, 2.4vw, 17px);
+  text-wrap: pretty;
+}
+
+/* --- Raster -------------------------------------------------------------- */
+
+.raster {
+  width: 100%;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 760px) {
+  .raster { grid-template-columns: repeat(3, 1fr); gap: var(--spalt); }
+  .kachel, .stapel { min-height: var(--hoehe); }
+}
+
+/* --- Kacheln ------------------------------------------------------------- */
+
+.kachel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: 22px 22px 20px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.kachel:hover, .kachel:focus-visible {
+  border-color: var(--linie-stark);
+  box-shadow: 0 2px 12px rgba(22, 32, 44, .07);
+}
+
+.kachel:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+}
+
+.symbol {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: var(--akzent-hell);
+  color: var(--akzent);
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  flex: none;
+}
+
+.symbol svg { width: 20px; height: 20px; display: block; }
+
+.kachel h2 {
+  font-size: 18px;
+  font-weight: 640;
+  letter-spacing: -.012em;
+}
+
+.kachel p {
+  color: var(--leise);
+  font-size: 14.5px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* Die Fusszeile jeder Kachel: links der Hinweis, rechts die Aktion. margin-top
+   auto haelt sie unten, damit alle Kacheln an derselben Linie enden. */
+.fuss {
+  margin-top: auto;
+  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--akzent);
+}
+
+.hinweis {
+  font-weight: 400;
+  color: var(--leise);
+  font-size: 12.5px;
+}
+
+.pfeil {
+  display: inline-block;
+  transition: transform .16s ease;
+}
+
+.kachel:hover .pfeil { transform: translateX(3px); }
+
+/* --- Trading: zwei halbhohe Kacheln in einer Spalte ----------------------- */
+/* Beide Dashboards stehen direkt hier. Bewusst nichts zum Aufklappen und keine
+   Zwischenseite: ein Klick von der Startseite bis ins Dashboard.
+   Die beiden teilen sich die Hoehe einer vollen Kachel (flex:1 auf gleicher
+   Basis), deshalb schliesst die Spalte oben und unten buendig mit den
+   Nachbarn ab. */
+
+.stapel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spalt);
+}
+
+@media (max-width: 759px) {
+  .stapel { gap: 16px; }
+}
+
+.stapel > .kachel {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+/* Die Haelfte-der-Hoehe-Regel gilt nur im dreispaltigen Raster. Einspaltig hat
+   .stapel keine vorgegebene Hoehe – flex-basis:0 haette dort nichts zu
+   verteilen und die beiden Kacheln fielen auf die Hoehe des Symbols zusammen. */
+@media (min-width: 760px) {
+  .stapel > .kachel { flex: 1 1 0; min-height: 0; }
+}
+
+.stapel .symbol {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 0;
+}
+
+.stapel .symbol svg { width: 18px; height: 18px; }
+
+/* min-width:0 laesst den Textblock schrumpfen, statt den Pfeil aus der Kachel
+   zu schieben, wenn die Spalte schmal wird. */
+.stapel .text { min-width: 0; }
+
+.stapel h2 { font-size: 16px; }
+
+.stapel p {
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin-top: 2px;
+}
+
+.stapel .pfeil {
+  margin-left: auto;
+  flex: none;
+  color: var(--akzent);
+  font-weight: 600;
+}
+
+/* --- Fuss ---------------------------------------------------------------- */
+
+footer {
+  width: 100%;
+  max-width: 900px;
+  border-top: 1px solid var(--linie);
+  padding-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  color: var(--leise);
+  font-size: 13px;
+}
+
+footer nav { display: flex; gap: 20px; flex-wrap: wrap; }
+
+footer a {
+  color: var(--leise);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color .16s ease, border-color .16s ease;
+}
+
+footer a:hover, footer a:focus-visible {
+  color: var(--schrift);
+  border-color: var(--linie-stark);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="marke"><span class="zeichen" aria-hidden="true">Z</span>inf-zeus.de</div>
+  <h1>Drei Anwendungen auf einem Server</h1>
+  <p class="sub">Diese Seite ist nur der Einstieg. Dahinter liegen eine Nextcloud für
+    meinen Jahrgang, zwei Auswertungswerkzeuge für Aktien und eine Sammlung
+    Browserspiele. Jedes läuft eigenständig.</p>
+</header>
+
+<main class="raster">
+
+  <a class="kachel" href="/nextcloud/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.5 19H7a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.8 9.2 4.4 4.4 0 0 1 17.5 19Z"/>
+      </svg>
+    </span>
+    <h2>Nextcloud</h2>
+    <p>Dateien, Kalender und Termine für den Jahrgang – an einer Stelle, auf
+      eigenem Server statt bei einem Anbieter.</p>
+    <span class="fuss">
+      <span class="hinweis">Konto erforderlich</span>
+      <span>Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
+    </span>
+  </a>
+
+  <div class="stapel">
+
+    <a class="kachel" href="/tradebot_value/">
+      <span class="symbol" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20V4"/><path d="M4 20h16"/>
+          <rect x="7.5" y="12" width="3.4" height="5"/>
+          <rect x="13.6" y="8" width="3.4" height="9"/>
+        </svg>
+      </span>
+      <span class="text">
+        <h2>Value</h2>
+        <p>Trading · Bewertung</p>
+      </span>
+      <span class="pfeil" aria-hidden="true">→</span>
+    </a>
+
+    <a class="kachel" href="/tradingbot_momentum/">
+      <span class="symbol" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20V4"/><path d="M4 20h16"/>
+          <path d="M7.5 16l3.5-4.5 3 2.5L20 8"/>
+          <path d="M16.2 8H20v3.6"/>
+        </svg>
+      </span>
+      <span class="text">
+        <h2>Momentum</h2>
+        <p>Trading · Kursverlauf</p>
+      </span>
+      <span class="pfeil" aria-hidden="true">→</span>
+    </a>
+
+  </div>
+
+  <a class="kachel" href="/spiele/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4"/>
+        <circle cx="8.6" cy="8.6" r="1.15" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none"/>
+        <circle cx="15.4" cy="15.4" r="1.15" fill="currentColor" stroke="none"/>
+      </svg>
+    </span>
+    <h2>Spiele</h2>
+    <p>Browserspiele für die Runde oder allein. Ohne Installation und ohne
+      Konto: Link teilen, Namen eintippen, losspielen.</p>
+    <span class="fuss">
+      <span class="hinweis">Frei zugänglich</span>
+      <span>Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
+    </span>
+  </a>
+
+</main>
+
+<footer>
+  <span>inf-zeus.de – privat betriebener Server</span>
+  <nav>
+    <a href="/recht/impressum/">Impressum</a>
+    <a href="/recht/datenschutz/">Datenschutz</a>
+  </nav>
+</footer>
+
+</body>
+</html>

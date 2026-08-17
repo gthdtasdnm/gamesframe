@@ -1,0 +1,185 @@
+/* Rechtstexte der Startseite.
+ *
+ * Bewusst eine eigene Datei neben /recht.css: die dortige Fassung gehoert zur
+ * Spieleseite und traegt deren dunkle Farben. Diese hier gehoert zur
+ * Startseite. Beide Seiten sollen ihre eigenen Rechtstexte behalten duerfen,
+ * ohne dass eine Aenderung an der einen die andere umfaerbt.
+ *
+ * Farbwerte identisch zu /index.html – dort stehen sie inline, weil die
+ * Startseite ohne einen zweiten Request auskommen soll.
+ */
+
+:root {
+  --grund:   #f4f5f7;
+  --flaeche: #ffffff;
+  --linie:   #e3e6ea;
+  --linie-stark: #c8d0da;
+  --schrift: #16202c;
+  --leise:   #5c6875;
+  --akzent:  #1f3a5f;
+  --akzent-hell: #eef2f7;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100dvh;
+  background: var(--grund);
+  color: var(--schrift);
+  font: 400 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(32px, 6vw, 72px) 20px calc(48px + env(safe-area-inset-bottom));
+  gap: clamp(26px, 4vw, 40px);
+}
+
+header, main, footer { width: 100%; max-width: 720px; }
+
+/* --- Kopf ---------------------------------------------------------------- */
+
+.zurueck {
+  display: inline-block;
+  margin-bottom: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--akzent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: border-color .16s ease;
+}
+
+.zurueck:hover, .zurueck:focus-visible {
+  border-color: currentColor;
+  outline: none;
+}
+
+h1 {
+  font-size: clamp(28px, 5.5vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -.022em;
+  font-weight: 650;
+}
+
+.stand {
+  margin-top: 8px;
+  color: var(--leise);
+  font-size: 14.5px;
+}
+
+/* --- Textkoerper --------------------------------------------------------- */
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+section {
+  background: var(--flaeche);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius);
+  padding: clamp(20px, 4vw, 28px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 640;
+  letter-spacing: -.015em;
+}
+
+/* Zwischenueberschrift innerhalb eines Abschnitts – deutlich leiser als h2,
+   damit die Gliederung der Seite an den Kaesten haengt und nicht an ihnen
+   vorbei laeuft. */
+h3 {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--leise);
+}
+
+p, li { text-wrap: pretty; }
+
+ul {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+li::marker { color: var(--linie-stark); }
+
+address {
+  font-style: normal;
+  line-height: 1.7;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 20px;
+  align-items: baseline;
+}
+
+dt { font-weight: 600; font-size: 14.5px; }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .92em;
+  background: var(--akzent-hell);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+a { color: var(--akzent); }
+
+a:hover, a:focus-visible { text-decoration: none; outline: none; }
+
+strong { font-weight: 640; }
+
+/* Ein abgesetzter Hinweis: gleiche Schriftgroesse wie der Fliesstext waere zu
+   laut, ein Kasten im Kasten zu viel. Die Leiste links reicht. */
+.hinweis {
+  border-left: 3px solid var(--linie-stark);
+  padding-left: 14px;
+  color: var(--leise);
+  font-size: 14.5px;
+}
+
+/* --- Fuss ---------------------------------------------------------------- */
+
+footer {
+  border-top: 1px solid var(--linie);
+  padding-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  font-size: 13.5px;
+}
+
+footer a {
+  color: var(--leise);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
+  transition: color .16s ease, border-color .16s ease;
+}
+
+footer a:hover, footer a:focus-visible {
+  color: var(--schrift);
+  border-color: var(--linie-stark);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

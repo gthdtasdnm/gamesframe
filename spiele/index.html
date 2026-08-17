@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Dreiundzwanzig Browserspiele für 2 bis 10 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Fünfundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -517,7 +517,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Dreiundzwanzig Browserspiele für 2 bis 10 Leute. Kein Download, kein Account
+  <p class="sub">Fünfundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -1070,6 +1070,60 @@ footer a { color: inherit; }
         <li>Äpfel geben zehn Punkte und machen die Schlange länger.</li>
         <li>Wand, fremde Schlange, eigener Körper – alles tödlich. Wer als Letzter lebt, bekommt zwanzig Punkte.</li>
         <li>Nach der letzten Runde steht der Gesamtstand.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#ff8a3d; --accent2:#ff2e88;"
+           data-spiel="revier" data-bild="bilder/revier-spiel.webp"
+           data-kurz="Eine Welt, die nie aufhört. Reingehen und sofort mitfahren – Fläche einkreisen und behalten.">
+    <button class="info" type="button" aria-label="Wie Revier gespielt wird">i</button>
+    <a class="game-link" href="/revier/">
+      <div class="icon">🐾</div>
+      <h3>Revier</h3>
+      <p>Kein Raum, kein Code, kein Rundenende: Seite auf, und du fährst mit. Außerhalb des eigenen Gebiets ziehst du eine Spur – zurück im Eigenen wird alles Umschlossene deins. Wer eine fremde Spur kreuzt, schaltet sie aus. Der Daumen tippt irgendwohin, und genau dort sitzt der Joystick.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">1–20 Spieler</span>
+        <span class="tag">läuft immer</span>
+        <span class="tag">gegeneinander</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li>Link weitergeben und aufmachen – niemand muss warten, die Welt läuft schon. Wer später kommt, steigt einfach ein.</li>
+        <li>Irgendwo auf den Bildschirm tippen und ziehen: dort sitzt ab jetzt ein unsichtbarer Joystick. Loslassen heißt geradeaus weiter. Am Rechner gehen WASD und die Pfeiltasten.</li>
+        <li>Solange du auf eigenem Gebiet fährst, passiert nichts. Draußen ziehst du eine Spur hinter dir her.</li>
+        <li>Zurück im eigenen Revier wird alles, was die Spur umschlossen hat, deine Fläche – auch das, was vorher jemand anderem gehörte.</li>
+        <li>Tödlich sind die eigene Spur, die Außenwand und jeder, der über deine Spur fährt. Wer erwischt wird, verliert sein ganzes Gebiet.</li>
+        <li>Nach zweieinhalb Sekunden stehst du wieder irgendwo mit einem kleinen Startquadrat. Oben rechts steht, wer gerade wie viel Prozent der Welt hält.</li>
+        <li>Sind wenige Leute da, fahren Bots mit – damit nie eine leere Welt dasteht.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;"
+           data-spiel="wurm" data-bild="bilder/wurm-spiel.webp"
+           data-kurz="Energie sammeln, wachsen, niemandem in den Weg kriechen. Die Welt läuft immer.">
+    <button class="info" type="button" aria-label="Wie Wurm gespielt wird">i</button>
+    <a class="game-link" href="/wurm/">
+      <div class="icon">🪱</div>
+      <h3>Wurm</h3>
+      <p>Anmelden und sofort mitkriechen: überall liegen Energiebälle, jeder macht dich länger und dicker. Fährst du in einen anderen hinein, zerfällst du zu Energie – er nicht. Zweiter Finger gibt Turbo, fast dreimal so schnell und entsprechend teuer. Nach oben ist nichts zugemacht.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">1–20 Spieler</span>
+        <span class="tag">läuft immer</span>
+        <span class="tag">gegeneinander</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li>Namen eintippen und anmelden – niemand muss warten, die Welt läuft schon. Wer später kommt, steigt einfach ein.</li>
+        <li>Irgendwo auf den Bildschirm tippen und ziehen: dort sitzt ab jetzt ein unsichtbarer Joystick. Loslassen heißt geradeaus weiter. Am Rechner gehen WASD und die Pfeiltasten.</li>
+        <li>Die bunten Bälle sind Energie. Jeder macht dich länger und ein bisschen dicker – große bringen mehr, und die liegen dort, wo gerade jemand gestorben ist. Eine Obergrenze gibt es nicht: wer durchhält, wird beliebig groß, und die Ansicht zoomt mit.</li>
+        <li>Zweiter Finger auf den Schirm, der Knopf unten rechts oder die Leertaste: Turbo. Fast dreimal so schnell, wendet dafür träger und kostet laufend Energie, die hinter dir wieder herausfällt – anteilig, ein Riese zahlt also mehr als ein Wurm.</li>
+        <li>Tödlich ist jeder fremde Körper und die Außenwand – dein eigener nicht. Wer in dich hineinkriecht, zerfällt zu Energie, und die kannst du gleich einsammeln.</li>
+        <li>Nach gut zwei Sekunden kriechst du wieder irgendwo klein los. Oben rechts steht, wer gerade wie viel Energie hat.</li>
+        <li>Bots kriechen mit, damit nie eine leere Welt dasteht. Jeder hört bei einer anderen Größe auf zu fressen – einholbar sind sie alle.</li>
     </template>
   </article>
 

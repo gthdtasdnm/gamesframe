@@ -1,13 +1,21 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
-  "portsFrei": [],
+  "portsFrei": [
+    "8084",
+    "8085",
+    "8086",
+    "8087",
+    "8088",
+    "8089"
+  ],
   "portsFremd": {
     "3002": "Whiteboard (Nextcloud)",
     "5000": "Piper PDF Reader",
     "7867": "Notify Push (Nextcloud)",
     "8010": "Tradingbot Value",
     "8011": "Tradingbot Momentum",
-    "8080": "Talk-Signaling (Nextcloud)"
+    "8080": "Talk-Signaling (Nextcloud)",
+    "8081": "Hochzeitsseite (privat, kein Spiel)"
   },
   "spiele": [
     {
@@ -387,6 +395,36 @@
       "art": "statisch",
       "leute": "1",
       "repo": "git@github.com:gthdtasdnm/patience.git"
+    },
+    {
+      "name": "revier",
+      "titel": "Revier",
+      "pfad": "/revier/",
+      "port": 8082,
+      "dienst": "systemd",
+      "leute": "1–20",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "statisch": "statisch.js"
+      }
+    },
+    {
+      "name": "wurm",
+      "titel": "Wurm",
+      "pfad": "/wurm/",
+      "port": 8083,
+      "dienst": "systemd",
+      "leute": "1–20",
+      "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "statisch": "statisch.js"
+      }
     }
   ]
 }

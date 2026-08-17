@@ -42,6 +42,28 @@ Das ist kein Widerspruch zu „nie ohne Server": der Satz meint Spiele, die
 Raum – und der Server hätte nichts zu tun, was der Browser nicht selbst kann.
 Eintrag in `spiele.json` mit `"art": "statisch"`, ohne `port` und `dienst`.
 
+## Wenn es gar keine Runde gibt
+
+Die dritte Bauart sind **Revier** und **Wurm**: eine Welt, die durchläuft, in
+die man beim Öffnen einsteigt und die kein Ende kennt. Dort passen `raum.js`
+und `public/schale.js` **nicht** – beide setzen voraus, dass eine Runde anfängt
+und aufhört, und `neuspiel.sh` baut genau diesen Ablauf. Ein solches Spiel wird
+von Hand angelegt und führt in `spiele.json` unter `gemeinsam` nur `bremse` und
+`statisch`; die HTML-Hülle ist eine einzige Leinwand statt vier Bildschirmen.
+
+Wer die dritte baut, fängt bei **Wurm** an, nicht bei Revier: dort steht der
+Griff, den jede weitere Welt braucht und den Revier noch nicht hat – **jeder
+bekommt nur seinen Ausschnitt**. Revier darf jedem alles schicken, weil sein
+ganzes Feld 40 000 Bytes sind. Sobald eine Welt aus einzelnen Dingen besteht
+(Schlangen, Bälle, was auch immer), geht das nicht mehr: der Server führt je
+Mensch mit, was dieser gerade kennt, und schickt nur die Unterschiede. Wer neu
+in Sicht kommt, kommt einmal ganz. Gemessen sind das rund 7 KB/s je Spieler bei
+sechstausend Bällen in der Welt.
+
+Das ist kein Freibrief: alles andere bleibt gleich – eigener Ordner, eigener
+Port, eigener Dienst, eigene `probe.js`, Kachel und Bild. Nur der Weg hinein
+ist kürzer.
+
 ## Dateien
 
 ```
