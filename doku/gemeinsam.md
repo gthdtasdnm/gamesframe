@@ -60,6 +60,58 @@ Spiels und ist von keiner Seite her zu fassen. Vorher wurde die Datei von
 derselben Stelle ihr eigenes, gewachsenes CSS; sie nachträglich auf den Rahmen
 zu ziehen hieße, ihr Aussehen anzufassen, und dafür gibt es keinen Grund.
 
+## Die Geisterwache (17.08.2026)
+
+`raum.js` räumt seit dem 17.08.2026 Verbindungen ab, die **offen aussehen und
+keine mehr sind**. Auf dem Handy ist das der Normalfall: wer wegwischt, den
+Bildschirm sperrt oder den Tab schließt, schickt kein FIN – der Server sieht bis
+zum TCP-Timeout einen anwesenden Spieler. Steht dieser Geist auf dem Hostplatz,
+wartet die ganze Lobby auf einen Startknopf, den niemand mehr drücken kann. Das
+war Bugreport 4 (Snake), und dieselbe Meldung gab es für Card Chaos (8).
+
+`connected` allein ist deshalb kein Nachweis. Der Client meldet sich alle 25 s
+mit `ping`, auch wenn niemand spielt; **`statisch.js` stempelt jede eingehende
+Nachricht auf `player.lastSeen`**. Wer `geistMs` (65 s, zwei ausgefallene Pings
+plus Puffer) nichts mehr gesagt hat, wird behandelt wie einer, dessen Verbindung
+ordentlich zuging: Socket zu mit Code 4002, Platz frei, Host rückt weiter.
+
+`geistMs` liegt bewusst **über** `seatGraceMs`: erst gilt einer als weg, dann
+läuft seine Karenzzeit.
+
+Die fünf Spiele der Gruppe C (`nochnie`, `maexchen`, `imposter`, `flasche`,
+`luckyreflex`) tragen ihre Klempnerei selbst – dort steht dieselbe Wache von
+Hand im `server.js`, gleicher Wortlaut, gleiche Werte.
+
+Nachgewiesen wird das von **`lobbyprobe.mjs`, Test L17**. Der Dienst läuft dafür
+mit `GEIST_MS=3000` statt 65 s (`raum.js` liest die Umgebungsvariable, die
+Gruppe C ebenso) – deshalb nur gegen eine eigene Fassung, nicht gegen live.
+
+## Die Kennung im Browser (17.08.2026)
+
+Dieselbe Meldung von der anderen Seite. Wer *zurückkommt*, muss auf seinen alten
+Platz zurück, sonst sitzt er als zweite Person neben sich selbst.
+
+Die Kennung (`{code, token}`, bei Card Chaos `{pid, token}`) lag im
+`sessionStorage` und starb mit dem Tab. Jetzt liegt sie im `localStorage`, mit
+einem **Herzschlag je Tab**:
+
+| Fund im Speicher | Was passiert |
+|---|---|
+| gleiche Tabkennung | das sind wir selbst (Neuladen) → nehmen |
+| fremd, Herzschlag frisch (< 12 s) | ein anderer Tab spielt gerade → liegen lassen |
+| fremd, Herzschlag alt | niemand da → übernehmen |
+
+Ohne den mittleren Fall zögen sich zwei Tabs desselben Geräts abwechselnd den
+Platz weg – genau das prüft `pruefe-durchlauf.mjs` B03. Nach zwei Stunden
+verfällt der Eintrag; den Raum gibt es dann längst nicht mehr.
+
+Beim Beitreten per Code oder aus der Raumliste geht das Token **mit**, wenn es
+zu genau diesem Raum eines gibt. Vorher ging es nur über den Link mit `#CODE` –
+wer über die Kachel zurückkam, wurde ein neuer Spieler.
+
+In `schale.js` steht das für die sieben Schalenspiele; die neun übrigen tragen
+denselben Block von Hand in ihrer `app.js`.
+
 ## raum.js benutzen
 
 `raumverwaltung()` liefert alles zurück, was der Server sonst selbst hatte.

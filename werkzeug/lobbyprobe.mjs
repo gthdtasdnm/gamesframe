@@ -167,7 +167,12 @@ async function portAntwortet(port, ms = 8000) {
 }
 
 class Dienst {
-  constructor(spiel, port) { this.spiel = spiel; this.port = port; this.kind = null; }
+  constructor(spiel, port, zusatz = {}) {
+    this.spiel = spiel;
+    this.port = port;
+    this.zusatz = zusatz;     // zusaetzliche Umgebung, siehe L17
+    this.kind = null;
+  }
 
   async an() {
     const { spawn } = await import("node:child_process");
@@ -175,7 +180,10 @@ class Dienst {
       "run", "--allow-net", "--allow-read", "--allow-env", "--allow-sys", "server.js",
     ], {
       cwd: `/var/www/html/${this.spiel}`,
-      env: { ...process.env, PORT: String(this.port), HOST: "127.0.0.1", DENO_DIR: "/tmp/deno-check" },
+      env: {
+        ...process.env, PORT: String(this.port), HOST: "127.0.0.1",
+        DENO_DIR: "/tmp/deno-check", ...this.zusatz,
+      },
       stdio: ["ignore", "pipe", "pipe"],
     });
     this.fehler = "";
@@ -770,6 +778,44 @@ test("L16", "Namen: leer, lang, Steuerzeichen, Emoji", async (ctx) => {
   return notizen.join(", ");
 });
 
+// Der Fall, der Bugreport 4 zugrunde lag - und den kein anderer Test trifft:
+// nicht die Verbindung, die *zugeht*, sondern die, die offen bleibt und
+// niemandem mehr gehoert. Auf dem Handy ist das der Normalfall: wer wegwischt
+// oder den Bildschirm sperrt, schickt kein FIN. Sitzt so ein Geist auf dem
+// Hostplatz, wartet die ganze Lobby auf einen Knopf, den niemand mehr druecken
+// kann.
+//
+// Der Dienst laeuft fuer diesen Test mit `GEIST_MS=3000` statt 65 s - deshalb
+// nur gegen eine eigene Fassung. Der Gast tickt im Sekundentakt weiter und
+// weist damit die andere Haelfte nach: wer sich meldet, bleibt sitzen.
+test("L17", "Geist auf dem Hostplatz: offener Socket, der stumm bleibt", async (ctx) => {
+  const host = await raumAuf(ctx, "Geist");
+  const { c: gast } = await dazu(ctx, host.code, "Gast");
+  await sitze(gast, 2);
+  muss(gast.letzte("room").hostId === host.you, "der Geist ist gar nicht Host");
+
+  const takt = setInterval(() => gast.schicke({ t: "ping", c: Date.now() }), 1000);
+  let r;
+  try {
+    r = await gast.warte(
+      (m) => m.t === "room" && !m.players.some((p) => p.id === host.you),
+      { ms: 20_000, was: "der stumme Platz wird geraeumt" },
+    );
+  } finally {
+    clearInterval(takt);
+  }
+  muss(r.hostId === gast.you,
+    `Platz geraeumt, aber der Hostzeiger steht auf ${r.hostId} statt auf dem Gast`);
+  muss(r.players.some((p) => p.id === gast.you),
+    "der Gast wurde mit abgeraeumt, obwohl er die ganze Zeit gepingt hat");
+  muss(!gast.schluss, `dem Gast wurde die Verbindung gekappt (${gast.schluss?.code})`);
+  // Der Schlussrahmen laeuft dem Raumzustand hinterher - erst zusehen lassen.
+  await schlaf(600);
+  muss(host.schluss, "der Geist haelt seinen Socket weiter offen");
+  return `stummer Host nach ~3 s weg (Schluss ${host.schluss.code}), ` +
+    "Host wandert zum Gast, wer pingt bleibt sitzen";
+}, { env: { GEIST_MS: "3000" } });
+
 // ---------------------------------------------------------------------------
 // Lauf
 // ---------------------------------------------------------------------------
@@ -801,7 +847,12 @@ async function laufSpiel(spiel) {
       // null, und ein Absturz im vorigen Test reisst den naechsten nicht mit.
       if (eigen) {
         await dienst?.aus();
-        dienst = await new Dienst(spiel, PRUEFPORT).an();
+        dienst = await new Dienst(spiel, PRUEFPORT, t.env ?? {}).an();
+      } else if (t.env) {
+        // L17 braucht eine verkuerzte Geisterfrist. Gegen live gibt es die
+        // nicht - dort dauerte der Test 80 s und liefe gegen echte Raeume.
+        console.log(`  – ${t.id} ${t.titel}\n      nur gegen eine eigene Fassung`);
+        continue;
       }
       const notiz = await t.lauf(ctx);
       const ms = Date.now() - t0;

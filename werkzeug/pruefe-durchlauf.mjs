@@ -13,6 +13,7 @@
 //   B06  Name über Spiele hinweg – derselbe Schlüssel überall?
 //   B07  Handy 390×844: Lobby und Spielbrett bedienbar.
 //   B08  Verbindung kappen und wiederherstellen.
+//   B09  Führt von jedem Bildschirm ein Weg zurück? (Bugreport 10)
 //
 // Möglich ist das generisch, weil die sieben Spiele mit `schale.js` denselben
 // Aufbau haben: `#screen-home` → `#screen-lobby` → `#screen-game` →
@@ -448,8 +449,62 @@ async function B08(spiel) {
   }
 }
 
+// ══════════════════════════════════════════════════════════ B09
+// Bugreport 10: „allgemein Knoepfe zum Zurueckgehen fehlen". Aus dem
+// Spielbildschirm führte für alle ausser dem Host gar nichts heraus, aus dem
+// Endstand auch für den Host nicht, und zur Spieleübersicht führte in keinem
+// der sechzehn Lobbyspiele ein Link. Geprüft wird jeder der drei Ausgänge –
+// dass er dasteht **und** dass er wirklich hinausführt.
+async function B09(spiel) {
+  const a = await geraet(spiel), b = await geraet(spiel);
+  try {
+    const heim = a.locator('.zurueck[href="/spiele/"]');
+    pruefe(spiel, "B09", await heim.isVisible().catch(() => false),
+      "Startseite hat einen Weg zur Spieleübersicht");
+
+    const code = await eroeffne(a, "Anna");
+    const drin = await tritt_bei(b, "Bert", code);
+    if (!drin) return pruefe(spiel, "B09", false, "zweites Gerät kam nicht in die Lobby");
+
+    const { los, grund } = await starte(a, [b]);
+    if (!los) {
+      return pruefe(spiel, "B09", Boolean(grund),
+        `Start gesperrt und begründet: „${grund}" – zu zweit zu wenig, kein Fehler`);
+    }
+
+    // Der Gast steckt im Spielbildschirm. Vorher gab es hier für ihn nichts.
+    const raus = b.locator("#screen-game [data-raus]");
+    pruefe(spiel, "B09", await raus.isVisible().catch(() => false),
+      "der Gast hat im Spielbildschirm einen Ausgang");
+    await raus.click();
+    pruefe(spiel, "B09", await aufSchirm(b, "home"),
+      "und er führt auf die Startseite des Spiels");
+    const hash = await b.evaluate(() => location.hash);
+    pruefe(spiel, "B09", hash === "" || hash === "#",
+      `dabei fällt der Hash weg (war „${hash}")`);
+
+    // Und der Host im Endstand.
+    if (await sichtbar(a, "#endeBtn")) await a.click("#endeBtn");
+    if (await aufSchirm(a, "final")) {
+      const rausF = a.locator("#screen-final [data-raus]");
+      pruefe(spiel, "B09", await rausF.isVisible().catch(() => false),
+        "der Endstand hat einen Ausgang");
+      await rausF.click();
+      pruefe(spiel, "B09", await aufSchirm(a, "home"),
+        "und er führt aus dem Raum heraus");
+    } else {
+      pruefe(spiel, "B09", false, "kam nicht zum Endstand");
+    }
+
+    pruefe(spiel, "B09", a.konsole.length === 0 && b.konsole.length === 0,
+      `Konsole still (${[...a.konsole, ...b.konsole].join(" | ").slice(0, 200)})`);
+  } finally {
+    await a.kontext.close(); await b.kontext.close();
+  }
+}
+
 // ---------------------------------------------------------------- Lauf
-const JE_SPIEL = { B01, B02, B03, B04, B07, B08 };
+const JE_SPIEL = { B01, B02, B03, B04, B07, B08, B09 };
 
 for (const spiel of SPIELE) {
   console.log(`\n═══ ${spiel} ═══`);

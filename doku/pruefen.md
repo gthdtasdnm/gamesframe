@@ -26,7 +26,13 @@ node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
 node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
 node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Ueberlauf
+node pruefe-revier.mjs         # kommt der unsichtbare Joystick an, bewegt sich die Leinwand?
+node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu die drei Wege zum Turbo
+node pruefe-hochzeit.mjs       # Grossansicht: passt das Bild ins Fenster? (misst, statt zu zeigen)
+GAST=<wort> node pruefe-hochzeit-upload.mjs   # 150 Bilder am Handy auswaehlen: kommt Rueckmeldung?
 node pruefe-durchlauf.mjs      # zwei Handys: Startseite -> Lobby -> Runde -> Endstand
+node pruefe-ausgang.mjs        # fuehrt aus jedem Spiel ein Weg zurueck?
+node pruefe-cardchaos-tippen.mjs  # Karten mit dem Finger, schnell hintereinander
 ```
 
 Ohne Browser, aus `/var/www/html` heraus:
@@ -73,13 +79,41 @@ Spiel ohne `probe.js`, prüft sie zusätzlich die Wortlisten, den Tageswechsel,
 einen kaputten Speichereintrag und die Bewertung doppelter Buchstaben gegen
 eine zweite, unabhängig geschriebene Fassung derselben Regel.
 
+## Was am 17.08.2026 dazugekommen ist
+
+Aus den Bugreports 4, 7, 8, 9, 10 und 13:
+
+- **`lobbyprobe.mjs` L17** – der Geist auf dem Hostplatz: ein Socket, der offen
+  bleibt und stumm wird. Kein anderer Test trifft ihn, weil alle anderen die
+  Verbindung sauber schließen. Braucht `GEIST_MS=3000` und läuft deshalb nur
+  gegen eine eigene Fassung; die Probe setzt das selbst (`t.env`).
+- **`pruefe-durchlauf.mjs` B09** – der Weg hinaus von jedem Bildschirm, für die
+  sieben Schalenspiele durchgeklickt.
+- **`pruefe-ausgang.mjs`** – dasselbe für alle sechzehn Lobbyspiele, aber nur
+  die Verdrahtung: Endstand einblenden, Knopf drücken, steht die Startseite da?
+  Ohne Partie, deshalb in einer Minute durch.
+- **`pruefe-statisch-tief.mjs` E05** – Wortgitter: die Kästchengröße **auf
+  leerem Brett** (der Fehler verschwand, sobald man tippte) und die
+  Übungswörter, die die Serie in Ruhe lassen müssen.
+- **`pruefe-cardchaos-tippen.mjs`** – Karten mit dem Finger antippen, schneller
+  als ein Doppeltipp-Fenster. Gezählt wird die Rückmeldung über der Karte, nicht
+  der Punktestand: auf frischem Brett steht der auf null, und ein Fehlgriff
+  drückt ihn nicht darunter. Diese Falle hat die Probe beim Schreiben zuerst
+  selbst gestellt und rot geleuchtet, obwohl alles stimmte.
+
 ## Die Lobby-Probe
 
 `werkzeug/lobbyprobe.mjs` (10.08.2026) prüft nicht das Spiel, sondern den Weg
 **hinein und wieder hinaus** – das, was kein `probe.js` tut: neu laden, das
 Netz verlieren, einen zweiten Tab aufmachen, einer laufenden Runde beitreten,
-Müll schicken. Sechzehn Tests (L01–L16) gegen die sechzehn Spiele mit
+Müll schicken. Siebzehn Tests (L01–L17) gegen die sechzehn Spiele mit
 gemeinsamem Lobby-Protokoll.
+
+**Revier und Wurm fallen heraus** – sie haben keine Lobby, kein `raum.js` und
+keinen Raumcode, weil ihre Welt durchläuft. Ihr Weg hinein und hinaus steckt
+deshalb in der eigenen `probe.js` (Beitritt, Abschuss, Müll) und in
+`pruefe-revier.mjs` bzw. `pruefe-wurm.mjs` (der Joystick, den man nicht sieht,
+und bei Wurm der Turbo, den kein Serverprotokoll kennt).
 
 ```bash
 cd /var/www/html
@@ -130,8 +164,9 @@ worauf es ankommt: was die gemeinsame Logik erlaubt, muss der Server annehmen,
 und was sie verbietet, muss er ablehnen. Der erste Teil der Probe läuft ganz
 ohne Server und rechnet jede Punktzahl von Hand nach.
 
-**Stand 10.08.2026: jedes der 24 Spiele hat einen Nachweis.** Der Absatz
-darunter ist ueberholt und bleibt nur als Verlauf stehen.
+**Stand 16.08.2026: jedes der 25 Spiele hat einen Nachweis** – Wurm mit
+`probe.js` (P0–P10) und `pruefe-wurm.mjs` (W01–W08). Der Absatz darunter ist
+ueberholt und bleibt nur als Verlauf stehen.
 
 Kein `probe.js` haben **Seconds** und **Lucky Reflex**. Solange das so ist,
 werden die beiden nicht umgebaut – es fehlt der Nachweis. **Lucky Reflex** wird
@@ -232,3 +267,37 @@ Die Bilder landen als WebP in `spiele/bilder/`. Voraussetzungen auf dem Server:
 Playwright samt Chromium (**nicht** `--with-deps`, das kaputte MongoDB-Repo
 lässt jedes `apt update` scheitern) und die Emoji-Schrift unter
 `/usr/local/share/fonts/emoji/`.
+
+## Was die Wurm-Proben gefunden haben (16.08.2026)
+
+`probe.js` hat beim Entfernen der Obergrenze drei echte Fehler gefunden – zwei
+davon älter als die Änderung:
+
+- **Rasterabfragen liefen über die Weltkante hinaus.** Beide Ortsraster legen
+  ihre Zellen unter `zeile * Breite + spalte` ab. Wer am oberen Rand abfragt,
+  bekommt eine negative Zeile; steht er zugleich weit rechts, ist die Spalte
+  größer als die Rasterbreite – zusammen ergibt das wieder einen gültigen
+  Schlüssel, der auf eine ganz andere Ecke der Welt zeigt. Aufgefallen ist es
+  als Ball, der 7 433 Einheiten weit weg gemeldet wurde. Dieselbe Verwechslung
+  hätte beim Zusammenstoß einen Tod durch eine Schlange am anderen Ende der
+  Welt bedeutet. **Lehre für jedes Ortsraster: Abfragebereiche klemmen, nicht
+  nur die gespeicherten Werte.**
+- **Kopf-an-Kopf zählte keinem etwas an.** Beide bekamen die Meldung
+  „erwischt!", der Zähler blieb bei null, weil der Abschuss nur zählte, wenn
+  der Schütze noch lebte. Wem man es sagt, dem zählt man es auch an.
+- **Ein vergessener Import kam durch `deno check` durch.** Der Dienst startete
+  und starb beim ersten Tick. Steht als vierte Falle in `CLAUDE.md`.
+
+Und `pruefe-wurm.mjs` zwei weitere, beide nur im Browser sichtbar:
+
+- **Der Turboknopf schaltete nicht.** Sein `pointerdown` rief zuerst
+  `setPointerCapture` und erst danach den Turbo an. Wirft das Fangen – und das
+  tut es, sobald der Browser den Zeiger nicht kennt –, bricht der Rest des
+  Handlers ab, und der Finger auf dem Knopf bewirkt nichts. Die Seite sah dabei
+  vollkommen gesund aus. Deshalb hört W08 der Konsole **nach** allem Getippe
+  noch einmal zu; W01 sieht nur den Aufbau.
+- **Der Maßstab war falsch.** Nicht die Probe hat das gefunden, sondern das
+  Bildschirmfoto: eine mittelgroße Schlange war länger als der Schirm hoch. In
+  einem Spiel, in dem jede Begegnung tödlich ist, ist Sicht die halbe
+  Steuerung. Die Lehre für jedes Spiel auf einer Leinwand: **einmal ansehen,
+  was man gebaut hat.** Kein Zahlenwert im Server verrät das.

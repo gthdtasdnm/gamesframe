@@ -226,6 +226,15 @@ async function tippe(seite, wort) {
   await seite.waitForTimeout(200);
 }
 
+/** Wie `tippe`, aber über die Tasten auf dem Schirm – die kennen auch ÄÖÜ. */
+async function tippeKlick(seite, wort) {
+  for (const b of wort) {
+    await seite.locator(".tk", { hasText: new RegExp(`^${b}$`) }).first().click();
+  }
+  await seite.locator(".tk", { hasText: /^⏎$/ }).first().click();
+  await seite.waitForTimeout(250);
+}
+
 async function wortgitter() {
   console.log("\nwortgitter");
   const TAG = tagNr();
@@ -314,6 +323,51 @@ async function wortgitter() {
   pruefe("wortgitter", "E04", kaputt.konsole.length === 0,
     `dabei still (${kaputt.konsole.join(" | ")})`);
   await kaputt.close();
+
+  // E05: die Kästchengröße auf einem Handy, und zwar **vor** dem ersten
+  // Buchstaben. Bugreport 7: „auf dem Handy ist das Wort zu klein, erst nach
+  // dem Schreiben wird es richtig skaliert". Das Gitter hing an der
+  // Inhaltsbreite und war leer 4 px breit; getippt wuchs es auf die richtige
+  // Größe. Gemessen wird deshalb auf leerem Brett – sonst fällt genau dieser
+  // Fehler nicht auf.
+  const handy = await seiteAuf("wortgitter", () => localStorage.clear());
+  await handy.waitForSelector(".wgitter .wk");
+  const kasten = await handy.locator(".wk").first().boundingBox();
+  pruefe("wortgitter", "E05", kasten.width >= 40,
+    `leeres Kästchen ist ${Math.round(kasten.width)} px breit (vor dem Fix: 4 px)`);
+
+  // E05: Übungswörter. Bugreport 9 – „neues Spiel anfangen Knopf fehlt". Der
+  // Knopf muss dastehen, ein anderes Wort geben und Serie und Tagesstand in
+  // Ruhe lassen.
+  await handy.evaluate(() => localStorage.setItem("wortgitter-stat",
+    JSON.stringify({ gespielt: 3, gewonnen: 3, serie: 3, beste: 3 })));
+  await handy.click("#aktionen .btn");
+  await handy.waitForTimeout(300);
+  const uebungWort = await handy.evaluate(() =>
+    JSON.parse(localStorage.getItem("wortgitter-uebung") ?? "null")?.wort);
+  pruefe("wortgitter", "E05", typeof uebungWort === "string" && uebungWort !== WORT,
+    `„Neues Wort" gibt ein anderes als das Tageswort (${uebungWort} statt ${WORT})`);
+
+  await tippeKlick(handy, uebungWort);
+  const serie = await handy.evaluate(() =>
+    JSON.parse(localStorage.getItem("wortgitter-stat")).serie);
+  const geloest = await handy.locator(".fertigbox").count();
+  pruefe("wortgitter", "E05", geloest === 1 && serie === 3,
+    `ein gelöstes Übungswort lässt die Serie in Ruhe (${serie})`);
+  const tagesstand = await handy.evaluate(() => localStorage.getItem("wortgitter-stand"));
+  pruefe("wortgitter", "E05", !tagesstand || JSON.parse(tagesstand).zeilen.length === 0,
+    "und den Tagesstand auch");
+
+  await handy.locator("#aktionen .btn").nth(1).click();
+  await handy.waitForTimeout(300);
+  const wiederTag = await handy.evaluate(() => localStorage.getItem("wortgitter-uebung"));
+  const leer = await handy.locator(".wgitter .wzeile").first().locator(".wk")
+    .evaluateAll((ks) => ks.map((k) => k.textContent).join("").trim());
+  pruefe("wortgitter", "E05", wiederTag === null && leer === "",
+    "der Weg zurück zum Wort des Tages führt auf ein leeres Brett");
+  pruefe("wortgitter", "E05", handy.konsole.length === 0,
+    `dabei still (${handy.konsole.join(" | ")})`);
+  await handy.close();
 
   pruefe("wortgitter", "E01", seite.konsole.length === 0,
     `Konsole still (${seite.konsole.join(" | ")})`);
