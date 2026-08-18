@@ -3,11 +3,11 @@
 Diese Datei wird in **jeder** Sitzung gelesen. Deshalb steht hier nur, was in
 jeder Sitzung gebraucht wird: wo etwas liegt, und die drei Fallen, die sonst
 jedes Mal zuschlagen. Alles andere steht in `doku/` und wird **nur bei Bedarf**
-geöffnet. Stand: 09.08.2026.
+geöffnet. Stand: 18.08.2026.
 
 ## Was hier liegt
 
-`/var/www/html` ist der DocumentRoot. Darin: fünfundzwanzig Browserspiele, die
+`/var/www/html` ist der DocumentRoot. Darin: sechsundzwanzig Browserspiele, die
 Spieleübersicht, ein Bugreport-Werkzeug, zwei Rechtstexte – und, damit nicht
 verwechselt, Nextcloud und zwei Tradingbots.
 

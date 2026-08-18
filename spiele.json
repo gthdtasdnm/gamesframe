@@ -1,7 +1,6 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
   "portsFrei": [
-    "8084",
     "8085",
     "8086",
     "8087",
@@ -419,6 +418,21 @@
       "dienst": "systemd",
       "leute": "1–20",
       "kategorie": "Tempo und Geschick",
+      "art": "server",
+      "repo": null,
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "statisch": "statisch.js"
+      }
+    },
+    {
+      "name": "ameisen",
+      "titel": "Ameisen",
+      "pfad": "/ameisen/",
+      "port": 8084,
+      "dienst": "systemd",
+      "leute": "1",
+      "kategorie": "Allein spielen",
       "art": "server",
       "repo": null,
       "gemeinsam": {

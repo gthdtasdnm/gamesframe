@@ -64,6 +64,25 @@ Das ist kein Freibrief: alles andere bleibt gleich – eigener Ordner, eigener
 Port, eigener Dienst, eigene `probe.js`, Kachel und Bild. Nur der Weg hinein
 ist kürzer.
 
+**Seit Ameisen (18.08.2026) gibt es davon zwei Spielarten.** Revier und Wurm
+teilen sich *eine* Welt, in der alle stehen. Ameisen gibt jedem Menschen
+*seine eigene*: der Server würfelt beim ersten Besuch eine Kennung, der Browser
+legt sie in den `localStorage`, und der Bau liegt als Datei unter
+`<spiel>/welten/<kennung>.json`. Vier Dinge gehören dann dazu, die die beiden
+anderen nicht brauchen:
+
+- **`--allow-write` auf genau einen Ordner**, dazu `ReadWritePaths` in der
+  systemd-Unit. `ProtectSystem=full` ließe `/var/www` zwar ohnehin zu – die
+  Unit soll aber sagen, was sie beschreibt.
+- **Erst daneben schreiben, dann umbenennen.** Ein Stromausfall mitten im
+  Schreiben hinterlässt sonst einen halben Spielstand.
+- **Nur rechnen, solange jemand zusieht.** Ein Bau ohne offene Verbindung ruht;
+  was in der Zeit zusammengekommen wäre, wird beim Wiederkommen in einem Zug
+  ausgerechnet. Sonst kostete jeder je angelegte Bau für immer Rechenzeit.
+- **Ein Ordner ist eine Halde.** Ein Deckel für die Zahl der Dateien, ein
+  Kennungsformat, gegen das geprüft wird (sonst schreibt jemand Pfade), und ein
+  Aufräumlauf für Baue, in denen lange niemand war.
+
 ## Dateien
 
 ```

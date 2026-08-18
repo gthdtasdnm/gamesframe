@@ -1354,13 +1354,107 @@ async function wurm(browser) {
   await seite.context().close();
 }
 
+// ------------------------------------------------------------------ Ameisen
+
+/**
+ * Ameisen ist das einzige Spiel, dessen Bild **nicht** gegen live entsteht,
+ * und das aus einem harmlosen Grund: jeder Bau faengt bei drei Ameisen an. Ein
+ * ehrliches Bild eines frischen Bauen waere ein leerer Hang mit drei Punkten
+ * darauf - und was das Spiel ausmacht, die Strassen aus Duftspuren und der
+ * Betrieb um den Huegel, saehe man erst nach Stunden.
+ *
+ * Deshalb laeuft hier eine **eigene Fassung** auf einem freien Port, mit voller
+ * Kasse und einem eigenen Ordner fuer die Baue - derselbe Griff wie bei
+ * `lobbyprobe.mjs`. Gekauft wird ueber dieselben Nachrichten, die auch der
+ * Laden schickt; geworfen wird mit echten Klicks. Zu sehen ist damit nichts,
+ * was ein Mensch nicht auch saehe, nur frueher.
+ */
+async function ameisen(browser) {
+  const { spawn } = await import('node:child_process');
+  const PORT = 8172;
+  const kind = spawn('/usr/local/bin/deno', [
+    'run', '--allow-net', '--allow-read', '--allow-write=/tmp/ameisen-bild',
+    '--allow-env', '--allow-sys', 'server.js',
+  ], {
+    cwd: '/var/www/html/ameisen',
+    env: {
+      ...process.env,
+      PORT: String(PORT), HOST: '127.0.0.1',
+      DENO_DIR: '/tmp/deno-check',
+      START_MUENZEN: '90000',
+      WELTEN_DIR: '/tmp/ameisen-bild',
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let fehler = '';
+  kind.stderr.on('data', (d) => { fehler += d.toString(); });
+
+  try {
+    await mkdir('/tmp/ameisen-bild', { recursive: true });
+    await warte(2500);
+    const seite = await spieler(browser, 'ameisen');
+    await seite.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });
+    await seite.waitForFunction(() => S.dabei === true, null, { timeout: 10000 });
+    await seite.click('#wegZu');                       // Begruessung weg
+
+    // `app.js` ist ein gewoehnliches Skript – `schicke` liegt global.
+    //
+    // Einzeln und mit Abstand: der Server nimmt je Verbindung 25 Nachrichten
+    // in der Sekunde an, alles darueber faellt still weg. Die erste Fassung
+    // feuerte achtundvierzig Kaeufe in einer Schleife ab - dreiundzwanzig
+    // davon kamen nie an, und auf dem Bild fehlten der zweite Ausgang und
+    // jede Ausbaustufe. Zu sehen war das nur am Bild selbst.
+    const kaufe = async (id, mal) => {
+      for (let i = 0; i < mal; i++) {
+        await seite.evaluate((id) => schicke({ t: 'kauf', id }), id);
+        await warte(70);
+      }
+    };
+    await kaufe('ameise', 30);
+    await kaufe('fuehler', 4);
+    await kaufe('spur', 6);
+    await kaufe('beutel', 6);
+    await kaufe('kiefer', 1);
+    await kaufe('ausgang', 1);
+    await warte(1200);
+
+    // Werfen mit echten Klicks – zwei Haufen, damit zwei Strassen entstehen.
+    const box = await seite.locator('#feld').boundingBox();
+    const ziele = [[0.30, 0.24], [0.33, 0.28], [0.27, 0.30], [0.72, 0.72], [0.76, 0.68],
+                   [0.69, 0.75], [0.70, 0.28], [0.29, 0.72]];
+    for (const [fx, fy] of ziele) {
+      await seite.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
+      await warte(180);
+    }
+
+    // Zusehen, bis wirklich getragen wird und die Spuren stehen.
+    let lage = null;
+    for (let i = 0; i < 60; i++) {
+      await warte(1000);
+      lage = await seite.evaluate(() => ({
+        traeger: ameisen.filter((a) => a.last > 0).length,
+        futter: futter.length,
+        muenzen: S.stand?.muenzen ?? 0,
+      }));
+      if (lage.traeger >= 3 && i > 12) break;
+    }
+    console.log(`    ${lage?.traeger} Traegerinnen unterwegs, ${lage?.futter} Stueck liegen noch`);
+    await warte(400);
+    await knipsen(seite, 'ameisen-spiel.png');
+    await seite.context().close();
+  } finally {
+    kind.kill('SIGTERM');
+    await warte(500);
+  }
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
   flasche, cubes, wortleger,
   // Die zwoelf vom 09.08.2026
   werwolf, schwimmen, maumau, luegen, becher, kingscup, paare, snake,
   minenfeld, sudoku, wortgitter, patience,
-  revier, wurm,
+  revier, wurm, ameisen,
 };
 
 const gewaehlt = process.argv.slice(2);

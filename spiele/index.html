@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Fünfundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Sechsundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -76,7 +76,7 @@ h1 {
 }
 
 /* --- Suche --------------------------------------------------------------- */
-/* Fünfundzwanzig Kacheln sind viel zu scrollen, wenn man schon weiß, was man
+/* Sechsundzwanzig Kacheln sind viel zu scrollen, wenn man schon weiß, was man
    sucht. Das Feld steht auf `display: none` und wird erst vom Skript
    eingeblendet: ohne JS filtert es nichts, dann soll es auch nichts
    versprechen. */
@@ -639,7 +639,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Fünfundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
+  <p class="sub">Sechsundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -1347,7 +1347,7 @@ footer a { color: inherit; }
 
 <section class="gruppe" aria-labelledby="gruppe-allein">
   <h2 class="gruppe-titel" id="gruppe-allein">Allein spielen</h2>
-  <p class="gruppe-sub">Kein Raum, kein Code, niemand, den man erst überreden muss. Läuft ganz im Browser und braucht keine Verbindung, sobald die Seite geladen ist.</p>
+  <p class="gruppe-sub">Kein Raum, kein Code, niemand, den man erst überreden muss. Die vier Rätselspiele laufen ganz im Browser und brauchen keine Verbindung mehr, sobald die Seite geladen ist; Ameisen dagegen läuft immer weiter, weil dein Bau auf dem Server liegt.</p>
 </section>
 
 <main class="raster">
@@ -1469,6 +1469,38 @@ footer a { color: inherit; }
         <li>Auf ein leeres Feld darf nur ein König.</li>
         <li>Der Stapel oben links zieht eine oder drei Karten; ist er leer, dreht ihn ein Tippen wieder um.</li>
         <li>„Aufräumen“ legt zum Schluss alles ab, was oben hinpasst.</li>
+    </template>
+  </article>
+
+
+  <article class="game" style="--accent:#e8a13a; --accent2:#8fc46a;"
+           data-spiel="ameisen" data-bild="bilder/ameisen-spiel.webp">
+    <button class="info" type="button" aria-label="Wie Ameisen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <a class="game-link" href="/ameisen/">
+      <img class="schnappschuss" src="bilder/klein/ameisen-spiel.webp" alt="Bildschirmfoto aus einem Ameisenbau"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🐜</span>
+        <h3>Ameisen</h3>
+      </div>
+      <p class="kurz">Krümel hinwerfen und zusehen, wie sie gefunden und heimgetragen werden. Läuft weiter, wenn du weg bist.</p>
+      <p class="lang">Ein Hügel im Sand, ein Volk, das ausschwärmt. Du wirfst Futter dazwischen, die Ameisen suchen es, finden es und tragen es heim – und wer trägt, legt eine Duftspur, der die anderen nachlaufen. Aus einem Fund wird so nach kurzer Zeit eine Straße. Unten im Bau wird kleingemacht, daraus kommen Münzen, und die gehören in den Laden: mehr Ameisen, stärkere Kiefer, ein zweiter Ausgang. Dein Bau bleibt dir und arbeitet weiter, während du nicht hinsiehst.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">allein</span>
+        <span class="tag">läuft immer</span>
+        <span class="tag">zum Zusehen</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li>Aufmachen genügt – kein Name, kein Code. Beim ersten Mal bekommst du einen frischen Hügel mit drei Ameisen; dein Browser merkt sich die Kennung, und du landest jedes Mal wieder in demselben Bau.</li>
+        <li>Irgendwohin tippen wirft einen Krümel. Der Beutel füllt sich von selbst wieder auf. Auf den Hügel selbst kannst du nichts werfen – das müsste ja niemand tragen.</li>
+        <li>Die Ameisen laufen kreuz und quer und riechen, was in ihre Nähe kommt. Wirf mehrere Krümel an dieselbe Stelle: dann lohnt sich der Weg, und die Duftspur der ersten Trägerin zieht die anderen hinterher.</li>
+        <li>Getragenes Futter landet im Vorrat. Unten in der Kammer wird es kleingemacht, und daraus kommen laufend Münzen – schneller, je größer Kammer und Volk sind. Ist der Vorrat voll, geht Nachschub verloren.</li>
+        <li>Im Laden kostet jede Stufe mehr als die davor: Ameisen, Kiefer, Beine, Fühler, Duftspur, ein zweiter Ausgang, Kammer, Pilzgarten, Vorratskammer, Körnerbeutel.</li>
+        <li>Machst du zu, arbeitet der Bau weiter – aber niemand wirft dann Krümel. Eingesammelt wird nur, was von selbst herunterfällt: <b>Waldrand</b> und <b>Blattläuse</b> sind die Ausbauten für die Nacht, die Vorratskammer der Platz dafür.</li>
+        <li>Irgendwann gründest du einen neuen Hügel: alles fängt von vorn an, aber die Königinnen kommen mit und machen jede Lieferung dauerhaft ergiebiger.</li>
     </template>
   </article>
 

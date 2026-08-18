@@ -28,6 +28,7 @@ node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json
 node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Ueberlauf
 node pruefe-revier.mjs         # kommt der unsichtbare Joystick an, bewegt sich die Leinwand?
 node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu die drei Wege zum Turbo
+node pruefe-ameisen.mjs        # Ameisen: Tippen, Laden, zweiter Ausgang, derselbe Bau nach dem Neuladen
 node pruefe-hochzeit.mjs       # Grossansicht: passt das Bild ins Fenster? (misst, statt zu zeigen)
 GAST=<wort> node pruefe-hochzeit-upload.mjs   # 150 Bilder am Handy auswaehlen: kommt Rueckmeldung?
 node pruefe-durchlauf.mjs      # zwei Handys: Startseite -> Lobby -> Runde -> Endstand
@@ -119,11 +120,25 @@ Netz verlieren, einen zweiten Tab aufmachen, einer laufenden Runde beitreten,
 Müll schicken. Siebzehn Tests (L01–L17) gegen die sechzehn Spiele mit
 gemeinsamem Lobby-Protokoll.
 
-**Revier und Wurm fallen heraus** – sie haben keine Lobby, kein `raum.js` und
-keinen Raumcode, weil ihre Welt durchläuft. Ihr Weg hinein und hinaus steckt
-deshalb in der eigenen `probe.js` (Beitritt, Abschuss, Müll) und in
-`pruefe-revier.mjs` bzw. `pruefe-wurm.mjs` (der Joystick, den man nicht sieht,
-und bei Wurm der Turbo, den kein Serverprotokoll kennt).
+**Revier, Wurm und Ameisen fallen heraus** – sie haben keine Lobby, kein
+`raum.js` und keinen Raumcode, weil ihre Welt durchläuft. Ihr Weg hinein und
+hinaus steckt deshalb in der eigenen `probe.js` (Beitritt, Abschuss, Müll) und
+in `pruefe-revier.mjs` bzw. `pruefe-wurm.mjs` (der Joystick, den man nicht
+sieht, und bei Wurm der Turbo, den kein Serverprotokoll kennt).
+
+**Ameisen ist der erste Fall, in dem eine Probe eine eigene Fassung braucht,
+ohne dass es um Räume oder Züge ginge** (18.08.2026): jeder Bau gehört einem
+Menschen und fängt bei drei Ameisen und null Münzen an. Ein Kauf ließe sich
+gegen live erst nach Minuten prüfen, ein Umzug erst nach Stunden, und die Datei
+auf der Platte gar nicht, solange der Bau noch im Speicher liegt. Die Probe
+setzt dafür `START_MUENZEN`, `RUHE_MS` und `WELTEN_DIR` – und **sagt jeden
+dieser Teile ausdrücklich ab**, wenn sie gegen live läuft, statt ihn stumm zu
+überspringen. `WELTEN_DIR` ist dabei so wichtig wie die anderen beiden: ohne
+den Griff schriebe jede Probe in die echten Baue.
+
+Dasselbe gilt für das Vorschaubild: `aufnehmen.mjs` startet sich für Ameisen
+als einziges Spiel eine eigene Fassung. Ein ehrliches Bild eines frischen Baus
+wäre ein leerer Hang mit drei Punkten darauf.
 
 ```bash
 cd /var/www/html
@@ -174,8 +189,9 @@ worauf es ankommt: was die gemeinsame Logik erlaubt, muss der Server annehmen,
 und was sie verbietet, muss er ablehnen. Der erste Teil der Probe läuft ganz
 ohne Server und rechnet jede Punktzahl von Hand nach.
 
-**Stand 16.08.2026: jedes der 25 Spiele hat einen Nachweis** – Wurm mit
-`probe.js` (P0–P10) und `pruefe-wurm.mjs` (W01–W08). Der Absatz darunter ist
+**Stand 18.08.2026: jedes der 26 Spiele hat einen Nachweis** – Wurm mit
+`probe.js` (P0–P10) und `pruefe-wurm.mjs` (W01–W08), Ameisen mit `probe.js`
+(P0–P13) und `pruefe-ameisen.mjs` (A01–A09). Der Absatz darunter ist
 ueberholt und bleibt nur als Verlauf stehen.
 
 Kein `probe.js` haben **Seconds** und **Lucky Reflex**. Solange das so ist,
