@@ -8,7 +8,7 @@
 # Seitenrahmen), gehoert aber trotzdem nicht ins Netz: sie nennt Serverpfade
 # und verweist auf die Risikoliste – wer sie liest, weiss, wonach er suchen
 # muesste.
-<FilesMatch "^(RISIKEN-TODO|SPIELE-IDEEN|OFFEN-NACHZIEHEN|CLAUDE|INSTAGRAM|PRUEFPLAN)\.md$">
+<FilesMatch "^(RISIKEN-TODO|SPIELE-IDEEN|OFFEN-NACHZIEHEN|ZUGAENGE|CLAUDE|INSTAGRAM|PRUEFPLAN)\.md$">
     Require all denied
 </FilesMatch>
 

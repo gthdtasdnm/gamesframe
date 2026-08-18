@@ -33,6 +33,7 @@ Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
 | Was darf inhaltlich auf die Seite? | `doku/inhalte.md` |
 | Startseite ändern | `doku/startseite.md` |
 | Wer steht oben auf `/spiele/`, und warum bleibt er dort? | `doku/beliebt.md` |
+| Seite mit den Aufrufzahlen (Adresse, Passwort) | `ZUGAENGE.md` (nicht im Repo, 403) |
 | Hochzeitsseite (`/hochzeit/`, kein Spiel) | `doku/hochzeit.md` |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |
@@ -82,9 +83,9 @@ node werkzeug/verteilen.mjs --pruefen        # gemeinsame Teile noch gleich?
 jq -r '.spiele[].name' spiele.json | while read p; do
   printf "  /%-12s %s\n" "$p/" "$(curl -s -o /dev/null -w '%{http_code}' https://inf-zeus.de/$p/)"
 done
-for f in RISIKEN-TODO.md SPIELE-IDEEN.md OFFEN-NACHZIEHEN.md spiele.json CLAUDE.md; do
+for f in RISIKEN-TODO.md SPIELE-IDEEN.md OFFEN-NACHZIEHEN.md ZUGAENGE.md spiele.json CLAUDE.md; do
   printf "  %-20s %s\n" "$f" "$(curl -s -o /dev/null -w '%{http_code}' https://inf-zeus.de/$f)"
-done   # alle fünf müssen 403 sein
+done   # alle sechs müssen 403 sein
 ```
 
 Wurde irgendwo **committet**, kommt der Repo-Abgleich dazu – ein `push` allein

@@ -197,6 +197,54 @@ function zeigen(stand) {
   }
 }
 
+// ---------------------------------------------------------------- Adminseite
+// Neben der Tabelle im Terminal gibt es eine Seite im Browser. Sie ist
+// statisch – sie liest nur diese eine Datei und rechnet selbst.
+//
+// Wo die Datei hin soll, steht in `werkzeug/daten/panel-ziel.txt` (eine
+// Zeile, ein Verzeichnis). Warum nicht hier im Quelltext: der Ordner der
+// Adminseite heisst absichtlich nach nichts, und dieses Repo ist oeffentlich.
+// Ein Pfad, der in GitHub steht, ist kein geheimer Pfad mehr. Fehlt die
+// Datei, passiert hier gar nichts – auf einem anderen Rechner gibt es keine
+// Adminseite.
+const PANELZIEL = join(WURZEL, "werkzeug/daten/panel-ziel.txt");
+
+function panelSchreiben(stand) {
+  if (!existsSync(PANELZIEL)) return;
+  const ziel = readFileSync(PANELZIEL, "utf8").trim();
+  if (!ziel || !existsSync(ziel)) {
+    console.error(`  ! Adminseite: ${ziel || "(leer)"} gibt es nicht`);
+    return;
+  }
+
+  // Bewusst ohne Ports und Dienstnamen: die Seite haengt hinter einer
+  // Passwortabfrage, aber eine Landkarte des Servers braucht sie nicht.
+  const spiele = spieleJson.spiele
+    .filter((s) => s.art !== "werkzeug")
+    .map((s) => ({ name: s.name, titel: s.titel, art: s.art, kategorie: s.kategorie }));
+
+  let oben = null, obenStand = null;
+  const rang = join(WURZEL, "werkzeug/daten/rangstand.json");
+  if (existsSync(rang)) {
+    try {
+      const r = JSON.parse(readFileSync(rang, "utf8"));
+      oben = r.oben ?? null;
+      obenStand = r.gerechnetAm ?? null;
+    } catch { /* kaputter Rangstand darf die Seite nicht aufhalten */ }
+  }
+
+  const datei = join(ziel, "daten.json");
+  const tmp = datei + ".neu";
+  writeFileSync(tmp, JSON.stringify({
+    erzeugt: new Date().toISOString(),
+    zuletzt: stand.zuletzt,
+    spiele, oben, obenStand,
+    tage: stand.tage,
+  }, null, 1) + "\n");
+  try { chmodSync(tmp, 0o644); } catch { /* nicht root */ }
+  renameSync(tmp, datei);
+}
+
 // ---------------------------------------------------------------- Lauf
 const stand = standLesen();
 
@@ -208,6 +256,7 @@ if (!NURZEIGEN) {
   Object.assign(stand.tage, tage);
   stand.zuletzt = new Date().toISOString();
   standSchreiben(stand);
+  panelSchreiben(stand);
   console.log(`  ${zeilen} Protokollzeilen, ${treffer} gezaehlte Aufrufe,`
     + ` ${Object.keys(tage).length} Tage im Protokoll (${neu} neu),`
     + ` ${Object.keys(stand.tage).length} Tage im Stand.`);

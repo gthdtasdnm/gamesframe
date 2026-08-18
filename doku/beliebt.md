@@ -21,8 +21,11 @@ node werkzeug/rangfolge.mjs --probe    # was würde passieren?
 node werkzeug/rangfolge.mjs --jetzt    # die Wochensperre überspringen
 ```
 
-Beides läuft täglich um 03:20 aus dem Cron von root (`crontab -l`). Das
-Protokoll dazu steht in `/var/log/spielzahlen.log`.
+Beides läuft täglich um 03:20 aus dem Cron von root (`crontab -l`), `zaehlen.mjs`
+zusätzlich **stündlich zur Minute 25** – damit die Seite mit den Zahlen (unten)
+nie einen ganzen Tag hinterherhinkt. Die Reihenfolge auf `/spiele/` bleibt beim
+täglichen Termin, sie soll nicht ständig wackeln. Das Protokoll zu beiden
+Läufen steht in `/var/log/spielzahlen.log`.
 
 ## Wie gezählt wird
 
@@ -112,3 +115,51 @@ Nichts zu tun. Es steht ab dem ersten Aufruf in der Zählung und kann nach
 `MINDEST` Aufrufen und der nächsten Wochenrechnung nach oben. Bis dahin steht
 es in seiner Kategorie – und das ist auch die Kategorie, in die es
 zurückfällt.
+
+## Die Seite mit den Zahlen
+
+Dieselben Zahlen gibt es im Browser: Kacheln für heute / 7 / 28 Tage / gesamt,
+ein Balkenverlauf je Tag und eine Liste aller Spiele, sortierbar nach 7 Tagen,
+28 Tagen oder gesamt. Ein Klick auf ein Spiel zeigt Kacheln und Verlauf nur für
+dieses Spiel.
+
+Die Seite ist **rein statisch**: ein `index.html` und eine `daten.json`, kein
+Dienst, kein Port, keine Datenbank. Sie rechnet im Browser und kann nichts
+verändern – fällt sie aus, fällt nichts anderes mit aus.
+
+| Was | Wo |
+|---|---|
+| Wohin `zaehlen.mjs` die `daten.json` schreibt | `werkzeug/daten/panel-ziel.txt` (eine Zeile: das Verzeichnis) |
+| Adresse und Passwort | `ZUGAENGE.md` (nicht im Repo, 403) |
+| Passwortdatei | `/etc/apache2/.htpasswd-zahlen`, `root:www-data`, Modus 640 |
+
+**Warum der Ordner nirgends genannt wird:** dieses Repo ist öffentlich. Der
+Ordnername ist die erste Hürde – er steht in keinem Repo, in keinem Link, in
+keiner Sitemap –, das Passwort (Basic Auth) die zweite. Deshalb steht der Pfad
+in `panel-ziel.txt` statt im Quelltext von `zaehlen.mjs`, und `panel-ziel.txt`
+liegt unter `werkzeug/daten/` und damit außerhalb des Repos. Fehlt die Datei,
+schreibt `zaehlen.mjs` einfach keine `daten.json` – auf einem anderen Rechner
+gibt es die Seite nicht.
+
+Das ist bewusst kein Tresor. Dahinter liegt nur, wie oft welches Spiel
+aufgemacht wurde; personenbezogen ist daran nichts, IP-Adressen stehen nirgends
+in der `daten.json`.
+
+### Passwort ändern
+
+```bash
+htpasswd -B /etc/apache2/.htpasswd-zahlen zeus     # fragt zweimal
+```
+
+Danach in `ZUGAENGE.md` nachziehen. Apache muss **nicht** neu starten, die
+Datei wird bei jeder Anfrage gelesen.
+
+### Umziehen
+
+```bash
+cd /var/www/html
+NEU=$(openssl rand -hex 6)
+mv "$(cat werkzeug/daten/panel-ziel.txt)" "/var/www/html/$NEU"
+echo "/var/www/html/$NEU" > werkzeug/daten/panel-ziel.txt
+node werkzeug/zaehlen.mjs --still
+```
