@@ -32,6 +32,7 @@ Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
 | Dienste, Apache, Rechte, Git-Ebenen | `doku/betrieb.md` |
 | Was darf inhaltlich auf die Seite? | `doku/inhalte.md` |
 | Startseite ändern | `doku/startseite.md` |
+| Wer steht oben auf `/spiele/`, und warum bleibt er dort? | `doku/beliebt.md` |
 | Hochzeitsseite (`/hochzeit/`, kein Spiel) | `doku/hochzeit.md` |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |

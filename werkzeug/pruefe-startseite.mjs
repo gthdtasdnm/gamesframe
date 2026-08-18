@@ -202,6 +202,23 @@ const leereKoepfe = await page.$$eval('.raster', (rs) => rs.filter((r) => {
 if (leereKoepfe) throw new Error(`${leereKoepfe} Kategorie(n) stehen leer über einer Lücke`);
 console.log(`ok  Suche „wurfel": ${mitWurfel} von ${kacheln} Kacheln, keine leere Kategorie`);
 
+// Die Kacheln oben stehen nicht bei ihresgleichen, sondern in „Am meisten
+// gespielt" – werkzeug/rangfolge.mjs schiebt sie dorthin. Gefunden werden
+// muessen sie trotzdem ueber ihre Heimatkategorie, sonst fiele Keep aus der
+// Suche nach „tempo" heraus, nur weil es gerade beliebt ist.
+for (const kachel of await page.$$eval('.game[data-heimat]',
+  (gs) => gs.map((g) => ({ spiel: g.dataset.spiel, heimat: g.dataset.heimat })))) {
+  const titel = await page.textContent('#' + kachel.heimat);
+  const wort = titel.trim().split(/\s+/)[0];
+  await page.fill('#suche', wort);
+  const drin = await page.$$eval('.game:not([hidden])', (gs) => gs.map((g) => g.dataset.spiel));
+  if (!drin.includes(kachel.spiel)) {
+    throw new Error(`Suche „${wort}" findet ${kachel.spiel} nicht mehr `
+      + `– die Heimatkategorie (${kachel.heimat}) fehlt im Suchtext`);
+  }
+}
+console.log('ok  jede Kachel ist über ihre Heimatkategorie auffindbar');
+
 await page.fill('#suche', 'gibtesnichtxy');
 if (await sichtbare() !== 0) throw new Error('Unsinn als Suche lässt Kacheln stehen');
 if (!(await page.textContent('#suchErgebnis')).trim()) {

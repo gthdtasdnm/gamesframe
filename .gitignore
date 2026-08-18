@@ -24,3 +24,9 @@
 !/werkzeug/
 !/gemeinsam/
 !/doku/
+
+# Die gezaehlten Aufrufe und der Rangstand sind Betriebsdaten, keine Quelle:
+# sie aendern sich taeglich, wachsen ohne Ende und sagen auf einem anderen
+# Rechner nichts. Was daraus folgt – die Reihenfolge der Kacheln – steht in
+# spiele/index.html und geht damit ganz normal mit ins Repo.
+/werkzeug/daten/

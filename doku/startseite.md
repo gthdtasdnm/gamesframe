@@ -18,6 +18,17 @@ Anleitung selbst:
 Der Anleitungsdialog liest daraus. Früher gab es zusätzlich ein JS-Objekt
 `SPIELE` – zwei Fassungen desselben Spiels, die auseinanderliefen.
 
+## Die Kategorie oben
+
+Ganz oben steht „Am meisten gespielt" – vier Kacheln, die nicht von Hand
+dorthin gesetzt wurden, sondern von `werkzeug/rangfolge.mjs` aus gezählten
+Aufrufen. Das Skript **schreibt in diese Datei**; nach einem Wechsel steht sie
+deshalb in `git status`. Wie es zählt und welche Hürden davor stehen:
+`doku/beliebt.md`.
+
+Die verschobenen Kacheln tragen `data-heimat` und `data-platz` – den Rückweg
+in ihre eigentliche Kategorie. Nie von Hand entfernen.
+
 **Nicht rückgängig machen:** Die Kacheln bleiben statisches HTML. Die
 Ideendatei schlägt vor, die Liste als JS-Datenfeld zu führen; dann zeigte die
 Seite ohne JavaScript gar keine Spiele mehr, und die Übersicht ist der einzige

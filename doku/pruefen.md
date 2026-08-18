@@ -53,7 +53,14 @@ node werkzeug/grenzprobe.mjs       # Abschnitt G: die Bremse und was der Client 
 node werkzeug/pruefe-seconds.mjs   # ganze Partie Seconds
 node werkzeug/pruefe-cardchaos.mjs # ganze Partie Card Chaos
 node werkzeug/pruefe-keep.mjs      # ganze Partie Keep
+node werkzeug/pruefe-solo.mjs      # Keep, Card Chaos und Snake starten allein
 ```
+
+`pruefe-solo.mjs` ist die kurze davon: die drei Spiele haben seit dem
+18.08.2026 `minPlayers = 1`, und diese Probe weist nur nach, dass ein
+einzelner Host wirklich losdrücken kann und die Partie allein bis zum
+Endstand läuft. Eigene Fassungen auf 8106/8107/8108, `--nur snake` prüft
+einzeln.
 
 Die drei letzten sind die Spiele der **Gruppe D**: eigenes Protokoll, kein
 `probe.js`, und sie fallen auch aus `lobbyprobe.mjs` heraus. Seit dem
