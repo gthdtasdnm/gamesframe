@@ -219,8 +219,10 @@ async function cardchaos() {
     pruefe("S01", raum?.room?.minPlayers === 1, `Card Chaos: der Server nennt minPlayers=${raum?.room?.minPlayers}`);
     pruefe("S01", raum?.room?.players?.length === 1, "Card Chaos: genau ein Spieler am Tisch");
 
-    // Eine Runde reicht: geprueft wird die Lobby, nicht die Ausdauer.
-    anna.schicke({ t: "rounds", value: 1 });
+    // Die kuerzeste Partie, die der Server annimmt: seit dem 19.08.2026 sind
+    // nur noch 3, 5 und 10 Runden erlaubt, weil es nur dafuer eine Bestenliste
+    // gibt. Geprueft wird die Lobby, nicht die Ausdauer.
+    anna.schicke({ t: "rounds", value: 3 });
     await schlaf(200);
     anna.schicke({ t: "start" });
     const start = await anna.warte((m) => m.t === "roundStart", 8000);
@@ -228,11 +230,20 @@ async function cardchaos() {
     pruefe("S02", Boolean(start) && !fehler,
       fehler ? `Card Chaos: der Server sagt „${fehler.msg}"` : "Card Chaos: die erste Runde kommt allein los");
 
-    // Die Runde laeuft auf einer Uhr und dauert bei einer einzigen Runde die
-    // vollen 90 Sekunden (E.ROUND_MS) – deshalb der lange Zeitraum. Zu Ende
-    // spielen kann die Probe nicht: dafuer muesste sie die Bretter wirklich
-    // abraeumen, und genau das macht `pruefe-cardchaos.mjs`.
-    const schluss = await anna.warte((m) => m.t === "gameEnd", 120000);
+    // Die Runden laufen auf einer Uhr und werden nicht abgeraeumt: drei Runden
+    // dauern deshalb ihre vollen 90 + 58 + 25 Sekunden (E.roundMs) plus die
+    // Countdowns – daher der lange Zeitraum. Zu Ende spielen kann die Probe
+    // nicht: dafuer muesste sie die Bretter wirklich leerraeumen, und genau
+    // das macht `pruefe-cardchaos.mjs`.
+    //
+    // Zwischen den Runden wartet der Server auf „Bereit" – ohne das bliebe die
+    // Partie nach der ersten Runde stehen.
+    anna.ws.addEventListener("message", (ev) => {
+      try {
+        if (JSON.parse(ev.data).t === "roundEnd") anna.schicke({ t: "ready", value: true });
+      } catch { /* kein JSON */ }
+    });
+    const schluss = await anna.warte((m) => m.t === "gameEnd", 260000);
     pruefe("S03", Boolean(schluss), "Card Chaos: die Partie laeuft allein bis zum Endstand durch");
   } finally {
     anna.zu();

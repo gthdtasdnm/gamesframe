@@ -28,7 +28,10 @@ import net from "node:net";
 import * as E from "../cardchaos/shared/engine.js";
 
 const PORT = 8104;
-const RUNDEN = 2;   // statt zehn - geprüft wird der Weg, nicht die Ausdauer
+const RUNDEN = 3;   // statt zehn - geprüft wird der Weg, nicht die Ausdauer.
+                    // Weniger geht seit dem 19.08.2026 nicht mehr: der Server
+                    // nimmt nur noch 3, 5 und 10 an, weil es nur dafür eine
+                    // Bestenliste gibt.
 const schlaf = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let gruen = 0, rot = 0;
@@ -172,9 +175,9 @@ try {
   pruefe("P02", bert.raum.players.length === 2, "Bert sitzt mit am Tisch");
 
   // P05: der Gast darf die Rundenzahl nicht setzen und nicht starten.
-  bert.schicke({ t: "rounds", value: 7 });
+  bert.schicke({ t: "rounds", value: 5 });
   await schlaf(400);
-  pruefe("P05", anna.raum.totalRounds !== 7,
+  pruefe("P05", anna.raum.totalRounds !== 5,
     `Gast kann die Rundenzahl nicht ändern (steht auf ${anna.raum.totalRounds})`);
   bert.schicke({ t: "start" });
   await schlaf(400);

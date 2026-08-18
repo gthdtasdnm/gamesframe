@@ -36,6 +36,7 @@ node pruefe-ausgang.mjs        # fuehrt aus jedem Spiel ein Weg zurueck?
 node pruefe-cardchaos-tippen.mjs  # Karten mit dem Finger, schnell hintereinander
 node pruefe-cardchaos-ende.mjs    # Wartebildschirm: Fahne ruhig, Muenze vor dem Gewinn
 node pruefe-cardchaos-ablage.mjs  # Jubelmeldungen ueber der Pyramide, nie auf den Karten
+node pruefe-cardchaos-bestenliste.mjs  # eine Liste statt zwei: Woche/Ewig x 3/5/10 Runden
 ```
 
 Eine eigene Fassung braucht nur diese hier – sie verbraucht Raeume und Zuege:
@@ -60,7 +61,9 @@ node werkzeug/pruefe-solo.mjs      # Keep, Card Chaos und Snake starten allein
 `pruefe-solo.mjs` ist die kurze davon: die drei Spiele haben seit dem
 18.08.2026 `minPlayers = 1`, und diese Probe weist nur nach, dass ein
 einzelner Host wirklich losdrücken kann und die Partie allein bis zum
-Endstand läuft. Eigene Fassungen auf 8106/8107/8108, `--nur snake` prüft
+Endstand läuft. Card Chaos braucht darin seit dem 19.08.2026 rund drei
+Minuten – der Server nimmt nur noch 3, 5 oder 10 Runden an, und drei
+unabgeräumte Runden laufen ihre Uhr voll aus. Eigene Fassungen auf 8106/8107/8108, `--nur snake` prüft
 einzeln.
 
 Die drei letzten sind die Spiele der **Gruppe D**: eigenes Protokoll, kein
