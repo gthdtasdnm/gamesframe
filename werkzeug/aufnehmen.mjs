@@ -144,7 +144,12 @@ async function keep(browser) {
   }
   await warte(600);
   await host.click('#draw1').catch(() => {});
-  await warte(2200);
+  await warte(1600);
+  // Eine Kombination werten, bevor das Bild faellt: sonst steht der Glutbalken
+  // unter der Uhr auf null und der Multiplikator auf x1 - das Bild zeigte dann
+  // genau die Mechanik nicht, um die sich das Spiel dreht.
+  const kachel = await host.$('.cat.available');
+  if (kachel) { await kachel.click().catch(() => {}); await warte(1200); }
   await knipsen(host, 'keep-spiel.png');
   await host.context().close();
   await gast.context().close();
