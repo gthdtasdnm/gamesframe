@@ -411,8 +411,8 @@ async function amehesten(browser) {
 // ----------------------------------------------------------------- Imposter
 
 async function imposter(browser) {
-  // Fuenf Sitzungen: unter vier startet das Spiel gar nicht, und die
-  // Hinweisreihe im Bild soll nach mehr aussehen als nach drei Namen.
+  // Fuenf Sitzungen. Drei wuerden reichen, aber der Warteraum im Bild soll
+  // nach einer Runde aussehen und nicht nach einem Anruf.
   const namen = ['Ata', 'Mira', 'Nuri', 'Jo', 'Sam'];
   const seiten = [];
   for (const name of namen) {
@@ -427,28 +427,24 @@ async function imposter(browser) {
   await host.waitForSelector('#screen-lobby.active', { timeout: 15000 });
   const code = (await host.textContent('#roomCode')).trim();
 
+  // Kein Bereit-Knopf mehr: wer im Raum ist, ist dabei.
   for (const g of gaeste) {
     await g.fill('#codeInput', code);
     await g.click('#joinBtn');
     await g.waitForSelector('#screen-lobby.active', { timeout: 15000 });
-    await g.click('#readyBtn');
   }
 
   await warte(600);
   await knipsen(host, 'imposter-raum.png');
 
+  // Ein Druck, und alle haben ihre Karte. Nichts zu bestaetigen.
   await host.click('#startBtn');
   await host.waitForSelector('#screen-game.active', { timeout: 15000 });
-  await warte(600);
+  await warte(700);
 
-  // Alle bestaetigen ihre Karte, dann laeuft die Hinweisrunde an.
-  for (const s of seiten) await s.click('#aktionen .btn.primary');
-  await host.waitForSelector('#reihenListe:not([hidden])', { timeout: 15000 });
-  await warte(400);
-
-  // Fuers Bild die Seite eines *Nicht*-Imposters nehmen: sie zeigt ein echtes
-  // Wort statt der Luper-Karte, und das erklaert das Spiel besser. Wer der
-  // Imposter ist, steht nur auf dessen eigenem Bildschirm.
+  // Waehrend der Runde zeigt der Bildschirm nur ein Wort und sonst nichts –
+  // fuer die Kachel ist das zu wenig Bild. Deshalb die **aufgeloeste** Runde:
+  // dort stehen Wort und Imposter zusammen, und damit das ganze Spiel.
   let bild = null;
   for (const s of seiten) {
     const kopf = await s.textContent('#karteKopf');
@@ -456,9 +452,8 @@ async function imposter(browser) {
   }
   if (!bild) throw new Error('keine Seite ohne Imposter-Karte gefunden');
 
-  // Die Wortliste aufklappen: sie ist der Kniff des Spiels und im
-  // zusammengeklappten Zustand nicht zu sehen.
-  await bild.click('#liste summary');
+  await host.click('#aktionen .btn.primary');           // Aufloesen
+  await bild.waitForSelector('#aufloesung:not([hidden])', { timeout: 15000 });
   await warte(500);
   await knipsen(bild, 'imposter-spiel.png');
 

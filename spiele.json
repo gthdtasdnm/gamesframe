@@ -132,7 +132,7 @@
       "pfad": "/imposter/",
       "port": 8073,
       "dienst": "systemd",
-      "leute": "4–10",
+      "leute": "3–10",
       "kategorie": "Reden und Raten",
       "art": "server",
       "repo": "git@github.com:gthdtasdnm/imposter.git",

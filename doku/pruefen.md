@@ -298,7 +298,8 @@ Ein Bild muss die Mechanik **zeigen**. Beispiele, wo das Arbeit war: bei
 Mäxchen wird so lange weitergewürfelt, bis ein gemischter Wurf fällt (bei einem
 Mäxchen ist alles grün und die Bildunterschrift widerlegt sich selbst); bei
 Wer am ehesten werden die Stimmen absichtlich ungleich verteilt; bei Imposter
-wird die Seite eines **Nicht**-Imposters geknipst.
+wird die **aufgelöste** Runde geknipst – während der Runde zeigt der Bildschirm
+nur ein Wort und sonst nichts, und das ist als Kachelbild zu wenig.
 
 Die Bilder landen als WebP in `spiele/bilder/`. Voraussetzungen auf dem Server:
 Playwright samt Chromium (**nicht** `--with-deps`, das kaputte MongoDB-Repo

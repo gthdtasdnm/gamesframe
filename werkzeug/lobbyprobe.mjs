@@ -85,6 +85,14 @@ async function koennen(spiel) {
     // Nicht jedes Spiel laesst den Host vorzeitig beenden - Lucky Reflex hat
     // dafuer weder Knopf noch Handler, und eine Runde dauert dort Sekunden.
     kannEnde: /case "ende"/.test(q),
+    // Und nicht jedes hat ein „Bereit": Imposter teilt aus, sobald der Host
+    // drueckt - dort waere ein Knopf, auf den die Runde wartet, genau das,
+    // was das Spiel nicht wollte. Ohne diese Abfrage haenge die Probe am
+    // Warten auf ein Feld, das der Server nie schickt.
+    kannBereit: /case "ready"/.test(q),
+    // Spiele, die einen Nachzuegler in die laufende Runde lassen (er wartet
+    // dann auf die naechste), statt ihn abzuweisen.
+    laesstNachzuegler: !/"Die Runde läuft schon"/.test(q),
   };
   merkmale.set(spiel, k);
   return k;
@@ -344,13 +352,15 @@ async function rundeAn(ctx, { mindestens = 1 } = {}) {
     gaeste.push(c);
   }
   await sitze(host, min);
-  for (const g of gaeste) g.schicke({ t: "ready", value: true });
-  // Warten, bis der Host alle als bereit sieht - sonst faellt `start` durch.
-  await host.warte(
-    (m) => m.t === "room" &&
-      m.players.filter((p) => p.ready || p.id === m.hostId).length === min,
-    { was: "alle bereit" },
-  );
+  if ((await koennen(ctx.spiel)).kannBereit) {
+    for (const g of gaeste) g.schicke({ t: "ready", value: true });
+    // Warten, bis der Host alle als bereit sieht - sonst faellt `start` durch.
+    await host.warte(
+      (m) => m.t === "room" &&
+        m.players.filter((p) => p.ready || p.id === m.hostId).length === min,
+      { was: "alle bereit" },
+    );
+  }
   const ab = host.marke();
   host.schicke({ t: "start" });
   await host.warte((m) => m.t === "room" && m.phase !== "lobby", { ab, was: "Rundenstart" });
@@ -460,16 +470,19 @@ test("L05", "Bereit und Start: Sperren greifen, Gast darf nicht starten", async 
   }
   await sitze(host, Math.max(min, 2));
 
-  // Genug Leute, aber noch niemand bereit.
-  const ab2 = host.marke();
-  host.schicke({ t: "start" });
-  await schlaf(700);
-  muss(!host.msgs.slice(ab2).some((m) => m.t === "room" && m.phase !== "lobby"),
-    "Start ging durch, obwohl niemand bereit war");
+  // Genug Leute, aber noch niemand bereit. Wo es kein Bereit gibt, darf der
+  // Host natuerlich sofort starten - das ist dort der Sinn der Sache.
+  if ((await koennen(ctx.spiel)).kannBereit) {
+    const ab2 = host.marke();
+    host.schicke({ t: "start" });
+    await schlaf(700);
+    muss(!host.msgs.slice(ab2).some((m) => m.t === "room" && m.phase !== "lobby"),
+      "Start ging durch, obwohl niemand bereit war");
 
-  for (const g of gaeste) g.schicke({ t: "ready", value: true });
-  await host.warte((m) => m.t === "room" && m.players.every((p) => p.ready || p.id === m.hostId),
-    { was: "alle bereit" });
+    for (const g of gaeste) g.schicke({ t: "ready", value: true });
+    await host.warte((m) => m.t === "room" && m.players.every((p) => p.ready || p.id === m.hostId),
+      { was: "alle bereit" });
+  }
 
   // Jetzt versucht ein Gast zu starten - das darf nichts tun.
   const ab3 = host.marke();
@@ -594,8 +607,14 @@ test("L09", "Host geht - in der Lobby und in der Runde", async (ctx) => {
   }
   const ab = g2.marke();
   g2.schicke({ t: "ende" });
-  await g2.warte((m) => m.t === "final" || (m.t === "room" && m.phase === "final"),
-    { ab, ms: 6000, was: "der neue Host darf die Runde beenden" });
+  // Wohin „ende" fuehrt, ist Sache des Spiels: die meisten zeigen einen
+  // Endstand, Imposter geht direkt in den Warteraum zurueck (es gibt dort
+  // nichts zu zaehlen). Gemeint ist beides Mal dasselbe - die Runde ist aus.
+  await g2.warte(
+    (m) => m.t === "final" ||
+      (m.t === "room" && (m.phase === "final" || m.phase === "lobby")),
+    { ab, ms: 6000, was: "der neue Host darf die Runde beenden" },
+  );
   return "wandert sofort, und der Nachfolger darf auch beenden";
 });
 
@@ -641,6 +660,20 @@ test("L11", "Raum voll: eine Meldung, kein stiller Beitritt", async (ctx) => {
 
 test("L12", "Runde laeuft schon: kein Beitritt, auch nicht mit erfundenem Token", async (ctx) => {
   const { host } = await rundeAn(ctx);
+
+  // Wer Nachzuegler zulaesst, wird hier anders geprueft: sie muessen einen
+  // Platz bekommen, aber nichts aus der laufenden Runde zu sehen kriegen.
+  if ((await koennen(ctx.spiel)).laesstNachzuegler) {
+    const { c: spaet } = await dazu(ctx, host.code, "Spaet");
+    await spaet.typ("room", { ms: 6000 });
+    muss(spaet.you, "Nachzuegler bekam keinen Platz");
+    await schlaf(400);
+    const karte = spaet.letzte("karte");
+    muss(!karte || karte.dabei === false,
+      "der Nachzuegler ist in der laufenden Runde dabei");
+    return "Nachzuegler kommt rein, spielt aber erst die naechste Runde mit";
+  }
+
   const { c: fremd } = await dazu(ctx, host.code, "Spaet");
   const e1 = await fremd.typ("error", { ms: 6000 });
   muss(/l(ae|äu)uft|schon|begonnen/i.test(e1.msg), `Meldung lautet »${e1.msg}«`);

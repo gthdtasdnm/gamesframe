@@ -1,7 +1,7 @@
 # Ein neues Server-Spiel bauen
 
 Vorlage ist **`/var/www/html/amehesten/`** – am wenigsten Sonderfälle und das
-erste Spiel auf `raum.js`. `imposter` ist das komplexeste, `nochnie` das
+erste Spiel auf `raum.js`. `cardchaos` ist das komplexeste, `nochnie` das
 älteste.
 
 Freien Port holen: `jq -r '.portsFrei[0]' spiele.json`. Danach den Port dort

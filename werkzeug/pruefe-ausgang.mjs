@@ -40,19 +40,25 @@ for (const spiel of SPIELE) {
     const heim = await seite.locator('.zurueck[href="/spiele/"]').isVisible().catch(() => false);
     pruefe(spiel, heim, "Startseite: Weg zur Spieleübersicht");
 
+    // Nicht jedes Spiel hat einen Endstand: Imposter zählt keine Punkte und
+    // geht vom Spielbildschirm direkt in den Warteraum zurück. Geprüft wird
+    // deshalb der letzte Bildschirm, den es *gibt*.
+    const hatEndstand = await seite.locator("#screen-final").count() > 0;
+    const letzter = hatEndstand ? "screen-final" : "screen-game";
     const zahl = await seite.locator("[data-raus]").count();
-    pruefe(spiel, zahl >= 2, `${zahl} Ausgänge im Markup (Spielbildschirm und Endstand)`);
+    pruefe(spiel, zahl >= (hatEndstand ? 2 : 1),
+      `${zahl} Ausgänge im Markup (${hatEndstand ? "Spielbildschirm und Endstand" : "Spielbildschirm"})`);
 
-    // Den Endstand von Hand einblenden – ohne Partie. Geprüft wird nur die
+    // Den Bildschirm von Hand einblenden – ohne Partie. Geprüft wird nur die
     // Verdrahtung des Knopfes, nicht der Weg dorthin.
-    await seite.evaluate(() => {
+    await seite.evaluate((id) => {
       for (const s of document.querySelectorAll(".screen")) {
-        s.classList.toggle("active", s.id === "screen-final");
+        s.classList.toggle("active", s.id === id);
       }
-    });
-    await seite.locator("#screen-final [data-raus]").click();
+    }, letzter);
+    await seite.locator(`#${letzter} [data-raus]`).click();
     const daheim = await seite.locator("#screen-home.active").isVisible().catch(() => false);
-    pruefe(spiel, daheim, "Knopf im Endstand führt auf die Startseite");
+    pruefe(spiel, daheim, `Knopf auf »${letzter}« führt auf die Startseite`);
     pruefe(spiel, konsole.length === 0, `Konsole still (${konsole.join(" | ").slice(0, 160)})`);
   } catch (e) {
     pruefe(spiel, false, e.message);
