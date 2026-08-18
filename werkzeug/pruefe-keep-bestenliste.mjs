@@ -141,13 +141,16 @@ try {
   await seite.waitForSelector("#screen-leaderboard.active", { timeout: 10000 });
   await schlaf(500);
 
-  const zeilen = async () => seite.$$eval("#leaderboardList li", (ls) => ls.map((l) => l.textContent.trim()));
+  // Die Zeilen heissen `.res` wie in Card Chaos - gleicher Aufbau, gleiche Klassen.
+  const zeilen = async () => seite.$$eval("#leaderboardList .res", (ls) => ls.map((l) => l.textContent.trim()));
   const wocheListe = await zeilen();
   pruefe("L06", wocheListe.length === 1, `Woche zeigt eine Zeile (${wocheListe.length})`);
   pruefe("L06", /Wochenheld/.test(wocheListe[0] ?? ""), `und zwar ${JSON.stringify(wocheListe[0] ?? "")}`);
   pruefe("L06", /2 Partien/.test(wocheListe[0] ?? ""), "mit der Zahl der Partien dahinter");
   pruefe("L06", /1\.500\.000/.test(wocheListe[0] ?? ""), "und der besten Punktzahl");
   pruefe("L06", /Montag/.test(await seite.textContent("#lbFuss")), "die Fusszeile nennt den Wochenanfang");
+  pruefe("L06", await seite.$eval("#leaderboardList .res", (r) => r.classList.contains("p1")),
+    "die erste Zeile traegt den Platz-1-Anstrich (wie in Card Chaos)");
 
   await seite.click('#lbZeitraum .seg[data-lb="ewig"]');
   await schlaf(300);
