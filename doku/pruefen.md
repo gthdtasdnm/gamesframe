@@ -38,6 +38,7 @@ node pruefe-cardchaos-ende.mjs    # Wartebildschirm: Fahne ruhig, Muenze vor dem
 node pruefe-cardchaos-ablage.mjs  # Jubelmeldungen ueber der Pyramide, nie auf den Karten
 node pruefe-cardchaos-bestenliste.mjs  # eine Liste statt zwei: Woche/Ewig x 3/5/10 Runden
 node pruefe-keep-glut.mjs      # Keep: Glutbalken, Multiplikator, feste Zahlen (eigene Fassung, Port 8106)
+node pruefe-keep-bestenliste.mjs  # Keep: Woche/Ewig, eine Zeile je Person (eigene Fassung, Port 8107)
 ```
 
 Eine eigene Fassung braucht nur diese hier – sie verbraucht Raeume und Zuege:

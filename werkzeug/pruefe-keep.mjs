@@ -9,6 +9,8 @@
 //   P05  Nur der Host darf starten.
 //   P06  Was der Server mit einer erfundenen Punktzahl macht (siehe F10):
 //        `Infinity`, negativ, Text – nichts davon darf in die Summe.
+//   P07  Die Bestenliste kommt als zwei Ansichten (Woche/Ewig), eine Zeile
+//        je Person, mit Platz und Besetzung.
 //
 // **Ohne neues Paket.** `socket.io-client` liegt nicht in `keep/node_modules`,
 // und in ein laufendes Spiel wandert dafür keine Abhängigkeit. Engine.IO
@@ -242,11 +244,20 @@ try {
     `Annas Summe ist eine Zahl geblieben, trotz „Infinity": ${annasSumme}`);
 
   // Und die Bestenliste darf keinen unbrauchbaren Eintrag bekommen haben.
+  // Sie kommt seit dem 18.08.2026 als zwei Ansichten statt als eine Liste.
   anna.schicke("getLeaderboard");
-  const liste = await anna.warte("leaderboard", 6000) ?? anna.letzte("leaderboard") ?? [];
-  const kaputt = (Array.isArray(liste) ? liste : []).filter((e) => !Number.isFinite(e?.score));
+  const tafeln = await anna.warte("leaderboard", 6000) ?? anna.letzte("leaderboard") ?? {};
+  const zeilen = [...(tafeln.woche ?? []), ...(tafeln.ewig ?? [])];
+  const kaputt = zeilen.filter((e) => !Number.isFinite(e?.score));
   pruefe("P06", kaputt.length === 0,
-    `${Array.isArray(liste) ? liste.length : 0} Einträge in der Bestenliste, keiner unbrauchbar`);
+    `${zeilen.length} Zeilen in beiden Ansichten, keine unbrauchbar`);
+  pruefe("P07", Array.isArray(tafeln.woche) && Array.isArray(tafeln.ewig) && Number.isFinite(tafeln.wochenStart),
+    `Woche und Ewig kommen zusammen, Wochenstart ${new Date(tafeln.wochenStart ?? 0).toISOString().slice(0, 10)}`);
+  const namen = (tafeln.woche ?? []).map((e) => String(e.name).toLowerCase());
+  pruefe("P07", namen.length === new Set(namen).size,
+    `jeder Name genau einmal in der Wochenliste (${namen.join(", ") || "leer"})`);
+  pruefe("P07", (tafeln.woche ?? []).every((e) => e.rank >= 1 && e.players === 2),
+    "jede Zeile kennt ihren Platz und die Besetzung der Partie");
 
   // ── P03 ─────────────────────────────────────────────────────────────────
   anna.schicke("backToLobby");
