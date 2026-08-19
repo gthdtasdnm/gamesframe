@@ -450,12 +450,10 @@
       "dienst": "systemd",
       "art": "still",
       "repo": null,
-      "hinweis": "Speed-Dating mit Spielen. Nicht verlinkt, keine Kachel, noindex - deshalb steht es hier und nicht unter 'spiele'. Benutzt zehn bestehende Spiele ueber eine bestellte private Lobby, ohne eines davon anzufassen. Siehe doku/dating.md.",
+      "hinweis": "Speed-Dating mit Spielen. Nicht verlinkt, keine Kachel, noindex - deshalb steht es hier und nicht unter 'spiele'. Traegt bewusst KEIN lobbyCss/rahmenCss: es hat ein eigenes, dunkelrotes Aussehen, und verteilen.mjs wuerde ihm sonst das Neon der Spieleseite zurueckschreiben. Benutzt zehn bestehende Spiele ueber eine bestellte private Lobby, ohne eines davon anzufassen. Siehe doku/dating.md.",
       "gemeinsam": {
         "bremse": "bremse.js",
-        "statisch": "statisch.js",
-        "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "statisch": "statisch.js"
       }
     }
   ]

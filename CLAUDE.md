@@ -24,10 +24,13 @@ anfassen, wenn ausdrücklich danach gefragt wird.
 `hochzeit` ist eine private Bildergalerie hinter einem Zugangswort – kein
 Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
 
-`dating` ist ZWEI, ein Speed-Dating-Ablauf, der die bestehenden Spiele benutzt.
-Ebenfalls kein Spiel, keine Kachel, `noindex` – aber **ohne** Zugangswort: wer
-den Link hat, kommt hinein. Es steht deshalb nicht unter `spiele` in
-`spiele.json`, sondern unter `still`. Details: `doku/dating.md`.
+`dating` ist ZWEI, ein Speed-Dating-Abend (taeglich 20 Uhr), der die
+bestehenden Spiele benutzt. Ebenfalls kein Spiel, keine Kachel, `noindex` –
+aber **ohne** Zugangswort: wer den Link hat, kommt hinein und sieht die
+Vornamen aller, die fuer heute Abend reserviert haben. Es steht deshalb nicht
+unter `spiele` in `spiele.json`, sondern unter `still`, und traegt dort
+bewusst kein `lobbyCss`: es hat ein eigenes, dunkelrotes Aussehen, das
+`verteilen.mjs` sonst ueberschreibt. Details: `doku/dating.md`.
 
 ## Wohin zum Nachlesen
 
