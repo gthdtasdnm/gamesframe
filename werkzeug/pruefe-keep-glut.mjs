@@ -12,8 +12,8 @@
 //   G05  Eine gewertete Kachel behaelt ihre Zahl, auch wenn die Stufe wechselt.
 //   G06  Der Jubel haengt oben und liegt nie auf Walzen oder Kombi-Tafel -
 //        und keine Effekt-Ebene nimmt einen Klick weg.
-//   G07  Das Rollen der Walzen haelt niemanden auf: bis die Tafel wieder
-//        Zahlen zeigt, vergeht weniger als eine Sekunde.
+//   G07  Die Tafel steht sofort. Die Walzen zeigen ihr Symbol in dem Moment,
+//        in dem es gezogen wird - es gibt nichts abzuwarten.
 //
 //   cd /root/werkzeug-screenshots && node pruefe-keep-glut.mjs
 //
@@ -158,11 +158,12 @@ try {
       `${ersteKachel} steht weiter auf ${ersteZahl.toLocaleString("de-DE")} (jetzt ${jetzt.toLocaleString("de-DE")})`);
   }
 
-  // ---- G07: das Rollen darf niemanden aufhalten ----
-  // Gemessen wird vom Klick bis zu dem Moment, in dem die Tafel wieder Zahlen
-  // zeigt - inklusive Punktelauf, Walzen und (wenn es sie gab) der Spannung
-  // bei drei Gleichen.
-  pruefe("G07", laengstesRollen < 1500,
+  // ---- G07: es gibt nichts abzuwarten ----
+  // Gemessen vom Ende des vorigen Zuges bis zu dem Moment, in dem die Tafel
+  // wieder Zahlen zeigt. Das Einfliegen der Walzen laeuft ueber ein bereits
+  // lesbares Feld, also darf hier fast nichts stehen. Die Grenze ist bewusst
+  // eng: sie faengt jeden Effekt ab, der sich wieder vor das Spiel schiebt.
+  pruefe("G07", laengstesRollen < 400,
     `laengste Wartezeit auf die Tafel: ${laengstesRollen} ms`);
 
   // ---- G06: der Jubel darf nichts verdecken ----

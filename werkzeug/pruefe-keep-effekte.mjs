@@ -76,7 +76,7 @@ const totSfx = Object.keys(sfx).filter((k) => !stimmen.includes(k));
 pruefe("E01", totSfx.length === 0, totSfx.length ? `nie gerufen: ${totSfx.join(", ")}` : "keine Stimme liegt ungenutzt herum");
 
 // ---------------------------------------------------------------- E03
-for (const alt of ["celebrate(", "renderReels(", "symbolEl("]) {
+for (const alt of ["celebrate(", "renderReels(", "symbolEl(", "rollen(", "rollAufraeumen(", "game.rolling"]) {
   const treffer = APP.split("\n").filter((z) => z.includes(alt) && !z.trimStart().startsWith("*") && !z.trimStart().startsWith("//"));
   pruefe("E03", treffer.length === 0, `nichts ruft mehr ${alt}…)${treffer.length ? " -> " + treffer[0].trim() : ""}`);
 }
@@ -85,7 +85,8 @@ for (const alt of ["celebrate(", "renderReels(", "symbolEl("]) {
 // Jede Klasse, die JS setzt, muss in styles.css eine Regel haben - sonst
 // passiert beim Rollen, Landen oder Zittern schlicht nichts.
 const klassen = [
-  "rollt", "spannung", "land", "gewinn", "gewinn-gross", "halt-an", "held",
+  "spin", "gewinn", "gewinn-gross", "halt-an", "held", "stups",
+  "heiss", "sehrheiss", "neu",
   "eilig", "wackel", "wackel-klein", "bump", "hot", "low",
   "fx-zahl", "fx-welle", "fx-funke", "fx-muenze", "fx-konfetti",
   "burst", "jackpot", "gross", "schlecht",

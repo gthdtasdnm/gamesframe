@@ -145,11 +145,20 @@ async function keep(browser) {
   await warte(600);
   await host.click('#draw1').catch(() => {});
   await warte(1600);
-  // Eine Kombination werten, bevor das Bild faellt: sonst steht der Glutbalken
-  // unter der Uhr auf null und der Multiplikator auf x1 - das Bild zeigte dann
-  // genau die Mechanik nicht, um die sich das Spiel dreht.
-  const kachel = await host.$('.cat.available');
-  if (kachel) { await kachel.click().catch(() => {}); await warte(1200); }
+  // Zwei Kombinationen zuegig werten, bevor das Bild faellt: sonst steht der
+  // Glutbalken unter der Uhr auf null und der Multiplikator auf x1 - das Bild
+  // zeigte dann genau die Mechanik nicht, um die sich das Spiel dreht. Zwei
+  // statt einer, weil die Glut zwischen zwei Zuegen schon wieder faellt und
+  // eine einzelne Wertung sie selten ueber die erste Stufe hebt.
+  for (let i = 0; i < 2; i++) {
+    const kachel = await host.$('.cat.available');
+    if (!kachel) break;
+    await kachel.click().catch(() => {});
+    await warte(500);
+  }
+  // Kurz genug, dass Glutbalken, Multiplikator und die Meldung darunter
+  // dasselbe sagen - die Glut faellt ja weiter, waehrend das Bild wartet.
+  await warte(400);
   await knipsen(host, 'keep-spiel.png');
   await host.context().close();
   await gast.context().close();
