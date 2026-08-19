@@ -14,12 +14,20 @@ verwechselt, Nextcloud und zwei Tradingbots.
 Wie viele es gerade sind, sagt `spiele.json` – nicht dieser Satz:
 `jq '[.spiele[]|select(.art!="werkzeug")]|length' spiele.json`
 
+Was dort unter `still` steht, ist mit Absicht **nicht** mitgezaehlt: Dienste,
+die dieselben gemeinsamen Teile tragen, aber nirgends verlinkt sind.
+
 **Arbeitsbereich sind die Spiele.** `nextcloud`, `tradingbot_value`,
 `tradingbot_momentum`, `/reader/`, `hochzeit` und `_alt-tot-20260807` nur
 anfassen, wenn ausdrücklich danach gefragt wird.
 
 `hochzeit` ist eine private Bildergalerie hinter einem Zugangswort – kein
 Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
+
+`dating` ist ZWEI, ein Speed-Dating-Ablauf, der die bestehenden Spiele benutzt.
+Ebenfalls kein Spiel, keine Kachel, `noindex` – aber **ohne** Zugangswort: wer
+den Link hat, kommt hinein. Es steht deshalb nicht unter `spiele` in
+`spiele.json`, sondern unter `still`. Details: `doku/dating.md`.
 
 ## Wohin zum Nachlesen
 
@@ -35,6 +43,7 @@ Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
 | Wer steht oben auf `/spiele/`, und warum bleibt er dort? | `doku/beliebt.md` |
 | Seite mit den Aufrufzahlen (Adresse, Passwort) | `ZUGAENGE.md` (nicht im Repo, 403) |
 | Hochzeitsseite (`/hochzeit/`, kein Spiel) | `doku/hochzeit.md` |
+| Speed-Dating (`/dating/`, kein Spiel, geheim) | `doku/dating.md` |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |
 | Was bei den neuen Spielen noch fehlt | `OFFEN-NACHZIEHEN.md` (nicht im Repo, 403) |

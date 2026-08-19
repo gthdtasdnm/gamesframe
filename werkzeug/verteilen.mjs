@@ -104,7 +104,13 @@ function neuerInhalt(teil, alt) {
 // ---------------------------------------------------------------------------
 
 let geschrieben = 0, abweichend = 0, fehler = 0;
-const spiele = registry.spiele.filter((s) => !nur.length || nur.includes(s.name));
+// `still` sind Dienste, die dieselben gemeinsamen Teile tragen, aber nicht auf
+// /spiele/ stehen sollen - heute genau einer: /dating/. Stuenden sie unter
+// `spiele`, haetten sie sofort eine Kachel und einen Eintrag im Bugreport.
+// Stuenden sie nirgends, driftete ihre Kopie von bremse.js und statisch.js
+// still vor sich hin, und `--pruefen` merkte nichts davon.
+const alle = [...registry.spiele, ...(registry.still ?? [])];
+const spiele = alle.filter((s) => !nur.length || nur.includes(s.name));
 
 if (nur.length && !spiele.length) {
   console.error(`Kein Spiel namens ${nur.join(", ")} in spiele.json.`);

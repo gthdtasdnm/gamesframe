@@ -1,7 +1,6 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
   "portsFrei": [
-    "8085",
     "8086",
     "8087",
     "8088",
@@ -14,7 +13,8 @@
     "8010": "Tradingbot Value",
     "8011": "Tradingbot Momentum",
     "8080": "Talk-Signaling (Nextcloud)",
-    "8081": "Hochzeitsseite (privat, kein Spiel)"
+    "8081": "Hochzeitsseite (privat, kein Spiel)",
+    "8085": "ZWEI / Speed-Dating (privat, kein Spiel, nicht verlinkt)"
   },
   "spiele": [
     {
@@ -438,6 +438,24 @@
       "gemeinsam": {
         "bremse": "bremse.js",
         "statisch": "statisch.js"
+      }
+    }
+  ],
+  "still": [
+    {
+      "name": "dating",
+      "titel": "ZWEI",
+      "pfad": "/dating/",
+      "port": 8085,
+      "dienst": "systemd",
+      "art": "still",
+      "repo": null,
+      "hinweis": "Speed-Dating mit Spielen. Nicht verlinkt, keine Kachel, noindex - deshalb steht es hier und nicht unter 'spiele'. Benutzt zehn bestehende Spiele ueber eine bestellte private Lobby, ohne eines davon anzufassen. Siehe doku/dating.md.",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "statisch": "statisch.js",
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css"
       }
     }
   ]

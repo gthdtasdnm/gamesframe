@@ -29,6 +29,7 @@ node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Uebe
 node pruefe-revier.mjs         # kommt der unsichtbare Joystick an, bewegt sich die Leinwand?
 node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu Maussteuerung und vier Wege zum Turbo
 node pruefe-ameisen.mjs        # Ameisen: Tippen, Laden, zweiter Ausgang, derselbe Bau nach dem Neuladen
+node pruefe-dating.mjs         # ZWEI: Uebungsrunde bis in die private Lobby im iframe
 node pruefe-hochzeit.mjs       # Grossansicht: passt das Bild ins Fenster? (misst, statt zu zeigen)
 GAST=<wort> node pruefe-hochzeit-upload.mjs   # 150 Bilder am Handy auswaehlen: kommt Rueckmeldung?
 node pruefe-durchlauf.mjs      # zwei Handys: Startseite -> Lobby -> Runde -> Endstand
