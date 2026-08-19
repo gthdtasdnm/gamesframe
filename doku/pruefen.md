@@ -22,6 +22,7 @@ node pruefe-startseite.mjs     # alle Kacheln, alle Dialoge, alle Bilder
 node pruefe-flasche.mjs        # zeigt die Flasche wirklich auf die Person?
 node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
+node pruefe-imposter.mjs      # Imposter: liegt der Deckel wirklich auf dem Wort? (eigene Fassung, Port 8086)
 node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
 node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
@@ -49,6 +50,11 @@ cd /var/www/html/paare
 PORT=8456 HOST=127.0.0.1 deno run --allow-net --allow-read --allow-env --allow-sys server.js &
 cd /root/werkzeug-screenshots && node pruefe-paare-tippen.mjs   # Tipp bricht die Wartezeit ab
 ss -tlnp | grep ':8456 '   # danach ueber den Port beenden, nie per pkill
+
+cd /var/www/html/imposter
+PORT=8086 HOST=127.0.0.1 deno run --allow-net --allow-read --allow-env --allow-sys server.js &
+cd /root/werkzeug-screenshots && node pruefe-imposter.mjs   # Deckel, Ansage, Rollen
+ss -tlnp | grep ':8086 '   # danach ueber den Port beenden, nie per pkill
 ```
 
 Ohne Browser, aus `/var/www/html` heraus:
