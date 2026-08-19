@@ -4,8 +4,14 @@ Angelegt am 19.08.2026. Ein Speed-Dating-Abend, der die **bestehenden Spiele
 benutzt**, statt eigene mitzubringen. Läuft als eigener Dienst auf Port 8085,
 Termin ist **täglich 20:00 Uhr Europe/Berlin**.
 
-Die ausführliche Beschreibung steht in `dating/README.md` und geht mit dem
-eigenen Repo. Hier steht nur, was der Seitenrahmen davon wissen muss.
+Drei Dateien, drei Zwecke – wer dort arbeitet, braucht meist nur die erste:
+
+* **`dating/CLAUDE.md`** – der schnelle Einstieg: wo was steht, das Protokoll,
+  die Fallen, die Befehle. Reicht, um eine Änderung anzufangen, ohne
+  `server.js` zu lesen.
+* **`dating/README.md`** – das Warum: wogegen es gebaut ist, wie der Abend
+  läuft, warum die Regeln so sind.
+* **diese Datei** – nur, was der Seitenrahmen davon wissen muss.
 
 ## Warum es nicht in `spiele.json` unter `spiele` steht
 

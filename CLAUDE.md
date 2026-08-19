@@ -46,7 +46,7 @@ bewusst kein `lobbyCss`: es hat ein eigenes, dunkelrotes Aussehen, das
 | Wer steht oben auf `/spiele/`, und warum bleibt er dort? | `doku/beliebt.md` |
 | Seite mit den Aufrufzahlen (Adresse, Passwort) | `ZUGAENGE.md` (nicht im Repo, 403) |
 | Hochzeitsseite (`/hochzeit/`, kein Spiel) | `doku/hochzeit.md` |
-| Speed-Dating (`/dating/`, kein Spiel, geheim) | `doku/dating.md` |
+| Speed-Dating (`/dating/`, kein Spiel, geheim) | `doku/dating.md` – und **`dating/CLAUDE.md`**, wenn dort gearbeitet wird |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |
 | Was bei den neuen Spielen noch fehlt | `OFFEN-NACHZIEHEN.md` (nicht im Repo, 403) |
