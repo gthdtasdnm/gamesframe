@@ -2,9 +2,9 @@
 //
 // Die WebSocket-Probe fragt den Server ab und weiss nichts davon, ob ein
 // Handy ueberhaupt ein Bild bekommt. Genau daran haengt hier aber alles: das
-// Spiel ist eine einzige Leinwand, die Steuerung ist ein Joystick, den man
-// nicht sieht, und der Turbo haengt an drei verschiedenen Eingaben, von denen
-// keine im Serverprotokoll vorkommt.
+// Spiel ist eine einzige Leinwand, die Steuerung haengt am Zeigergeraet, und
+// der Turbo haengt an vier verschiedenen Eingaben, von denen keine im
+// Serverprotokoll vorkommt.
 //
 // Der Kniff fuer W03 und W04: vor dem Laden wird `WebSocket.prototype.send`
 // mitgeschnitten. So laesst sich nachsehen, was die Seite nach einem Zug oder
@@ -19,6 +19,9 @@
 // W05  Es lebt: die Leinwand aendert sich, Energie waechst
 // W06  390 px breit: nichts laeuft seitlich heraus
 // W07  Bildrate: die Schlangen muessen sich fluessig zeichnen lassen
+// W08  Konsole auch nach allem Getippe still
+// W09  Am Rechner: der Kopf folgt der Maus, auch wenn sie stillsteht
+// W10  Am Rechner: linke Maustaste gibt Turbo, Zeiger raus friert die Fahrt ein
 
 import { chromium } from 'playwright';
 
@@ -41,14 +44,15 @@ const ctx = await browser.newContext({
 });
 
 // Mitschnitt aller ausgehenden Nachrichten – muss vor dem Laden stehen.
-await ctx.addInitScript(() => {
+const mitschnitt = () => {
   window.__gesendet = [];
   const echt = WebSocket.prototype.send;
   WebSocket.prototype.send = function (daten) {
     try { window.__gesendet.push(String(daten)); } catch { /* egal */ }
     return echt.call(this, daten);
   };
-});
+};
+await ctx.addInitScript(mitschnitt);
 
 const page = await ctx.newPage();
 const konsole = [];
@@ -60,11 +64,13 @@ page.on('response', (r) => { if (r.status() >= 400) fehlgeschlagen.push(`${r.sta
 
 console.log(`Wurm im Browser (${BASIS}/wurm/)\n`);
 
-const gesendet = (art) => page.evaluate((a) =>
+const gesendetVon = (p, art) => p.evaluate((a) =>
   window.__gesendet
     .map((s) => { try { return JSON.parse(s); } catch { return null; } })
     .filter((m) => m && m.t === a), art);
-const leeren = () => page.evaluate(() => { window.__gesendet.length = 0; });
+const leerenVon = (p) => p.evaluate(() => { window.__gesendet.length = 0; });
+const gesendet = (art) => gesendetVon(page, art);
+const leeren = () => leerenVon(page);
 
 // ── W01 ────────────────────────────────────────────────────────────────────
 const antwort = await page.goto(`${BASIS}/wurm/`, { waitUntil: 'networkidle' });
@@ -93,16 +99,27 @@ pruefe(beste >= 1, `W02 Bestenliste hat ${beste} Zeilen`);
 pruefe(await page.isHidden('#start'), 'W02 Anmeldekarte ist weg');
 
 // ── W03 ────────────────────────────────────────────────────────────────────
+// Von Hand ausgeloest, nicht ueber `page.mouse`: Playwright schickt dort
+// `pointerType: 'mouse'`, und genau daran unterscheidet die Seite seit der
+// Maussteuerung Finger und Nagetier. Mit `page.mouse` wuerde hier der
+// Mausweg geprueft und der Joystick nie angefasst. `touchscreen` hilft
+// nicht, das kann nur tippen, nicht ziehen.
+const finger = (art, x, y, id = 1) => page.evaluate(([a, cx, cy, pid]) => {
+  document.getElementById('feld').dispatchEvent(new PointerEvent(a, {
+    pointerId: pid, pointerType: 'touch', isPrimary: pid === 1,
+    clientX: cx, clientY: cy, bubbles: true,
+  }));
+}, [art, x, y, id]);
+
 await leeren();
 const mitte = { x: 195, y: 460 };
-await page.mouse.move(mitte.x, mitte.y);
-await page.mouse.down();
+await finger('pointerdown', mitte.x, mitte.y);
 for (let i = 1; i <= 6; i++) {
-  await page.mouse.move(mitte.x, mitte.y + i * 12);
+  await finger('pointermove', mitte.x, mitte.y + i * 12);
   await warte(40);
 }
 await warte(200);
-await page.mouse.up();
+await finger('pointerup', mitte.x, mitte.y + 72);
 
 const winkel = (await gesendet('dir')).map((m) => m.a);
 pruefe(winkel.length > 0, `W03 Ziehen schickt eine Richtung (${winkel.length} mal)`);
@@ -111,7 +128,8 @@ pruefe(winkel.every((a) => Math.abs(a - 90) < 8), `W03 nach unten heisst 90 Grad
 // Ein kurzer Tipp ohne Ziehen darf nichts schicken – sonst zuckt die Fahrt
 // bei jeder Beruehrung.
 await leeren();
-await page.mouse.click(120, 300);
+await finger('pointerdown', 120, 300);
+await finger('pointerup', 120, 300);
 await warte(200);
 pruefe((await gesendet('dir')).length === 0, 'W03 blosses Antippen lenkt nicht');
 
@@ -211,6 +229,101 @@ pruefe(bilder >= 30, `W07 Bildrate ${bilder}/s (mindestens 30)`);
 // dazwischen: der Turboknopf warf beim Anfassen, der Turbo blieb aus, und die
 // Seite sah dabei vollkommen gesund aus.
 pruefe(konsole.length === 0, `W08 Konsole auch danach still (${konsole.join(' | ') || 'nichts'})`);
+
+// ── W09 ────────────────────────────────────────────────────────────────────
+// Am Rechner folgt der Kopf der Maus. Das braucht einen zweiten Kontext: ohne
+// `hasTouch` und mit einem Fenster, das breit genug ist, dass zwischen Kopf
+// und Zeiger ordentlich Abstand passt - je naeher der Zeiger am Kopf sitzt,
+// desto staerker schlaegt der Nachlauf der Kamera in den Winkel durch.
+const pcCtx = await browser.newContext({
+  viewport: { width: 1280, height: 800 },
+  deviceScaleFactor: 1,
+  locale: 'de-DE',
+});
+await pcCtx.addInitScript(mitschnitt);
+const pc = await pcCtx.newPage();
+const pcKonsole = [];
+pc.on('console', (m) => { if (m.type() === 'error') pcKonsole.push(m.text()); });
+pc.on('pageerror', (e) => pcKonsole.push(`Seitenfehler: ${e.message}`));
+
+await pc.goto(`${BASIS}/wurm/`, { waitUntil: 'networkidle' });
+await pc.fill('#name', 'ProbePC');
+await pc.click('#losBtn');
+await pc.waitForFunction(
+  () => !document.getElementById('hud').hasAttribute('hidden'),
+  null,
+  { timeout: 8000 },
+);
+await warte(1600);
+
+// Der Zeiger steht 380 px rechts der Bildmitte. Der Kopf liegt dort nicht
+// ganz - die Kamera hinkt ihm um `TEMPO/7` nach, rund 14 px - deshalb 10 Grad
+// Spielraum. Geurteilt wird ueber die letzten Meldungen: bis dahin zeigt der
+// Wurm schon dorthin, und der Nachlauf faellt in die Fahrtrichtung, wo er den
+// Winkel nicht mehr dreht.
+const mausRichtung = async (x, y, soll, was) => {
+  await pc.mouse.move(x, y);
+  await warte(900);
+  await leerenVon(pc);
+  await warte(700);
+  const a = (await gesendetVon(pc, 'dir')).map((m) => m.a);
+  const daneben = a.slice(-3).map((g) => {
+    let d = Math.abs(g - soll) % 360;
+    return d > 180 ? 360 - d : d;
+  });
+  pruefe(a.length > 0 && daneben.every((d) => d < 10),
+    `W09 ${was} heisst ${soll} Grad (${a.slice(-3).join(', ') || 'nichts'})`);
+};
+
+const pcMitte = { x: 640, y: 400 };
+await mausRichtung(pcMitte.x + 380, pcMitte.y, 0, 'Zeiger rechts');
+await mausRichtung(pcMitte.x, pcMitte.y + 340, 90, 'Zeiger unten');
+await mausRichtung(pcMitte.x - 380, pcMitte.y, 180, 'Zeiger links');
+
+// Der eigentliche Kern des Umbaus: der Kopf faehrt auf den Zeiger zu, also
+// aendert sich der Winkel auch dann, wenn die Maus stillsteht. Haenge die
+// Steuerung an `pointermove`, ist hier Ruhe - und der Wurm faehrt am Zeiger
+// vorbei geradeaus weiter.
+await leerenVon(pc);
+await warte(1200);
+const ohneRuehren = await gesendetVon(pc, 'dir');
+pruefe(ohneRuehren.length > 0,
+  `W09 stillstehende Maus lenkt weiter (${ohneRuehren.length} Meldungen in 1,2 s)`);
+
+// ── W10 ────────────────────────────────────────────────────────────────────
+await leerenVon(pc);
+await pc.mouse.down();
+await warte(200);
+const anGedrueckt = (await gesendetVon(pc, 'turbo')).map((m) => m.an);
+await pc.mouse.up();
+await warte(200);
+const turboLauf = (await gesendetVon(pc, 'turbo')).map((m) => m.an);
+pruefe(anGedrueckt.at(-1) === true && turboLauf.at(-1) === false,
+  `W10 linke Maustaste schaltet an und aus (${turboLauf.join(', ') || 'nichts'})`);
+
+// Zeiger aus dem Fenster: die Richtung friert ein. Weiter auf die letzte
+// bekannte Stelle zuzusteuern hiesse, um einen Punkt am Rand zu kreisen.
+// Playwright kann die Maus nicht aus dem Fenster fahren, das Ereignis dafuer
+// aber schon - und genau daran haengt der Handler.
+await pc.evaluate(() => {
+  document.getElementById('feld').dispatchEvent(
+    new PointerEvent('pointerleave', { pointerType: 'mouse', bubbles: true }));
+});
+await leerenVon(pc);
+await warte(1000);
+const eingefroren = await gesendetVon(pc, 'dir');
+pruefe(eingefroren.length === 0,
+  `W10 Zeiger raus friert die Fahrt ein (${eingefroren.length} Meldungen, 0 erwartet)`);
+
+// Und kommt er zurueck, geht es weiter.
+await pc.mouse.move(pcMitte.x, pcMitte.y - 340);
+await leerenVon(pc);
+await warte(700);
+const zurueck = await gesendetVon(pc, 'dir');
+pruefe(zurueck.length > 0, `W10 Zeiger zurueck lenkt wieder (${zurueck.length} Meldungen)`);
+
+pruefe(pcKonsole.length === 0,
+  `W10 Konsole am Rechner still (${pcKonsole.join(' | ') || 'nichts'})`);
 
 await browser.close();
 

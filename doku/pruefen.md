@@ -27,7 +27,7 @@ node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortli
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
 node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Ueberlauf
 node pruefe-revier.mjs         # kommt der unsichtbare Joystick an, bewegt sich die Leinwand?
-node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu die drei Wege zum Turbo
+node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu Maussteuerung und vier Wege zum Turbo
 node pruefe-ameisen.mjs        # Ameisen: Tippen, Laden, zweiter Ausgang, derselbe Bau nach dem Neuladen
 node pruefe-hochzeit.mjs       # Grossansicht: passt das Bild ins Fenster? (misst, statt zu zeigen)
 GAST=<wort> node pruefe-hochzeit-upload.mjs   # 150 Bilder am Handy auswaehlen: kommt Rueckmeldung?
@@ -204,7 +204,7 @@ und was sie verbietet, muss er ablehnen. Der erste Teil der Probe läuft ganz
 ohne Server und rechnet jede Punktzahl von Hand nach.
 
 **Stand 18.08.2026: jedes der 26 Spiele hat einen Nachweis** – Wurm mit
-`probe.js` (P0–P10) und `pruefe-wurm.mjs` (W01–W08), Ameisen mit `probe.js`
+`probe.js` (P0–P10) und `pruefe-wurm.mjs` (W01–W10), Ameisen mit `probe.js`
 (P0–P13) und `pruefe-ameisen.mjs` (A01–A09). Der Absatz darunter ist
 ueberholt und bleibt nur als Verlauf stehen.
 
@@ -329,7 +329,7 @@ davon älter als die Änderung:
 - **Ein vergessener Import kam durch `deno check` durch.** Der Dienst startete
   und starb beim ersten Tick. Steht als vierte Falle in `CLAUDE.md`.
 
-Und `pruefe-wurm.mjs` zwei weitere, beide nur im Browser sichtbar:
+Und `pruefe-wurm.mjs` drei weitere, alle nur im Browser sichtbar:
 
 - **Der Turboknopf schaltete nicht.** Sein `pointerdown` rief zuerst
   `setPointerCapture` und erst danach den Turbo an. Wirft das Fangen – und das
@@ -342,3 +342,9 @@ Und `pruefe-wurm.mjs` zwei weitere, beide nur im Browser sichtbar:
   einem Spiel, in dem jede Begegnung tödlich ist, ist Sicht die halbe
   Steuerung. Die Lehre für jedes Spiel auf einer Leinwand: **einmal ansehen,
   was man gebaut hat.** Kein Zahlenwert im Server verrät das.
+- **`page.mouse` ist keine Berührung.** Playwright schickt darüber
+  `pointerType: 'mouse'`. Solange Wurm beides gleich behandelte, hat W03 damit
+  den Joystick geprüft; seit der Maussteuerung wäre still und heimlich der
+  Mausweg geprüft worden und der Joystick nie wieder. W03 löst die Finger
+  deshalb von Hand aus. Für jede Seite, die Finger und Maus unterscheidet,
+  gilt dasselbe: `page.mouse` ist die Maus, sonst nichts.
