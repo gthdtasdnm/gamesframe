@@ -23,6 +23,7 @@ node pruefe-flasche.mjs        # zeigt die Flasche wirklich auf die Person?
 node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
 node pruefe-imposter.mjs      # Imposter: liegt der Deckel wirklich auf dem Wort? (eigene Fassung, Port 8086)
+node pruefe-amehesten-ab18.mjs # Wer am ehesten: die 18+-Abfrage – sie haengt ganz im Client
 node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
 node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?

@@ -14,19 +14,34 @@ Spielregeln sind frei, **Namen, Grafiken und Anleitungstexte nicht**.
 
 ## Jugendschutz
 
-Nur **ein** Spiel hat 18+-Inhalte: `/nochnie/`. Dort gibt es einen
-Kartenstapel mit Alkohol- und Sexbezug, eine Abfrage vor dem Umschalten (auch
-für Gäste) und „harmlos" als Voreinstellung. Ob das reicht (JMStG), steht als
-offene Frage in `RISIKEN-TODO.md`.
+**Zwei** Spiele haben 18+-Inhalte: `/nochnie/` und – seit dem 19.08.2026 –
+`/amehesten/`. Beide nach demselben Muster:
 
-**Wer am ehesten** und **Flaschendrehen** umgehen das bewusst: ihre Karten
-kommen ohne Alkohol, Sex und Körperkontakt aus, „frech" heißt peinlich. Bei
-Flaschendrehen prüft `probe.js` jede Karte gegen eine Wortliste und schlägt an,
-sobald jemand die Grenze verschiebt.
+- ein **eigener** Stapel, nie in die harmlosen untergemischt
+- eine Voreinstellung ohne 18+ (`harmlos` bzw. `gemischt`)
+- eine Abfrage vor dem Umschalten **und** vor dem Beitritt in einen Raum, der
+  schon so eingestellt ist – der zweite Fall ist der wichtigere, dort hat man
+  die Entscheidung nicht selbst getroffen
+- die Bestätigung im `localStorage`, je Spiel ein eigener Schlüssel
+  (`nochnie_ab18`, `amehesten_ab18`)
+- die jeweilige `probe.js` weist nach, dass kein 18+-Text in einen der anderen
+  Modi durchrutscht
 
-**Wer einen dieser Stapel erweitert, holt sich die ganze Jugendschutz-Abwägung
-mit dazu** – dann gilt, was `SPIELE-IDEEN.md` für die Trinkspiel-Sparte
-verlangt: eigener Bereich, 18-plus-Hinweis, trinkfreie Voreinstellung.
+Ob das reicht (JMStG), steht als offene Frage in `RISIKEN-TODO.md` – die gilt
+jetzt für beide.
+
+**Flaschendrehen** umgeht das weiterhin bewusst: seine Karten kommen ohne
+Alkohol, Sex und Körperkontakt aus. `probe.js` prüft dort jede Karte gegen eine
+Wortliste und schlägt an, sobald jemand die Grenze verschiebt.
+
+Bei **Wer am ehesten** gilt die Trennlinie innerhalb des Spiels: `HARMLOS` und
+`FRECH` bleiben frei von Alkohol, Sex und Körperlichem, „frech" heißt dort
+peinlich. Alles andere gehört in `SCHMUTZIG`.
+
+**Wer einen harmlosen Stapel erweitert, holt sich die ganze
+Jugendschutz-Abwägung mit dazu** – dann gilt, was `SPIELE-IDEEN.md` für die
+Trinkspiel-Sparte verlangt: eigener Bereich, 18-plus-Hinweis, trinkfreie
+Voreinstellung.
 
 Poker o. ä.: **nur Spielgeld, keine Verbindung zum Spendenknopf.** Sobald Geld
 hineingeht, ist es Glücksspiel (§ 284 StGB / GlüStV) und erlaubnispflichtig.

@@ -92,7 +92,11 @@ async function koennen(spiel) {
     kannBereit: /case "ready"/.test(q),
     // Spiele, die einen Nachzuegler in die laufende Runde lassen (er wartet
     // dann auf die naechste), statt ihn abzuweisen.
-    laesstNachzuegler: !/"Die Runde läuft schon"/.test(q),
+    //
+    // Nicht auf den genauen Wortlaut festnageln: wortleger weist ab mit „Die
+    // *Partie* laeuft schon", und die Probe hielt es deshalb jahrelang fuer
+    // ein Spiel mit Nachzueglern - L12 pruefte dort die falsche Haelfte.
+    laesstNachzuegler: !/t:\s*"error",\s*msg:\s*"Die \w+ läuft schon"/.test(q),
   };
   merkmale.set(spiel, k);
   return k;
@@ -497,24 +501,48 @@ test("L05", "Bereit und Start: Sperren greifen, Gast darf nicht starten", async 
   return `drei Sperren halten, Host startet mit ${Math.max(min, 2)}`;
 });
 
+// Zwei erlaubte Auslegungen, ein gemeinsamer Kern.
+//
+// Die meisten Spiele geben den Platz im Warteraum sofort frei; wer
+// zurueckkommt, bekommt einen neuen. Imposter und „Wer am ehesten" halten ihn
+// dagegen eine Weile fest - dort sitzt man lange im Warteraum, ohne etwas zu
+// druecken, und ein gesperrter Bildschirm darf keinen Platz kosten. Beides ist
+// richtig; falsch waere nur, was der Test im Namen fuehrt: **zwei** Sitze fuer
+// eine Person.
 test("L06", "Neu laden in der Lobby: ein Sitz, nicht zwei", async (ctx) => {
   const host = await raumAuf(ctx);
   const { c: gast } = await dazu(ctx, host.code, "Gast");
   await gast.typ("joined");
   await sitze(host, 2);
   const token = gast.token;
+  const gastId = gast.you;
 
+  // Ab hier zaehlen: sonst passt die Bedingung unten auf den Raumzustand von
+  // vorhin, als der Gast noch gar nicht drin war.
+  const ab = host.marke();
   await gast.zu();
-  // In der Lobby wird der Platz sofort frei - der Host muss das sehen.
-  await sitze(host, 1, 6000);
+  // Auf eines von beiden muss der Host reagieren: Platz weg oder Platz da,
+  // aber als abwesend gezeichnet. Passiert gar nichts, merkt der Raum den
+  // Abbruch nicht - und genau das war der Fehler.
+  const weg = await host.warte(
+    (m) => m.t === "room" &&
+      !m.players.some((pl) => pl.id === gastId && pl.connected),
+    { ab, ms: 6000, was: "der Abbruch kommt im Raum an" },
+  );
+  const haelt = weg.players.some((pl) => pl.id === gastId);
 
   const { c: zurueck } = await dazu(ctx, host.code, "Gast", token);
   await zurueck.typ("joined");
   const r = await sitze(host, 2, 6000);
   muss(r.players.length === 2,
     `nach der Rueckkehr stehen ${r.players.length} Sitze im Raum`);
-  muss(r.players.filter((p) => !p.connected).length === 0,
+  muss(r.players.filter((pl) => !pl.connected).length === 0,
     "im Raum steht eine Leiche: ein Sitz ohne Verbindung");
+  if (haelt) {
+    muss(zurueck.you === gastId,
+      "der Platz wurde gehalten, die Rueckkehr bekam trotzdem eine neue Id");
+    return "Platz wird gehalten, die Rueckkehr landet auf demselben";
+  }
   return "Platz wird sofort frei, Rueckkehrer bekommt genau einen neuen";
 });
 
@@ -586,7 +614,7 @@ test("L09", "Host geht - in der Lobby und in der Runde", async (ctx) => {
   const gastId = gast.you;
   await host.zu();
   const r = await gast.warte((m) => m.t === "room" && m.hostId === gastId,
-    { ms: 6000, was: "Hostrolle wandert in der Lobby" });
+    { ms: 9000, was: "Hostrolle wandert in der Lobby" });
   muss(r.players.find((p) => p.id === gastId)?.host, "neuer Host ist nicht markiert");
 
   // Teil 2: Runde. Geht der Host mitten im Spiel, darf die Rolle nicht
@@ -597,7 +625,7 @@ test("L09", "Host geht - in der Lobby und in der Runde", async (ctx) => {
   const g2 = gaeste[0];
   await h2.zu();
   const r2 = await g2.warte((m) => m.t === "room" && m.hostId !== h2.you,
-    { ms: 8000, was: "Hostrolle wandert auch in der laufenden Runde" });
+    { ms: 12_000, was: "Hostrolle wandert auch in der laufenden Runde" });
   muss(r2.hostId === g2.you, `Hostrolle ging an ${r2.hostId} statt an den einzig Anwesenden`);
 
   // Und der neue Host muss auch wirklich duerfen - sofern das Spiel ein
@@ -615,8 +643,13 @@ test("L09", "Host geht - in der Lobby und in der Runde", async (ctx) => {
       (m.t === "room" && (m.phase === "final" || m.phase === "lobby")),
     { ab, ms: 6000, was: "der neue Host darf die Runde beenden" },
   );
-  return "wandert sofort, und der Nachfolger darf auch beenden";
-});
+  return "wandert, und der Nachfolger darf auch beenden";
+  //
+  // `HOST_MS`: Imposter und „Wer am ehesten" lassen das Hostzeichen 45 s lang
+  // liegen, wenn der Host nur gerade weg ist - sonst springt es bei jedem
+  // gesperrten Bildschirm. Fuer die Probe wird die Frist auf eine Sekunde
+  // gekuerzt; Spiele ohne diese Uhr ignorieren die Variable.
+}, { env: { HOST_MS: "1000" } });
 
 test("L10", "Letzter geht: Raum verschwindet aus der Liste", async (ctx) => {
   const zuschauer = await ctx.neu("Zuschauer");
@@ -830,15 +863,19 @@ test("L17", "Geist auf dem Hostplatz: offener Socket, der stumm bleibt", async (
   const takt = setInterval(() => gast.schicke({ t: "ping", c: Date.now() }), 1000);
   let r;
   try {
+    // Worauf es ankommt, ist nicht der Platz, sondern das Hostzeichen: es muss
+    // beim Gast landen, sonst wartet die Lobby auf einen Knopf, den niemand
+    // mehr druecken kann. Ob der Platz des Geistes dabei sofort verschwindet
+    // oder als abwesend stehen bleibt, ist Sache des Spiels - siehe L06.
     r = await gast.warte(
-      (m) => m.t === "room" && !m.players.some((p) => p.id === host.you),
-      { ms: 20_000, was: "der stumme Platz wird geraeumt" },
+      (m) => m.t === "room" && m.hostId === gast.you,
+      { ms: 20_000, was: "der stumme Host verliert sein Zeichen" },
     );
   } finally {
     clearInterval(takt);
   }
-  muss(r.hostId === gast.you,
-    `Platz geraeumt, aber der Hostzeiger steht auf ${r.hostId} statt auf dem Gast`);
+  muss(!r.players.some((p) => p.id === host.you && p.connected),
+    "der Geist gilt weiter als anwesend");
   muss(r.players.some((p) => p.id === gast.you),
     "der Gast wurde mit abgeraeumt, obwohl er die ganze Zeit gepingt hat");
   muss(!gast.schluss, `dem Gast wurde die Verbindung gekappt (${gast.schluss?.code})`);
@@ -847,7 +884,7 @@ test("L17", "Geist auf dem Hostplatz: offener Socket, der stumm bleibt", async (
   muss(host.schluss, "der Geist haelt seinen Socket weiter offen");
   return `stummer Host nach ~3 s weg (Schluss ${host.schluss.code}), ` +
     "Host wandert zum Gast, wer pingt bleibt sitzen";
-}, { env: { GEIST_MS: "3000" } });
+}, { env: { GEIST_MS: "3000", HOST_MS: "1000" } });
 
 // ---------------------------------------------------------------------------
 // Lauf
@@ -914,7 +951,10 @@ async function laufSpiel(spiel) {
         id: "L99", ok: false,
         notiz: `der Dienst ist unterwegs gestorben:\n${(dienst.fehler ?? "").slice(0, 600)}`,
       });
-      console.log(`  ✗ L99 Dienst lebt noch\n      abgestuerzt`);
+      // Den Grund gleich mit ausgeben: ohne ihn steht in der Zusammenfassung
+      // nur „abgestuerzt", und man faengt bei null an zu suchen.
+      console.log(`  ✗ L99 Dienst lebt noch\n      abgestuerzt` +
+        (dienst.fehler ? `\n${dienst.fehler.trim().split("\n").map((z) => "        " + z).join("\n")}` : ""));
     }
     await dienst.aus();
   }
