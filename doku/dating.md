@@ -41,24 +41,30 @@ Pflege.
 **Nicht angefasst wurde keins.** Der Dienst benutzt nur, was jedes Lobbyspiel
 ohnehin kann:
 
-* Er öffnet eine WebSocket-Verbindung nach `127.0.0.1:<port>/ws`, schickt
-  `{t:"create", isPublic:false}`, merkt sich den Code und legt auf. Der Raum
-  steht danach `ROOM_IDLE_MS` = fünf Minuten leer weiter — das ist die
-  Link-Teilen-Karenz, die alle sechzehn Spiele haben.
+* Er öffnet eine WebSocket-Verbindung zum Spiel, lässt sich einen privaten
+  Raum aufmachen, merkt sich den Code und legt auf. Der Raum steht danach
+  `ROOM_IDLE_MS` = fünf Minuten leer weiter — das ist die Link-Teilen-Karenz.
+  Die zwölf Spiele stammen aus vier Zeitaltern und sagen das auf **vier
+  Arten** (`protokoll` in `dating/spiele.js`); Keep spricht dabei als einziges
+  Socket.IO, mit demselben Kniff wie `werkzeug/pruefe-keep.mjs`.
 * Der Browser bekommt den Code und legt den Spielen ihren jeweiligen
   `localStorage`-Sitz hin, damit der iframe **ohne Klick** in die Lobby geht.
   Beide Bauarten stehen im Kopf von `dating/spiele.js`.
 
-**Die Folge fürs Betriebsbild:** in zehn Spielen entstehen abends private
-Räume, deren Host `Zwei` heißt und der sofort wieder weg ist. Das ist kein
-Fehler. Die Bremse der Spiele lässt zwölf Räume je zehn Minuten und IP zu; alle
-Bestellungen kommen von 127.0.0.1, aber je Spiel höchstens eine je Abend (ein
-Spiel gehört genau einem Mann).
+**Wurm und Revier fallen heraus:** sie haben keine Räume, sondern eine Welt,
+die durchläuft. Ein Paar landet dort mit allen anderen zusammen. Das ist keine
+private Lobby, und die Seite sagt es auch — es privat zu machen hieße, die
+beiden Spiele umzubauen.
 
-Welche zehn und warum: `dating/spiele.js`. Kurz — es müssen drei Dinge
-zusammenkommen: zu zweit spielbar (`MIN_PLAYERS ≤ 2`), Raum von außen
-bestellbar, und der Browser kommt ohne Klick hinein. Seconds und Lucky Reflex
-scheitern am dritten Punkt.
+**Die Folge fürs Betriebsbild:** in den zehn Lobbyspielen der Liste entstehen
+abends private Räume, deren Host `Zwei` heißt und der sofort wieder weg ist.
+Das ist kein Fehler. Die Bremse der Spiele lässt zwölf Räume je zehn Minuten
+und IP zu; alle Bestellungen kommen von 127.0.0.1, aber je Spiel höchstens eine
+je Abend (ein Spiel gehört genau einem Mann).
+
+Welche zwölf und warum: `dating/spiele.js`. Kurz — es müssen drei Dinge
+zusammenkommen: zu zweit spielbar, ein von außen bestellbarer Raum (oder eine
+offene Welt), und der Browser kommt ohne Klick hinein.
 
 ## Das Einzige, was dieser Dienst schreibt
 
@@ -103,7 +109,7 @@ wie bei der Hochzeitsseite (siehe `doku/hochzeit.md`).
 ```bash
 cd /var/www/html/dating
 WS_URL=wss://inf-zeus.de/dating/ws deno task probe   # gegen live: nur die Tuer
-deno task spielprobe                                  # alle zehn Spiele
+deno task spielprobe                                  # alle zwoelf Spiele
 cd /root/werkzeug-screenshots && node pruefe-dating.mjs
 ```
 

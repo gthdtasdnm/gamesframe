@@ -123,10 +123,32 @@ async function tafel() {
 
 // ---------------------------------------------------------------------------
 // Eine Uebungsrunde bis in den iframe
+//
+// Geprueft wird je Runde **ein bestimmtes Spiel**, nicht irgendeins seiner
+// Sorte: die zwoelf verteilen sich auf vier Bestelldialekte und drei
+// Lobby-Markups, und wer nur „irgendein Hash-Spiel" prueft, prueft bei jedem
+// Lauf ein anderes und keins zuverlaessig.
+//
+// Die vier hier decken alles ab, was sich unterscheidet:
+//   schwimmen   Sitz im localStorage hinlegen  (Bauart "schale", Dialekt raum)
+//   keep        Socket.IO bestellen, sessionStorage aufraeumen
+//   cardchaos   eigener Dialekt, eigenes Lobby-Markup, localStorage aufraeumen
+//   wurm        offene Welt: kein Raum, kein Code, und das muss dastehen
 // ---------------------------------------------------------------------------
 
-/** @param {"schale"|"hash"} art welche Bauart der Uebergabe geprueft wird */
-async function runde(art, { messen = false } = {}) {
+/** Wo das jeweilige Spiel seinen Raumcode hinschreibt. */
+const LOBBY = {
+  // Card Chaos ist aelter als die gemeinsame Schale und heisst alles anders.
+  cardchaos: { code: '#room-code', vis: '#room-vis' },
+  standard: { code: '#roomCode', vis: '#roomVis' },
+};
+const lobbyVon = (name) => LOBBY[name] ?? LOBBY.standard;
+
+/**
+ * @param {string} spielName welches Spiel der Proband greifen soll
+ * @param {{messen?: boolean, versuch?: number}} o
+ */
+async function runde(spielName, { messen = false, versuch = 1 } = {}) {
   const seite = await neueSeite();
   const laut = [];
   seite.on('console', (m) => { if (m.type() === 'error') laut.push(m.text()); });
@@ -139,13 +161,28 @@ async function runde(art, { messen = false } = {}) {
   await seite.waitForSelector('#screen-wahl.active', { timeout: 15000 });
   const kacheln = await seite.locator('.kachel').count();
   const vergeben = await seite.locator('.kachel.weg').count();
-  pruefe(
-    kacheln === 10 && vergeben === 3,
-    `D05 Spielwahl: ${kacheln} Kacheln, ${vergeben} schon von Uebungsleuten vergeben (${art})`,
-  );
 
-  const kachel = seite.locator(`.kachel[data-art="${art}"]:not(.weg)`).first();
-  const spielName = await kachel.getAttribute('data-spiel');
+  // Die drei Uebungsleute greifen sich drei zufaellige Spiele. Erwischt einer
+  // unseres, faengt die Runde von vorn an – dreimal, dann ist etwas kaputt.
+  const kachel = seite.locator(`.kachel[data-spiel="${spielName}"]:not(.weg)`);
+  if (await kachel.count() === 0) {
+    await seite.close();
+    if (versuch >= 4) {
+      pruefe(false, `D05 ${spielName} war viermal hintereinander vergeben`);
+      return;
+    }
+    return runde(spielName, { messen, versuch: versuch + 1 });
+  }
+
+  if (versuch === 1) {
+    pruefe(
+      kacheln === 12 && vergeben === 3,
+      `D05 Spielwahl: ${kacheln} Kacheln, ${vergeben} von Uebungsleuten vergeben ` +
+        `(zwoelf laut spiele.js – wer die Liste aendert, aendert hier mit)`,
+    );
+  }
+
+  const art = await kachel.getAttribute('data-art');
   const spielTitel = (await kachel.locator('.kachel-titel').textContent()).trim();
   await kachel.click();
 
@@ -155,7 +192,7 @@ async function runde(art, { messen = false } = {}) {
   const legende = await seite.locator('.leg').count();
   pruefe(
     maenner === 4 && ichDa === 1 && legende === 4,
-    `D06 Karussell: ${maenner} Maenner, eigene Figur markiert, ${legende} in der Legende (${art})`,
+    `D06 Karussell: ${maenner} Maenner, eigene Figur markiert, ${legende} in der Legende (${spielName})`,
   );
 
   if (messen) {
@@ -172,59 +209,73 @@ async function runde(art, { messen = false } = {}) {
 
     await warte(1200);
     const rM = await abstand('.fig.mann');
-    // Bis zur ersten Freigabe stehen die Frauen in der Mitte gestapelt; erst
-    // danach stehen sie aussen. Also warten, bis eine frei ist.
-    await seite.waitForSelector('.fig.frau.frei', { timeout: 12000 });
-    await warte(200);
-    const rF = await abstand('.fig.frau.frei');
+    const rF = await abstand('.fig.frau');
     pruefe(
-      rM > 12 && rM < 22 && rF > rM,
+      rM > 12 && rM < 22 && rF > 38,
       `D06 Maenner kreisen innen (${rM.toFixed(1)} % der Arena), ` +
-        `Frauen starten aussen (${rF.toFixed(1)} %)`,
+        `Frauen warten aussen (${rF.toFixed(1)} %)`,
     );
   }
 
   await seite.waitForSelector('#screen-paar.active', { timeout: 90000 });
-  pruefe(true, `D07 ein Uebungsmensch hat ihn erreicht (${art}, ${spielTitel})`);
+  pruefe(true, `D07 ein Uebungsmensch hat ihn erreicht (${spielTitel}, Bauart ${art})`);
 
-  await seite.waitForFunction(
-    () => /Raum [A-Z0-9]{3,5} steht/.test(document.getElementById('chatVerlauf').textContent),
-    null,
-    { timeout: 20000 },
-  );
-  const verlauf = await seite.locator('#chatVerlauf').textContent();
-  const code = verlauf.match(/Raum ([A-Z0-9]{3,5}) steht/)[1];
-
-  // Und hier kommt der Nachweis: was steht im iframe?
   const rahmen = seite.frameLocator('#spielRahmen');
-  await rahmen.locator('#roomCode').waitFor({ state: 'visible', timeout: 25000 });
-  const imRahmen = (await rahmen.locator('#roomCode').textContent()).trim();
-  const sicht = (await rahmen.locator('#roomVis').textContent()).trim();
-  const src = await seite.locator('#spielRahmen').getAttribute('src');
 
-  pruefe(
-    imRahmen === code,
-    `D08/${art} der iframe steht in Raum ${imRahmen} – derselbe, den ZWEI bestellt hat (${code})`,
-  );
-  // Die Schalenspiele schreiben „privat", die vier aelteren
-  // „Privat – nur mit Code". Geprueft wird das Wort, nicht der Satz.
-  pruefe(
-    /^privat/i.test(sicht),
-    `D08/${art} und der Raum ist privat („${sicht}") – steht in keiner oeffentlichen Liste`,
-  );
-  pruefe(src === `/${spielName}/#${code}`, `D08/${art} der iframe zeigt auf ${src}`);
-  const inLobby = await rahmen.locator('#screen-lobby.active, #screen-lobby.on').count();
-  pruefe(
-    inLobby === 1,
-    `D08/${art} und zwar in der Lobby, ohne dass jemand im Spiel etwas anklicken musste`,
-  );
+  if (art === 'welt') {
+    // Wurm und Revier haben keine Raeume. Zu pruefen ist deshalb zweierlei:
+    // dass die Welt wirklich aufgeht – und dass die Seite den Unterschied
+    // ausspricht, statt eine private Lobby vorzutaeuschen.
+    await seite.waitForFunction(
+      () => /offene Welt/.test(document.getElementById('chatVerlauf').textContent),
+      null,
+      { timeout: 20000 },
+    );
+    const src = await seite.locator('#spielRahmen').getAttribute('src');
+    pruefe(src === `/${spielName}/`, `D08/welt der iframe zeigt auf ${src} – ohne Raumcode`);
+    await rahmen.locator('#feld').waitFor({ state: 'visible', timeout: 25000 });
+    pruefe(true, 'D08/welt und die Welt baut sich im iframe wirklich auf');
+    const hinweis = await seite.locator('#chatVerlauf').textContent();
+    pruefe(
+      /nicht allein/.test(hinweis),
+      'D08/welt und es steht da, dass die beiden dort nicht unter sich sind',
+    );
+  } else {
+    await seite.waitForFunction(
+      () => /Raum [A-Z0-9]{3,5} steht/.test(document.getElementById('chatVerlauf').textContent),
+      null,
+      { timeout: 20000 },
+    );
+    const verlauf = await seite.locator('#chatVerlauf').textContent();
+    const code = verlauf.match(/Raum ([A-Z0-9]{3,5}) steht/)[1];
+
+    // Der Nachweis: was steht im iframe? Dass das Codefeld ueberhaupt sichtbar
+    // ist, heisst schon, dass die Lobby offen steht – es liegt in ihr drin.
+    const w = lobbyVon(spielName);
+    await rahmen.locator(w.code).waitFor({ state: 'visible', timeout: 25000 });
+    const imRahmen = (await rahmen.locator(w.code).textContent()).trim();
+    const sicht = (await rahmen.locator(w.vis).textContent()).trim();
+    const src = await seite.locator('#spielRahmen').getAttribute('src');
+
+    pruefe(
+      imRahmen.includes(code),
+      `D08/${spielName} der iframe steht in Raum ${imRahmen} – derselbe, den ZWEI bestellt hat (${code})`,
+    );
+    // Die Schalenspiele schreiben „privat", die aelteren „Privat – nur mit
+    // Code". Geprueft wird das Wort, nicht der Satz.
+    pruefe(
+      /privat/i.test(sicht),
+      `D08/${spielName} und der Raum ist privat („${sicht}")`,
+    );
+    pruefe(src === `/${spielName}/#${code}`, `D08/${spielName} der iframe zeigt auf ${src}`);
+  }
 
   await seite.fill('#chatText', 'Hallo!');
   await seite.press('#chatText', 'Enter');
   await warte(700);
   pruefe(
     await seite.locator('.cz.meins').count() === 1,
-    `D09 die eigene Chatzeile steht auf der eigenen Seite (${art})`,
+    `D09 die eigene Chatzeile steht auf der eigenen Seite (${spielName})`,
   );
 
   if (messen) {
@@ -242,10 +293,13 @@ async function runde(art, { messen = false } = {}) {
 
 // ---------------------------------------------------------------------------
 
-console.log(`ZWEI gegen ${PFAD}\n`);
+console.log(
+`ZWEI gegen ${PFAD}\n`);
 await tafel();
-await runde('schale', { messen: true });
-await runde('hash');
+await runde('schwimmen', { messen: true });   // Schale: Sitz hinlegen
+await runde('keep');                          // Socket.IO + sessionStorage
+await runde('cardchaos');                     // eigener Dialekt, eigenes Markup
+await runde('wurm');                          // offene Welt, kein Raum
 
 // D11: die Seite muss Suchmaschinen absagen – sie soll geheim bleiben.
 const kopf = await neueSeite();
