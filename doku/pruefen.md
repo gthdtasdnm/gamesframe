@@ -37,7 +37,7 @@ node pruefe-cardchaos-tippen.mjs  # Karten mit dem Finger, schnell hintereinande
 node pruefe-cardchaos-ende.mjs    # Wartebildschirm: Fahne ruhig, Muenze vor dem Gewinn
 node pruefe-cardchaos-ablage.mjs  # Jubelmeldungen ueber der Pyramide, nie auf den Karten
 node pruefe-cardchaos-bestenliste.mjs  # eine Liste statt zwei: Woche/Ewig x 3/5/10 Runden
-node pruefe-keep-glut.mjs      # Keep: Glutbalken, Multiplikator, feste Zahlen (eigene Fassung, Port 8106)
+node pruefe-keep-glut.mjs      # Keep: Glutbalken, Multiplikator, feste Zahlen, und dass der Jubel nichts verdeckt (eigene Fassung, Port 8106)
 node pruefe-keep-bestenliste.mjs  # Keep: Woche/Ewig, eine Zeile je Person (eigene Fassung, Port 8107)
 ```
 
@@ -58,6 +58,7 @@ node werkzeug/pruefe-seconds.mjs   # ganze Partie Seconds
 node werkzeug/pruefe-cardchaos.mjs # ganze Partie Card Chaos
 node werkzeug/pruefe-keep.mjs      # ganze Partie Keep
 node werkzeug/pruefe-keep-punkte.mjs  # Keep: Punktetafel, Rangfolge, Glut (ohne Dienst)
+node werkzeug/pruefe-keep-effekte.mjs # Keep: jeder Ton und jeder Effekt, den app.js ruft, gibt es auch
 node werkzeug/pruefe-solo.mjs      # Keep, Card Chaos und Snake starten allein
 ```
 
