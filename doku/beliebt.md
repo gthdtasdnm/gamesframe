@@ -119,9 +119,15 @@ zurückfällt.
 ## Die Seite mit den Zahlen
 
 Dieselben Zahlen gibt es im Browser: Kacheln für heute / 7 / 28 Tage / gesamt,
-ein Balkenverlauf je Tag und eine Liste aller Spiele, sortierbar nach 7 Tagen,
-28 Tagen oder gesamt. Ein Klick auf ein Spiel zeigt Kacheln und Verlauf nur für
-dieses Spiel.
+ein Balkenverlauf je Tag und eine Liste aller Spiele mit vier Spalten – heute,
+7 Tage, 28 Tage, gesamt –, sortierbar nach jeder davon. **„heute" beantwortet
+die Frage, welche Spiele heute überhaupt liefen:** wer 0 stehen hat, wurde
+heute nicht aufgemacht. Ein Klick auf ein Spiel zeigt Kacheln und Verlauf nur
+für dieses Spiel.
+
+Der laufende Tag ist nur so frisch wie der letzte Lauf von `zaehlen.mjs` –
+stündlich zur Minute 25. Wer die letzte Stunde sehen will, ruft vorher
+`node werkzeug/zaehlen.mjs --still` auf.
 
 Die Seite ist **rein statisch**: ein `index.html` und eine `daten.json`, kein
 Dienst, kein Port, keine Datenbank. Sie rechnet im Browser und kann nichts
