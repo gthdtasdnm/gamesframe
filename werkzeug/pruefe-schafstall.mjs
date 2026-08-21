@@ -20,7 +20,7 @@ import { chromium } from "playwright";
 import { pathToFileURL } from "node:url";
 
 const {
-  ARTEN, baueWeide, istBeute, nimmWeg, saatAus, stufeFuer, wuerfel, zug,
+  ARTEN, baueWeide, karte, nimmWeg, saatAus, schiebe, stufeFuer, wuerfel, zug,
 } = await import(pathToFileURL("/var/www/html/schafstall/weide.js").href);
 
 const BASIS = process.env.BASIS ?? "https://inf-zeus.de";
@@ -181,16 +181,37 @@ console.log(`ok  weiter in Runde 2, ${punkte} Punkte stehen im Kopf`);
 }
 
 // --- Der Wolf ----------------------------------------------------------------
+//
+// Er rührt sich nicht. Gefährlich ist, wer neben ihm zum Stehen kommt - also
+// braucht die Probe einen Zug, der genau dort endet. Den rechnet sie sich mit
+// derselben `weide.js` aus, notfalls nach einem vorbereitenden Schub.
 
 {
-  // Eine Runde suchen, in der gleich zu Anfang ein Tier auf den Wolf zulaeuft.
-  let level = 8, opfer = null, feld = null;
-  for (; level <= 30 && !opfer; level++) {
+  let level = 8, opfer = null, vorlauf = [], feld = null;
+  suche:
+  for (; level <= 30; level++) {
     feld = weideVon(level);
-    opfer = feld.tiere.find((t) => zug(feld, t).art === "gefressen");
+    // Erst ohne Vorlauf, dann mit je einem Schub davor.
+    const anfaenge = [[]];
+    for (const t of feld.tiere) {
+      if (zug(feld, t).art === "weiter") anfaenge.push([t.id]);
+    }
+    for (const anfang of anfaenge) {
+      let lage = feld;
+      for (const id of anfang) {
+        const z = zug(lage, lage.tiere.find((t) => t.id === id));
+        lage = schiebe(lage, id, z.schritte);
+      }
+      const k = karte(lage);
+      const kandidat = lage.tiere.find((t) => zug(lage, t, k).art === "gefressen");
+      if (kandidat) {
+        opfer = kandidat;
+        vorlauf = anfang.map((id) => feld.tiere.find((t) => t.id === id));
+        break suche;
+      }
+    }
   }
-  if (!opfer) throw new Error("Keine Runde gefunden, in der ein Tier zum Wolf laufen kann");
-  level--;
+  if (!opfer) throw new Error("Keine Runde gefunden, in der ein Zug beim Wolf endet");
 
   await page.evaluate(([wer, lvl]) => {
     localStorage.setItem("schafstall-leute", JSON.stringify(
@@ -201,10 +222,27 @@ console.log(`ok  weiter in Runde 2, ${punkte} Punkte stehen im Kopf`);
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForSelector(".gitter .tier", { timeout: 8000 });
 
-  const gerechnet = feld.tiere.filter((t) => !istBeute(t.art)).length;
-  const woelfe = await page.locator(".tier.wolf").count();
-  if (woelfe !== gerechnet) throw new Error(`${woelfe} Woelfe im DOM, ${gerechnet} gerechnet`);
+  const woelfe = await page.locator(".wolf").count();
+  if (woelfe !== feld.woelfe.length) {
+    throw new Error(`${woelfe} Woelfe im DOM, ${feld.woelfe.length} gerechnet`);
+  }
+  // Je Wolf die vier geraden Nachbarn - so viele davon, wie auf der Weide
+  // liegen. Ueber Eck darf keiner markiert sein, sonst behauptet das Bild eine
+  // Gefahr, die es nicht gibt.
+  let felderInReichweite = 0;
+  for (const i of feld.woelfe) {
+    const wx = i % feld.breite, wy = Math.floor(i / feld.breite);
+    for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+      const x = wx + dx, y = wy + dy;
+      if (x >= 0 && y >= 0 && x < feld.breite && y < feld.hoehe) felderInReichweite++;
+    }
+  }
+  if (await page.locator(".reichweite").count() !== felderInReichweite) {
+    throw new Error(`Reichweite: ${await page.locator(".reichweite").count()} Felder`
+      + ` statt ${felderInReichweite}`);
+  }
 
+  for (const t of vorlauf) await tippe(t);
   await tippe(opfer);
   await page.waitForSelector(".fertigbox", { timeout: 8000 });
   const titel = (await page.textContent(".fertigbox h2")).trim();
@@ -212,7 +250,7 @@ console.log(`ok  weiter in Runde 2, ${punkte} Punkte stehen im Kopf`);
   if (await page.locator(".punktegewinn").count()) {
     throw new Error("Fuer ein gefressenes Tier darf es keine Punkte geben");
   }
-  console.log(`ok  Runde ${level}: wer auf den Wolf zulaeuft, ist weg – und die Runde faengt neu an`);
+  console.log(`ok  Runde ${level}: wer neben dem Wolf haelt, ist weg – und die Runde faengt neu an`);
 
   await page.click(".fertigbox .btn.primary");
   await page.waitForSelector(".fertigbox", { state: "detached", timeout: 8000 });
