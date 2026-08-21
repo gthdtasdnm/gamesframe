@@ -1,5 +1,5 @@
-// Browserlauf für die vier Spiele ohne Server: Minenfeld, Sudoku, Wortgitter,
-// Patience. Sie haben keine Verbindung, die eine Probe abklopfen könnte – was
+// Browserlauf für die fünf Spiele ohne Server: Minenfeld, Sudoku, Wortgitter,
+// Patience, Wasserfarben. Sie haben keine Verbindung, die eine Probe abklopfen könnte – was
 // bei ihnen schiefgeht, geht im Browser schief.
 //
 //   cd /root/werkzeug-screenshots && node pruefe-statisch.mjs
@@ -46,6 +46,21 @@ const SPIELE = [
     danach: [".tastatur .tk", 28],
   },
   {
+    name: "wasserfarben",
+    // Beim ersten Besuch liegt die Namensfrage ueber dem Brett. Sie muss weg,
+    // sonst faengt sie jeden Klick ab - und genau das waere der Fehler, den
+    // ein Besucher als „die Seite reagiert nicht" erlebt.
+    vorher: ["#namenSpaeter"],
+    warte: ".wregal .wflasche",
+    // Leicht ist die Voreinstellung: vier Farben, dazu zwei leere Flaschen.
+    mindestens: [".wregal .wflasche", 6],
+    // Antippen muss die Flasche anheben. Die erste ist auf einem frischen
+    // Brett immer gefuellt und nie fertig - der Erzeuger laesst keine
+    // einfarbige Flasche zu.
+    klick: ".wregal .wflasche:first-child",
+    danach: [".wflasche.gewaehlt", 1],
+  },
+  {
     name: "patience",
     warte: ".ptisch .pspalte",
     mindestens: [".ptisch .pspalte", 7],
@@ -67,6 +82,11 @@ for (const s of SPIELE) {
   try {
     const antwort = await seite.goto(url, { waitUntil: "domcontentloaded" });
     if (antwort.status() !== 200) throw new Error(`HTTP ${antwort.status()}`);
+
+    for (const wahl of s.vorher ?? []) {
+      await seite.locator(wahl).click({ timeout: 8000 });
+      await seite.waitForTimeout(150);
+    }
 
     await seite.waitForSelector(s.warte, { timeout: 8000 });
 

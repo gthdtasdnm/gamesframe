@@ -1,4 +1,4 @@
-// Tiefenprobe für die vier Spiele ohne Server – die Fortsetzung von
+// Tiefenprobe für die fünf Spiele ohne Server – die Fortsetzung von
 // `pruefe-statisch.mjs`. Jene fragt: baut sich die Seite auf? Diese fragt, was
 // danach kommt und was man nur im laufenden Spiel sieht:
 //
@@ -6,6 +6,10 @@
 //   E03  „Neues Spiel" räumt wirklich auf. Vor allem die Uhr: ein zweiter
 //        `setInterval` fällt nicht auf, außer man misst nach. Er ließe die
 //        Anzeige doppelt so schnell laufen und verdürbe jede Bestzeit.
+//   E06  Wasserfarben: ein verbogener Speichereintrag darf höchstens ein neues
+//        Spiel kosten – dieses Spiel hält als einziges seinen Stand.
+//   E07  Wasserfarben: kommen die Punkte wirklich an? Gesät wird ein Brett,
+//        dem ein Zug zum Sieg fehlt; gegossen wird er im Browser.
 //   E04  Wortgitter im Einzelnen – Wortlisten, Wort des Tages, Tageswechsel,
 //        kaputter Speicher, doppelte Buchstaben. Wortgitter ist das einzige
 //        Spiel ohne `probe.js`; was hier nicht geprüft wird, ist gar nicht
@@ -19,6 +23,9 @@
 
 import { chromium } from "playwright";
 import { GUELTIG, LOESUNGEN } from "/var/www/html/wortgitter/woerter.js";
+// Dieselbe Datei, die auch das Spiel benutzt: die Probe soll keinen zweiten
+// Satz Regeln erfinden, nur um einen erlaubten Zug zu finden.
+import { zuege } from "/var/www/html/wasserfarben/flaschen.js";
 
 const BASIS = process.env.BASIS ?? "https://inf-zeus.de";
 const nurArg = process.argv.indexOf("--nur");
@@ -41,7 +48,7 @@ function pruefe(spiel, test, bedingung, text) {
 const browser = await chromium.launch();
 
 /** Eine Seite mit Konsolenwache. Wirft der Aufbau etwas, ist das ein Befund. */
-async function seiteAuf(spiel, vorLaden) {
+async function seiteAuf(spiel, vorLaden, wert) {
   const seite = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const konsole = [];
   seite.on("console", (m) => { if (m.type() === "error") konsole.push(m.text()); });
@@ -51,7 +58,7 @@ async function seiteAuf(spiel, vorLaden) {
   // einmal leer laden, säen, dann richtig laden.
   await seite.goto(`${BASIS}/${spiel}/`, { waitUntil: "domcontentloaded" });
   if (vorLaden) {
-    await seite.evaluate(vorLaden);
+    await seite.evaluate(vorLaden, wert);
     await seite.reload({ waitUntil: "domcontentloaded" });
   }
   return seite;
@@ -403,7 +410,142 @@ async function wortgitter() {
   await seite.close();
 }
 
-const ALLE = { minenfeld, sudoku, patience, wortgitter };
+// ══════════════════════════════════════════════════════════ Wasserfarben
+//
+// Als einziges der fünf hält dieses Spiel seinen Stand über das Neuladen –
+// deshalb steht E02 hier andersherum, und deshalb gibt es E06: was aus dem
+// `localStorage` kommt, ist nichts, worauf man sich verlassen darf.
+
+/** Die Flaschen so, wie sie auf dem Schirm stehen: je Flasche ihre Farben. */
+const wfLage = (seite) => seite.$$eval(".wregal .wflasche", (fs) => fs.map(
+  (f) => [...f.querySelectorAll(".wschicht")]
+    .map((s) => s.style.getPropertyValue("--c").trim())));
+
+/** Ein Zug, den die Regeln erlauben – gesucht mit derselben Datei wie im Spiel. */
+async function wfZug(seite) {
+  const lage = await wfLage(seite);
+  const farben = [...new Set(lage.flat())];
+  const zahlen = lage.map((f) => f.map((h) => farben.indexOf(h) + 1));
+  return zuege(zahlen)[0] ?? null;
+}
+
+async function wasserfarben() {
+  console.log("\nwasserfarben");
+  const seite = await seiteAuf("wasserfarben", () =>
+    localStorage.setItem("wasserfarben-name", "Probe"));
+  await seite.waitForSelector(".wregal .wflasche");
+
+  const flaschen = seite.locator(".wregal .wflasche");
+  const zugNr = () => seite.evaluate(() =>
+    Number(document.getElementById("hint").textContent.match(/Zug (\d+)/)?.[1] ?? -1));
+
+  // E03: Zurück nimmt den Zug wieder heraus – Brett und Zähler.
+  const anfang = JSON.stringify(await wfLage(seite));
+  pruefe("wasserfarben", "E03", await seite.locator("#zurueckBtn").isDisabled(),
+    "vor dem ersten Zug ist Zurück abgeschaltet");
+  const zug = await wfZug(seite);
+  pruefe("wasserfarben", "E03", !!zug, "auf dem frischen Brett gibt es einen erlaubten Zug");
+  await flaschen.nth(zug[0]).click();
+  await flaschen.nth(zug[1]).click();
+  await seite.waitForTimeout(200);
+  pruefe("wasserfarben", "E03", (await zugNr()) === 1, `nach dem Gießen steht Zug ${await zugNr()}`);
+  pruefe("wasserfarben", "E03", JSON.stringify(await wfLage(seite)) !== anfang,
+    "und das Brett sieht anders aus als vorher");
+  await seite.getByRole("button", { name: "Zurück", exact: true }).click();
+  await seite.waitForTimeout(200);
+  pruefe("wasserfarben", "E03", (await zugNr()) === 0, "Zurück zählt den Zug wieder ab");
+  pruefe("wasserfarben", "E03", JSON.stringify(await wfLage(seite)) === anfang,
+    "und stellt genau das alte Brett wieder her");
+
+  // E02: denselben Zug noch einmal, dann neu laden. Brett und Zugzahl müssen
+  // beide stehen bleiben – sonst ist der halbe Nachmittag weg.
+  await flaschen.nth(zug[0]).click();
+  await flaschen.nth(zug[1]).click();
+  await seite.waitForTimeout(200);
+  const nachZug = JSON.stringify(await wfLage(seite));
+
+  await seite.reload({ waitUntil: "domcontentloaded" });
+  await seite.waitForSelector(".wregal .wflasche");
+  pruefe("wasserfarben", "E02", JSON.stringify(await wfLage(seite)) === nachZug,
+    "nach dem Neuladen steht dieselbe Aufgabe wieder da");
+  pruefe("wasserfarben", "E02", (await zugNr()) === 1, "und die Zugzahl auch");
+  // Der Verlauf zieht bewusst nicht mit: zurückgenommen wird nur, was in
+  // dieser Sitzung gegossen wurde. Der Knopf muss das zeigen und nicht raten.
+  pruefe("wasserfarben", "E02", await seite.locator("#zurueckBtn").isDisabled(),
+    "nach dem Neuladen ist Zurück abgeschaltet – der Verlauf zieht nicht mit");
+
+  // E06: ein verbogener Speichereintrag darf höchstens ein neues Spiel kosten.
+  // Drei Sorten Müll: kein JSON, falsche Stufe, und – der eigentliche Fall –
+  // ein Brett, in dem eine Farbe zu oft vorkommt.
+  for (const [was, wert] of [
+    ["kein JSON", "{kaputt"],
+    ["fremde Stufe", '{"stufe":"gibtsnicht","flaschen":[[1,1,1,1]]}'],
+    ["Farbe zu oft", '{"stufe":"leicht","flaschen":[[1,1,1,1],[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4],[]],"zuege":3}'],
+  ]) {
+    const kaputt = await seiteAuf("wasserfarben", (v) => {
+      localStorage.setItem("wasserfarben-name", "Probe");
+      localStorage.setItem("wasserfarben-stand", v);
+    }, wert);
+    await kaputt.waitForSelector(".wregal .wflasche", { timeout: 8000 }).catch(() => {});
+    const n = await kaputt.locator(".wregal .wflasche").count();
+    pruefe("wasserfarben", "E06", n === 6,
+      `${was}: es steht ein frisches Brett da (${n} Flaschen), keine halbe Seite`);
+    pruefe("wasserfarben", "E06", kaputt.konsole.length === 0,
+      `${was}: dabei still (${kaputt.konsole.join(" | ")})`);
+    await kaputt.close();
+  }
+
+  // E07: der Punkteweg. Ein Brett, dem ein einziger Zug zum Sieg fehlt, wird
+  // gesät und dieser Zug im Browser gegossen. Anders ist der Sieg nicht in
+  // vertretbarer Zeit zu erreichen – und ungeprüft bliebe damit genau das,
+  // worum es dem Spiel geht: dass die Punkte auch ankommen.
+  const fast = await seiteAuf("wasserfarben", () => {
+    localStorage.setItem("wasserfarben-name", "Probe");
+    localStorage.setItem("wasserfarben-punkte", "40");
+    localStorage.setItem("wasserfarben-geloest", "1");
+    localStorage.setItem("wasserfarben-stand", JSON.stringify({
+      stufe: "leicht",
+      flaschen: [[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [4, 4, 4], [4], []],
+      zuege: 6, rueck: 0,
+    }));
+  });
+  await fast.waitForSelector(".wregal .wflasche");
+  const vollVorher = await fast.locator(".wflasche.voll").count();
+  pruefe("wasserfarben", "E07", vollVorher === 3,
+    `das gesäte Brett steht (${vollVorher} fertige Flaschen)`);
+  await fast.locator(".wregal .wflasche").nth(4).click();
+  await fast.locator(".wregal .wflasche").nth(3).click();
+  await fast.waitForTimeout(300);
+
+  const sieg = await fast.locator(".fertigbox").count();
+  pruefe("wasserfarben", "E07", sieg === 1, "der letzte Zug beendet die Aufgabe");
+  const nachher = await fast.evaluate(() => ({
+    punkte: Number(localStorage.getItem("wasserfarben-punkte")),
+    geloest: Number(localStorage.getItem("wasserfarben-geloest")),
+    stand: localStorage.getItem("wasserfarben-stand"),
+    name: localStorage.getItem("wasserfarben-name"),
+  }));
+  // 4 Farben × 10 + (14 − 7) × 5 + 20 ohne Zurück = 95, dazu die 40 von vorher.
+  pruefe("wasserfarben", "E07", nachher.punkte === 135,
+    `die Punkte sind angewachsen: 40 → ${nachher.punkte}`);
+  pruefe("wasserfarben", "E07", nachher.geloest === 2,
+    `gelöste Aufgaben: ${nachher.geloest}`);
+  pruefe("wasserfarben", "E07", nachher.stand === null,
+    "die gelöste Aufgabe liegt nicht mehr als offener Stand herum");
+  pruefe("wasserfarben", "E07", nachher.name === "Probe", "und der Name steht noch");
+  const kopf = (await fast.textContent("#stand")).trim();
+  pruefe("wasserfarben", "E07", kopf.includes("Probe") && kopf.includes("135"),
+    `oben stehen Name und Punkte (${kopf})`);
+  pruefe("wasserfarben", "E01", fast.konsole.length === 0,
+    `Konsole still (${fast.konsole.join(" | ")})`);
+  await fast.close();
+
+  pruefe("wasserfarben", "E01", seite.konsole.length === 0,
+    `Konsole still (${seite.konsole.join(" | ")})`);
+  await seite.close();
+}
+
+const ALLE = { minenfeld, sudoku, patience, wortgitter, wasserfarben };
 for (const [name, fn] of Object.entries(ALLE)) {
   if (NUR && NUR !== name) continue;
   await fn();

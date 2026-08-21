@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Sechsundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Siebenundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -76,7 +76,7 @@ h1 {
 }
 
 /* --- Suche --------------------------------------------------------------- */
-/* Sechsundzwanzig Kacheln sind viel zu scrollen, wenn man schon weiß, was man
+/* Siebenundzwanzig Kacheln sind viel zu scrollen, wenn man schon weiß, was man
    sucht. Das Feld steht auf `display: none` und wird erst vom Skript
    eingeblendet: ohne JS filtert es nichts, dann soll es auch nichts
    versprechen. */
@@ -639,7 +639,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Sechsundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
+  <p class="sub">Siebenundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -1499,6 +1499,37 @@ footer a { color: inherit; }
         <li>Im Laden kostet jede Stufe mehr als die davor: Ameisen, Kiefer, Beine, Fühler, Duftspur, ein zweiter Ausgang, Kammer, Pilzgarten, Vorratskammer, Körnerbeutel.</li>
         <li>Machst du zu, arbeitet der Bau weiter – aber niemand wirft dann Krümel. Eingesammelt wird nur, was von selbst herunterfällt: <b>Waldrand</b> und <b>Blattläuse</b> sind die Ausbauten für die Nacht, die Vorratskammer der Platz dafür.</li>
         <li>Irgendwann gründest du einen neuen Hügel: alles fängt von vorn an, aber die Königinnen kommen mit und machen jede Lieferung dauerhaft ergiebiger.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#4ad9ff; --accent2:#ff6fb1;"
+           data-spiel="wasserfarben" data-heimat="gruppe-allein" data-platz="5" data-bild="bilder/wasserfarben-spiel.webp"
+           data-kurz="Farben umgießen, bis jede Flasche einfarbig ist – und jede Mischung ist garantiert lösbar.">
+    <button class="info" type="button" aria-label="Wie Wasserfarben gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <a class="game-link" href="/wasserfarben/">
+      <img class="schnappschuss" src="bilder/klein/wasserfarben-spiel.webp" alt="Bildschirmfoto aus einer Partie Wasserfarben"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🧪</span>
+        <h3>Wasserfarben</h3>
+      </div>
+      <p class="kurz">Farbige Schichten von Flasche zu Flasche gießen, bis jede nur noch eine Farbe hat. Das Water-Sort-Puzzle.</p>
+      <p class="lang">Vier bis zwölf Farben, in Flaschen durcheinandergeschichtet. Gegossen werden darf nur Gleiches auf Gleiches, und über den Rand geht nie etwas: passt nur die Hälfte, bleibt der Rest stehen. Klingt einfach und ist es in der leichten Stufe auch – bei zwölf Farben und zwei freien Flaschen sortiert man eine Weile. Jede Mischung ist nachweislich lösbar: der Erzeuger löst sie selbst, bevor du sie siehst. Name und Punkte bleiben im Browser.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">allein</span>
+        <span class="tag">Knobeln</span>
+        <span class="tag">offline</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li>Stufe wählen: 4, 7, 10 oder 12 Farben. Zwei Flaschen sind immer frei.</li>
+        <li>Eine Flasche antippen – ihr oberster Block einer Farbe wird angehoben. Dann die Zielflasche antippen.</li>
+        <li>Gegossen wird nur auf dieselbe Farbe oder in eine leere Flasche. Vier Schichten passen hinein, mehr nie.</li>
+        <li>Gegossen wird der ganze obere Block. Passt nur ein Teil, bleibt der Rest in der Flasche.</li>
+        <li>Zurück nimmt beliebig viele Züge zurück und kostet keine Punkte – wer ohne auskommt, bekommt zwanzig extra.</li>
+        <li>Fertig: in jeder Flasche steht nur noch eine Farbe. Punkte gibt es je Stufe und für wenige Züge; sie sammeln sich unter deinem Namen im Browser weiter an.</li>
     </template>
   </article>
 </main>

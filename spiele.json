@@ -396,6 +396,20 @@
       "repo": "git@github.com:gthdtasdnm/patience.git"
     },
     {
+      "name": "wasserfarben",
+      "titel": "Wasserfarben",
+      "pfad": "/wasserfarben/",
+      "kategorie": "Allein spielen",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null,
+      "hinweis": "Water-Sort-Puzzle; jede Mischung wird vor der Ausgabe nachweislich geloest",
+      "gemeinsam": {
+        "lobbyCss": "style.css",
+        "rahmenCss": "style.css"
+      }
+    },
+    {
       "name": "revier",
       "titel": "Revier",
       "pfad": "/revier/",

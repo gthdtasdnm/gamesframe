@@ -29,9 +29,9 @@ a2enconf <name> && apache2ctl configtest && systemctl reload apache2
 
 ## Wenn niemand mitspielen muss
 
-Die Sparte „Allein spielen" (Minenfeld, Sudoku, Wortgitter, Patience) ist
-**rein statisch**: kein Dienst, kein Port, kein Apache-Block – Apache liefert
-den Ordner direkt aus. Gerüst dafür:
+Die Sparte „Allein spielen" (Minenfeld, Sudoku, Wortgitter, Patience,
+Wasserfarben) ist **rein statisch**: kein Dienst, kein Port, kein
+Apache-Block – Apache liefert den Ordner direkt aus. Gerüst dafür:
 
 ```bash
 ./werkzeug/neusolo.sh <name> "<Titel>" "<Logo1>" "<Logo2>" "<Untertitel>" "<Emoji>"
@@ -41,6 +41,12 @@ Das ist kein Widerspruch zu „nie ohne Server": der Satz meint Spiele, die
 **mehrere Leute an einem Gerät** spielen. Wer allein spielt, braucht keinen
 Raum – und der Server hätte nichts zu tun, was der Browser nicht selbst kann.
 Eintrag in `spiele.json` mit `"art": "statisch"`, ohne `port` und `dienst`.
+Dazu – seit Wasserfarben (21.08.2026) – `"gemeinsam": {"lobbyCss":
+"style.css", "rahmenCss": "style.css"}`: `neusolo.sh` baut die Datei zwar aus
+denselben Quellen zusammen, aber ohne den Eintrag sieht `verteilen.mjs
+--pruefen` das Spiel nie wieder an, und eine spätere Änderung an der
+gemeinsamen Lobby-Basis erreicht es nicht. Genau das ist den vier älteren
+Solo-Spielen passiert; es steht als offener Punkt in `RISIKEN-TODO.md`.
 
 ## Wenn es gar keine Runde gibt
 

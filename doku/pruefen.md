@@ -8,7 +8,7 @@ cd /var/www/html/<spiel>
 DENO_DIR=/tmp/deno-check WS_URL=wss://inf-zeus.de/<spiel>/ws deno task probe
 
 # Spiele ohne Server: reine Rechenprobe, kein Browser
-cd /var/www/html/<minenfeld|sudoku|patience> && deno task probe
+cd /var/www/html/<minenfeld|sudoku|patience|wasserfarben> && deno task probe
 
 # Und dann doch im Browser, weil eine Rechenprobe keine Seite aufbaut
 cd /root/werkzeug-screenshots && node pruefe-statisch.mjs
@@ -24,7 +24,7 @@ node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
 node pruefe-imposter.mjs      # Imposter: liegt der Deckel wirklich auf dem Wort? (eigene Fassung, Port 8086)
 node pruefe-amehesten-ab18.mjs # Wer am ehesten: die 18+-Abfrage – sie haengt ganz im Client
-node pruefe-statisch.mjs       # bauen sich die vier Spiele ohne Server auf?
+node pruefe-statisch.mjs       # bauen sich die fuenf Spiele ohne Server auf?
 node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
 node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Ueberlauf
@@ -112,6 +112,17 @@ unsichtbar, aber jede Bestzeit wäre verdorben. Für Wortgitter, das einzige
 Spiel ohne `probe.js`, prüft sie zusätzlich die Wortlisten, den Tageswechsel,
 einen kaputten Speichereintrag und die Bewertung doppelter Buchstaben gegen
 eine zweite, unabhängig geschriebene Fassung derselben Regel.
+
+Seit dem 21.08.2026 gehört **Wasserfarben** dazu, und dort steht E02
+andersherum als bei den anderen drei: es ist das einzige Spiel ohne Server, das
+seinen Stand über das Neuladen hält – geprüft wird also, dass Brett und
+Zugzahl wirklich stehen bleiben. Dazu zwei eigene Griffe: **E06** sät drei
+Sorten verbogenen `localStorage` (kein JSON, fremde Stufe, eine Farbe zu oft)
+und verlangt, dass daraus ein frisches Brett wird und keine halbe Seite;
+**E07** sät ein Brett, dem ein einziger Zug zum Sieg fehlt, gießt ihn im
+Browser und rechnet die Punkte nach. Anders wäre genau der Weg, um den es dem
+Spiel geht, gar nicht in vertretbarer Zeit zu prüfen: eine Aufgabe von Hand
+durchzuspielen dauert je nach Stufe zwanzig bis sechzig Züge.
 
 ## Was am 17.08.2026 dazugekommen ist
 
@@ -235,9 +246,13 @@ Servern eigene Regeldateien herausgelöst worden – `karten.js` (Schwimmen),
 `gebote.js` (Becherbluff). Der erste Teil jeder Probe läuft dadurch ganz ohne
 Server.
 
-Die vier Spiele ohne Server prüfen dasselbe eine Stufe tiefer: `raetsel.js`
-(Sudoku), `feld.js` (Minenfeld), `regeln.js` (Patience) sind aus `app.js`
-herausgelöst, damit `deno task probe` sie ohne Browser rechnen lassen kann.
+Die Spiele ohne Server prüfen dasselbe eine Stufe tiefer: `raetsel.js`
+(Sudoku), `feld.js` (Minenfeld), `regeln.js` (Patience) und `flaschen.js`
+(Wasserfarben) sind aus `app.js` herausgelöst, damit `deno task probe` sie ohne
+Browser rechnen lassen kann. Bei Wasserfarben geht die Probe einen Schritt
+weiter als anderswo: sie glaubt dem eigenen Löser nicht, sondern lässt sich den
+Weg geben und gießt jeden Zug einzeln nach, bis die Aufgabe wirklich gelöst
+dasteht.
 Wortgitter hat keine Probe – dort ist die Wortliste erzeugt und wird von
 `pruefe-wortleger.mjs` mitgeprüft.
 

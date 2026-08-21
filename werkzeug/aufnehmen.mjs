@@ -16,6 +16,7 @@
 // keine (/usr/local/share/fonts/emoji/NotoColorEmoji.ttf).
 
 import { chromium } from 'playwright';
+import { pathToFileURL } from 'node:url';
 import { mkdir, readdir, stat, unlink } from 'node:fs/promises';
 import sharp from 'sharp';
 
@@ -1195,6 +1196,72 @@ async function patience(browser) {
   await seite.context().close();
 }
 
+async function wasserfarben(browser) {
+  const seite = await spieler(browser, 'solo');
+  await seite.goto(`${BASIS}/wasserfarben/`, { waitUntil: 'networkidle' });
+
+  // Beim ersten Besuch fragt das Spiel nach einem Namen - der steht danach
+  // neben den Punkten im Kopf und gehoert ins Bild.
+  await seite.waitForSelector('#namensfrage:not([hidden])', { timeout: 15000 });
+  await seite.fill('#namensfeld', 'Mira');
+  await seite.click('#namenOk');
+  // Schwer: zehn Farben, zwoelf Flaschen - zwei Reihen, und alle Farben, die
+  // das Spiel hergibt. Bei sieben Flaschen bliebe das halbe Bild leer.
+  await seite.click('#einstellung .btn:nth-child(3)');
+  await seite.waitForSelector('.wregal .wflasche');
+  await warte(400);
+
+  // Ein frisch gemischtes Brett zeigt nur Streifen. Interessant wird es in der
+  // Mitte der Partie: ein paar Flaschen fertig (goldener Rand), der Rest noch
+  // gemischt. Dafuer wird der echte Loesungsweg gerechnet - mit derselben
+  // Datei, die auch das Spiel benutzt - und zu zwei Dritteln gegangen.
+  const lage = async () => seite.$$eval('.wregal .wflasche', (fs) => fs.map(
+    (f) => [...f.querySelectorAll('.wschicht')].map((s) => s.style.getPropertyValue('--c').trim())));
+
+  const start = await lage();
+  const farben = [...new Set(start.flat())];
+  const alsZahlen = start.map((f) => f.map((h) => farben.indexOf(h) + 1));
+
+  const { geloest, giesse, zuege } = await import(
+    pathToFileURL('/var/www/html/wasserfarben/flaschen.js').href);
+  const kennung = (l) => l.map((x) => x.join(',')).sort().join('|');
+  const gesehen = new Set([kennung(alsZahlen)]);
+  const stapel = [{ lage: alsZahlen, weg: [] }];
+  let weg = null;
+  while (stapel.length && !weg) {
+    const { lage: l, weg: w } = stapel.pop();
+    if (geloest(l)) { weg = w; break; }
+    for (const [von, nach] of zuege(l)) {
+      const neu = giesse(l, von, nach);
+      const k = kennung(neu);
+      if (gesehen.has(k)) continue;
+      gesehen.add(k);
+      stapel.push({ lage: neu, weg: [...w, [von, nach]] });
+    }
+  }
+  if (!weg) throw new Error('kein Loesungsweg gefunden');
+
+  const flaschen = seite.locator('.wregal .wflasche');
+  for (const [von, nach] of weg.slice(0, Math.round(weg.length * 0.55))) {
+    await flaschen.nth(von).click();
+    await flaschen.nth(nach).click();
+    await warte(90);
+  }
+
+  // Zum Schluss eine Flasche anheben: das ist der Griff, um den es geht.
+  // Sie muss noch etwas enthalten und darf nicht fertig sein - sonst passiert
+  // beim Antippen nichts und das Bild zeigt einen Fehlgriff.
+  const offen = await seite.$$eval('.wregal .wflasche', (fs) => fs
+    .map((f, i) => ({ i, voll: f.classList.contains('voll'),
+                      schichten: f.querySelectorAll('.wschicht').length }))
+    .filter((x) => !x.voll && x.schichten > 0)
+    .map((x) => x.i));
+  await flaschen.nth(offen[0] ?? 0).click();
+  await warte(500);
+  await knipsen(seite, 'wasserfarben-spiel.png');
+  await seite.context().close();
+}
+
 // ═══════════════ Das Dauerspiel ══════════════════════════════════════════
 //
 // Revier braucht als einziges Spiel keinen Raum und keine zweite Sitzung: die
@@ -1462,7 +1529,7 @@ const SPIELE = {
   flasche, cubes, wortleger,
   // Die zwoelf vom 09.08.2026
   werwolf, schwimmen, maumau, luegen, becher, kingscup, paare, snake,
-  minenfeld, sudoku, wortgitter, patience,
+  minenfeld, sudoku, wortgitter, patience, wasserfarben,
   revier, wurm, ameisen,
 };
 
@@ -1483,15 +1550,23 @@ await browser.close();
 // fotoaehnlich, da wird die verlustfreie Kompression riesig. WebP drueckt das
 // um rund vier Fuenftel, ohne dass man am Text etwas sieht. Die PNG fliegen
 // danach raus - im Netz landet nur das WebP.
+// Dazu je eine kleine Fassung in bilder/klein/: die Kachel laedt nur die,
+// das grosse Bild bekommt erst der Anleitungsdialog zu sehen. Ohne diesen
+// Schritt zeigt die neue Kachel ein totes Bild - pruefe-startseite.mjs faellt
+// dann darueber, aber erst hinterher.
 console.log('  umwandeln nach WebP:');
+await mkdir(`${ZIEL}/klein`, { recursive: true });
 let vorher = 0, nachher = 0;
 for (const datei of (await readdir(ZIEL)).filter((f) => f.endsWith('.png'))) {
   const quelle = `${ZIEL}/${datei}`;
   const ziel = quelle.replace(/\.png$/, '.webp');
   const alt = (await stat(quelle)).size;   // sharp.metadata() fuellt .size nicht
   const { size } = await sharp(quelle).webp({ quality: 82 }).toFile(ziel);
+  const klein = await sharp(quelle).resize(640, 435, { fit: 'cover' })
+    .webp({ quality: 78 }).toFile(`${ZIEL}/klein/${datei.replace(/\.png$/, '.webp')}`);
   await unlink(quelle);
-  vorher += alt; nachher += size;
-  console.log(`    ${datei.replace('.png', '.webp').padEnd(26)} ${(size / 1024).toFixed(0).padStart(4)} KB`);
+  vorher += alt; nachher += size + klein.size;
+  console.log(`    ${datei.replace('.png', '.webp').padEnd(26)} ${(size / 1024).toFixed(0).padStart(4)} KB` +
+    ` + ${(klein.size / 1024).toFixed(0).padStart(3)} KB klein`);
 }
 console.log(`  gesamt: ${(vorher / 1024 / 1024).toFixed(1)} MB → ${(nachher / 1024 / 1024).toFixed(1)} MB`);
