@@ -67,13 +67,13 @@ const SPIELE = [
     // sie jeden Klick ab, und genau das waere der Fehler, den ein Besucher
     // als „die Seite reagiert nicht" erlebt.
     vorher: ["#leuteZu"],
-    warte: ".gitter .schaf",
-    // Runde 1 ist 4x4 mit sechs Schafen.
-    mindestens: [".gitter .schaf", 6],
-    // Der Tipp muss ein Schaf zeigen, das wirklich herauskommt. Er haengt an
-    // `freieSchafe()` - stirbt das Modul beim Laden, passiert hier nichts.
+    warte: ".gitter .tier",
+    // Runde 1 ist 4x4 mit sieben einzelnen Schafen.
+    mindestens: [".gitter .tier", 6],
+    // Der Tipp muss ein Tier zeigen, das wirklich ganz herauskommt. Er haengt
+    // an `freieTiere()` - stirbt das Modul beim Laden, passiert hier nichts.
     klick: "#tippBtn",
-    danach: [".schaf.tipp", 1],
+    danach: [".tier.tipp", 1],
   },
   {
     name: "patience",

@@ -1527,28 +1527,33 @@ async function ameisen(browser) {
 // ---------------------------------------------------------------- Schafstall
 
 async function schafstall(browser) {
-  const seite = await spieler(browser, 'solo');
+  // Hoeher als die anderen: das Feld ist in Runde 15 acht Reihen tief, und bei
+  // den ueblichen 680 Pixeln waere die untere Haelfte abgeschnitten. Die kleine
+  // Fassung fuer die Kachel schneidet oben und unten je sechzig Pixel weg -
+  // dort steht nur Logo und Fusszeile.
+  const seite = await spieler(browser, 'solo', 800);
   await seite.goto(`${BASIS}/schafstall/`, { waitUntil: 'networkidle' });
 
-  // Runde 1 waere ein Feld von 4x4 und zeigt nichts von dem, worum es geht.
-  // Der Spielstand liegt im localStorage, also wird er gesetzt und neu
-  // geladen: Runde 11 ist voll besetzt, hat Felsen und einen Rand mit Toren.
+  // Runde 1 waere ein Feld von 4x4 mit sieben einzelnen Schafen und zeigt
+  // nichts von dem, worum es geht. Der Spielstand liegt im localStorage, also
+  // wird er gesetzt und neu geladen: Runde 15 hat alles auf einmal - Gespanne,
+  // Elefanten, Felsen, zwei Woelfe und einen Rand mit Toren.
   await seite.evaluate(() => {
     localStorage.setItem('schafstall-leute', JSON.stringify(
-      [{ name: 'Mira', punkte: 1180, level: 11, runden: 10, sterne: 26 }]));
+      [{ name: 'Mira', punkte: 1980, level: 15, runden: 14, sterne: 37 }]));
     localStorage.setItem('schafstall-wer', 'Mira');
     localStorage.removeItem('schafstall-lauf');
   });
   await seite.reload({ waitUntil: 'networkidle' });
-  await seite.waitForSelector('.gitter .schaf', { timeout: 15000 });
+  await seite.waitForSelector('.gitter .tier', { timeout: 15000 });
 
-  // Ein paar Schafe in den Stall bringen - eine unberuehrte Weide sagt nicht,
+  // Ein paar Tiere in den Stall bringen - eine unberuehrte Weide sagt nicht,
   // dass ueberhaupt etwas passiert. Gefunden werden sie ueber den Tipp, der
-  // nur zeigt, was wirklich herauskommt. `reducedMotion: reduce` heisst: sie
-  // sind sofort weg, kein halber Lauf im Bild.
-  for (let i = 0; i < 7; i++) {
+  // nur zeigt, was wirklich ganz herauskommt. `reducedMotion: reduce` heisst:
+  // sie sind sofort weg, kein halber Lauf im Bild.
+  for (let i = 0; i < 6; i++) {
     await seite.click('#tippBtn');
-    const gezeigt = seite.locator('.schaf.tipp').first();
+    const gezeigt = seite.locator('.tier.tipp').first();
     if (!await gezeigt.count()) break;
     await gezeigt.click();
     await warte(120);

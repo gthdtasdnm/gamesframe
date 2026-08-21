@@ -1536,7 +1536,7 @@ footer a { color: inherit; }
 
   <article class="game" style="--accent:#8fe04a; --accent2:#ffd447;"
            data-spiel="schafstall" data-heimat="gruppe-allein" data-platz="6" data-bild="bilder/schafstall-spiel.webp"
-           data-kurz="Eingeklemmte Schafe befreien – jedes läuft nur geradeaus, und jede Weide ist garantiert zu räumen.">
+           data-kurz="Schiebepuzzle mit Schafen: jedes läuft nur geradeaus, bis etwas im Weg steht – und der Wolf frisst, wen er berührt.">
     <button class="info" type="button" aria-label="Wie Schafstall gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
     <a class="game-link" href="/schafstall/">
       <img class="schnappschuss" src="bilder/klein/schafstall-spiel.webp" alt="Bildschirmfoto aus einer Runde Schafstall"
@@ -1545,8 +1545,8 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🐑</span>
         <h3>Schafstall</h3>
       </div>
-      <p class="kurz">Eine Weide voller Schafe, die sich gegenseitig im Weg stehen. Von außen nach innen freiräumen, bis alle im Stall sind.</p>
-      <p class="lang">Jedes Schaf schaut in eine Richtung und läuft nur dorthin – wenn der Weg frei ist. Ist er es nicht, kommt es keinen Schritt weit, und das kostet eines von drei Herzen. Also erst die außen, dann die dahinter. Das Feld wächst mit jeder Runde, ab Runde 5 liegen Felsen darauf, ab Runde 10 ist der Rand zugezäunt und es geht nur noch durch die Tore hinaus. Festfahren kann man sich nie: jede Weide wird rückwärts gebaut und ist damit nachweislich zu räumen. Punkte, Runde und Sterne bleiben unter deinem Namen im Browser – mehrere Leute können sich ein Gerät teilen.</p>
+      <p class="kurz">Eine Weide voller Tiere, die sich gegenseitig im Weg stehen. Antippen, laufen lassen, schieben – bis alle im Stall sind.</p>
+      <p class="lang">Jedes Tier schaut in eine Richtung und läuft nur dorthin: bis vor das nächste Hindernis oder ganz aus der Weide hinaus. Damit räumt man von außen nach innen ab – und schiebt, wo es sein muss. Zwei Schafe im Gespann brauchen zwei Zellen, ein Elefant vier, und der Wolf frisst jedes Tier, das ihn berührt; wegjagen lässt er sich trotzdem. Rückwärts läuft keins, also kann man sich festfahren: dafür gibt es Zurück und Von vorn, beides ohne Punktabzug. Jede Weide ist nachweislich zu räumen, mit einem Zug je Tier – genau dafür gibt es drei Sterne. Punkte, Runde und Sterne bleiben unter deinem Namen im Browser; mehrere Leute können sich ein Gerät teilen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
         <span class="tag">allein</span>
@@ -1557,11 +1557,12 @@ footer a { color: inherit; }
     </a>
     <template class="ablauf">
         <li>Namen eintippen – oder „Später“, dann spielt Gast. Die Punkte gehören dem Namen und bleiben in diesem Browser.</li>
-        <li>Ein Schaf antippen: es rennt in die Richtung, in die sein Pfeil zeigt, aus der Weide hinaus und in den Stall.</li>
-        <li>Steht etwas in seiner Bahn – ein anderes Schaf, ein Fels, der geschlossene Zaun –, bleibt es stehen und ein Herz ist weg. Das Hindernis leuchtet kurz auf.</li>
-        <li>Drei Herzen hat eine Runde. Sind sie alle, fängt dieselbe Weide von vorn an; Punkte kostet das keine, nur den Tempobonus.</li>
-        <li>Der Tipp zeigt ein Schaf, das gerade herauskommt – auch er kostet nur den Tempobonus.</li>
-        <li>Alle im Stall: Punkte nach Runde, übrig gebliebenen Herzen und Tempo, dazu bis zu drei Sterne. Die nächste Runde ist größer und voller.</li>
+        <li>Ein Tier antippen: es rennt in die Richtung, in die sein Pfeil zeigt – bis vor das nächste Hindernis, oder aus der Weide hinaus und in den Stall.</li>
+        <li>Der kürzeste Weg ist von außen nach innen: jede Weide lässt sich mit einem einzigen Zug je Tier räumen. Dafür gibt es drei Sterne.</li>
+        <li>Wer schiebt, kann sich festfahren – rückwärts läuft keins. „Zurück“ nimmt Züge zurück, „Von vorn“ stellt die Weide wieder hin. Punkte kostet beides keine.</li>
+        <li>Der Wolf 🐺 lässt sich wegjagen wie jedes andere Stück, aber berühren darf er nichts: läuft ein Tier gegen ihn, ist es weg und die Runde fängt von vorn an.</li>
+        <li>Ab Runde 4 laufen zwei Schafe im Gespann, ab 6 liegen Felsen herum, ab 8 kommt der Wolf, ab 10 ist der Rand zugezäunt, ab 12 steht ein Elefant im Weg.</li>
+        <li>Alle im Stall: Punkte nach Runde, gesparten Zügen und Tempo, dazu bis zu drei Sterne. Die nächste Runde ist größer und voller.</li>
     </template>
   </article>
 </main>
