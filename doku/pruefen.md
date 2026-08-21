@@ -8,7 +8,7 @@ cd /var/www/html/<spiel>
 DENO_DIR=/tmp/deno-check WS_URL=wss://inf-zeus.de/<spiel>/ws deno task probe
 
 # Spiele ohne Server: reine Rechenprobe, kein Browser
-cd /var/www/html/<minenfeld|sudoku|patience|wasserfarben> && deno task probe
+cd /var/www/html/<minenfeld|sudoku|patience|wasserfarben|schafstall> && deno task probe
 
 # Und dann doch im Browser, weil eine Rechenprobe keine Seite aufbaut
 cd /root/werkzeug-screenshots && node pruefe-statisch.mjs
@@ -24,12 +24,13 @@ node pruefe-cubes.mjs          # steht in jedem Quadrat die richtige Zahl?
 node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
 node pruefe-imposter.mjs      # Imposter: liegt der Deckel wirklich auf dem Wort? (eigene Fassung, Port 8086)
 node pruefe-amehesten-ab18.mjs # Wer am ehesten: die 18+-Abfrage – sie haengt ganz im Client
-node pruefe-statisch.mjs       # bauen sich die fuenf Spiele ohne Server auf?
+node pruefe-statisch.mjs       # bauen sich die sechs Spiele ohne Server auf?
 node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?
 node pruefe-rahmen.mjs         # jede Seite: 200, Konsole still, Handy ohne Ueberlauf
 node pruefe-revier.mjs         # kommt der unsichtbare Joystick an, bewegt sich die Leinwand?
 node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu Maussteuerung und vier Wege zum Turbo
+node pruefe-schafstall.mjs     # Schafstall: eine ganze Runde ueber den Tipp-Knopf, Neuladen, Herz weg
 node pruefe-ameisen.mjs        # Ameisen: Tippen, Laden, zweiter Ausgang, derselbe Bau nach dem Neuladen
 node pruefe-dating.mjs         # ZWEI: Tafel, Countdown, Reservierung – und die Uebungsrunde bis in die private Lobby im iframe
 node pruefe-hochzeit.mjs       # Grossansicht: passt das Bild ins Fenster? (misst, statt zu zeigen)

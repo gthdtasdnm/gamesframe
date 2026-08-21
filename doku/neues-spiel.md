@@ -30,7 +30,7 @@ a2enconf <name> && apache2ctl configtest && systemctl reload apache2
 ## Wenn niemand mitspielen muss
 
 Die Sparte „Allein spielen" (Minenfeld, Sudoku, Wortgitter, Patience,
-Wasserfarben) ist **rein statisch**: kein Dienst, kein Port, kein
+Wasserfarben, Schafstall) ist **rein statisch**: kein Dienst, kein Port, kein
 Apache-Block – Apache liefert den Ordner direkt aus. Gerüst dafür:
 
 ```bash

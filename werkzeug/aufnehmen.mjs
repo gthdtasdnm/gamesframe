@@ -1524,13 +1524,48 @@ async function ameisen(browser) {
   }
 }
 
+// ---------------------------------------------------------------- Schafstall
+
+async function schafstall(browser) {
+  const seite = await spieler(browser, 'solo');
+  await seite.goto(`${BASIS}/schafstall/`, { waitUntil: 'networkidle' });
+
+  // Runde 1 waere ein Feld von 4x4 und zeigt nichts von dem, worum es geht.
+  // Der Spielstand liegt im localStorage, also wird er gesetzt und neu
+  // geladen: Runde 11 ist voll besetzt, hat Felsen und einen Rand mit Toren.
+  await seite.evaluate(() => {
+    localStorage.setItem('schafstall-leute', JSON.stringify(
+      [{ name: 'Mira', punkte: 1180, level: 11, runden: 10, sterne: 26 }]));
+    localStorage.setItem('schafstall-wer', 'Mira');
+    localStorage.removeItem('schafstall-lauf');
+  });
+  await seite.reload({ waitUntil: 'networkidle' });
+  await seite.waitForSelector('.gitter .schaf', { timeout: 15000 });
+
+  // Ein paar Schafe in den Stall bringen - eine unberuehrte Weide sagt nicht,
+  // dass ueberhaupt etwas passiert. Gefunden werden sie ueber den Tipp, der
+  // nur zeigt, was wirklich herauskommt. `reducedMotion: reduce` heisst: sie
+  // sind sofort weg, kein halber Lauf im Bild.
+  for (let i = 0; i < 7; i++) {
+    await seite.click('#tippBtn');
+    const gezeigt = seite.locator('.schaf.tipp').first();
+    if (!await gezeigt.count()) break;
+    await gezeigt.click();
+    await warte(120);
+  }
+  // Die Meldung des letzten Tipps braucht 1,6 s, bis sie verschwindet - sonst
+  // liegt sie im Bild ueber der Weide.
+  await warte(2000);
+  await knipsen(seite, 'schafstall-spiel.png');
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
   flasche, cubes, wortleger,
   // Die zwoelf vom 09.08.2026
   werwolf, schwimmen, maumau, luegen, becher, kingscup, paare, snake,
   minenfeld, sudoku, wortgitter, patience, wasserfarben,
-  revier, wurm, ameisen,
+  revier, wurm, ameisen, schafstall,
 };
 
 const gewaehlt = process.argv.slice(2);

@@ -4,7 +4,7 @@ Alles, was auf inf-zeus.de nicht zu einem einzelnen Spiel gehört: die
 Spieleübersicht, Impressum und Datenschutzerklärung, der gemeinsame Stil der
 Rechtstexte und die Apache-Regeln des DocumentRoot.
 
-Die siebenundzwanzig Spiele und der Bugreport liegen in eigenen Repos und werden
+Die achtundzwanzig Spiele und der Bugreport liegen in eigenen Repos und werden
 hier bewusst nicht mitversioniert – ein Fehler an der Startseite soll kein Spiel
 mitreißen.
 
@@ -12,7 +12,7 @@ mitreißen.
 
 | Pfad | Was |
 |---|---|
-| `spiele/index.html` | Startseite mit den siebenundzwanzig Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
+| `spiele/index.html` | Startseite mit den achtundzwanzig Spielkacheln, nach Kategorien gruppiert, Statuspunkten und dem Spendenknopf |
 | `impressum/index.html` | Anbieterkennzeichnung nach § 5 DDG |
 | `datenschutz/index.html` | Datenschutzerklärung |
 | `recht.css` | gemeinsamer Stil der beiden Rechtstexte |
@@ -56,7 +56,8 @@ Die meisten sind **Server-Spiele**: eigener Dienst, eigener Port, ein
 `deno task probe`. Jeder spielt auf seinem eigenen Gerät.
 
 Seit dem 09.08.2026 gibt es daneben die Sparte **Allein spielen** – Minenfeld,
-Sudoku, Wortgitter, Patience. Die haben keinen Dienst und keinen Port; Apache
+Sudoku, Wortgitter, Patience, Wasserfarben, Schafstall. Die haben keinen Dienst
+und keinen Port; Apache
 liefert sie als statische Dateien aus. Ein Server wäre dort kein Gewinn: es gibt
 niemanden, mit dem etwas abzugleichen wäre.
 

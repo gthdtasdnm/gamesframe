@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Siebenundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
+<meta name="description" content="Achtundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -76,7 +76,7 @@ h1 {
 }
 
 /* --- Suche --------------------------------------------------------------- */
-/* Siebenundzwanzig Kacheln sind viel zu scrollen, wenn man schon weiß, was man
+/* Achtundzwanzig Kacheln sind viel zu scrollen, wenn man schon weiß, was man
    sucht. Das Feld steht auf `display: none` und wird erst vom Skript
    eingeblendet: ohne JS filtert es nichts, dann soll es auch nichts
    versprechen. */
@@ -639,7 +639,7 @@ footer a { color: inherit; }
 <header>
   <div class="eyebrow">inf-zeus.de</div>
   <h1>Spiele</h1>
-  <p class="sub">Siebenundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
+  <p class="sub">Achtundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -1502,6 +1502,7 @@ footer a { color: inherit; }
     </template>
   </article>
 
+
   <article class="game" style="--accent:#4ad9ff; --accent2:#ff6fb1;"
            data-spiel="wasserfarben" data-heimat="gruppe-allein" data-platz="5" data-bild="bilder/wasserfarben-spiel.webp"
            data-kurz="Farben umgießen, bis jede Flasche einfarbig ist – und jede Mischung ist garantiert lösbar.">
@@ -1530,6 +1531,37 @@ footer a { color: inherit; }
         <li>Gegossen wird der ganze obere Block. Passt nur ein Teil, bleibt der Rest in der Flasche.</li>
         <li>Zurück nimmt beliebig viele Züge zurück und kostet keine Punkte – wer ohne auskommt, bekommt zwanzig extra.</li>
         <li>Fertig: in jeder Flasche steht nur noch eine Farbe. Punkte gibt es je Stufe und für wenige Züge; sie sammeln sich unter deinem Namen im Browser weiter an.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#8fe04a; --accent2:#ffd447;"
+           data-spiel="schafstall" data-heimat="gruppe-allein" data-platz="6" data-bild="bilder/schafstall-spiel.webp"
+           data-kurz="Eingeklemmte Schafe befreien – jedes läuft nur geradeaus, und jede Weide ist garantiert zu räumen.">
+    <button class="info" type="button" aria-label="Wie Schafstall gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <a class="game-link" href="/schafstall/">
+      <img class="schnappschuss" src="bilder/klein/schafstall-spiel.webp" alt="Bildschirmfoto aus einer Runde Schafstall"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🐑</span>
+        <h3>Schafstall</h3>
+      </div>
+      <p class="kurz">Eine Weide voller Schafe, die sich gegenseitig im Weg stehen. Von außen nach innen freiräumen, bis alle im Stall sind.</p>
+      <p class="lang">Jedes Schaf schaut in eine Richtung und läuft nur dorthin – wenn der Weg frei ist. Ist er es nicht, kommt es keinen Schritt weit, und das kostet eines von drei Herzen. Also erst die außen, dann die dahinter. Das Feld wächst mit jeder Runde, ab Runde 5 liegen Felsen darauf, ab Runde 10 ist der Rand zugezäunt und es geht nur noch durch die Tore hinaus. Festfahren kann man sich nie: jede Weide wird rückwärts gebaut und ist damit nachweislich zu räumen. Punkte, Runde und Sterne bleiben unter deinem Namen im Browser – mehrere Leute können sich ein Gerät teilen.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag">allein</span>
+        <span class="tag">Knobeln</span>
+        <span class="tag">offline</span>
+        <span class="go">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li>Namen eintippen – oder „Später“, dann spielt Gast. Die Punkte gehören dem Namen und bleiben in diesem Browser.</li>
+        <li>Ein Schaf antippen: es rennt in die Richtung, in die sein Pfeil zeigt, aus der Weide hinaus und in den Stall.</li>
+        <li>Steht etwas in seiner Bahn – ein anderes Schaf, ein Fels, der geschlossene Zaun –, bleibt es stehen und ein Herz ist weg. Das Hindernis leuchtet kurz auf.</li>
+        <li>Drei Herzen hat eine Runde. Sind sie alle, fängt dieselbe Weide von vorn an; Punkte kostet das keine, nur den Tempobonus.</li>
+        <li>Der Tipp zeigt ein Schaf, das gerade herauskommt – auch er kostet nur den Tempobonus.</li>
+        <li>Alle im Stall: Punkte nach Runde, übrig gebliebenen Herzen und Tempo, dazu bis zu drei Sterne. Die nächste Runde ist größer und voller.</li>
     </template>
   </article>
 </main>

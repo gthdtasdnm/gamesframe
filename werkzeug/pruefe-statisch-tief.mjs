@@ -1,6 +1,7 @@
-// Tiefenprobe für die fünf Spiele ohne Server – die Fortsetzung von
-// `pruefe-statisch.mjs`. Jene fragt: baut sich die Seite auf? Diese fragt, was
-// danach kommt und was man nur im laufenden Spiel sieht:
+// Tiefenprobe für fünf der sechs Spiele ohne Server – die Fortsetzung von
+// `pruefe-statisch.mjs`. (Schafstall hat mit `pruefe-schafstall.mjs` eine
+// eigene, die eine ganze Runde durchspielt.) Jene fragt: baut sich die Seite
+// auf? Diese fragt, was danach kommt und was man nur im laufenden Spiel sieht:
 //
 //   E02  Neu laden mitten im Spiel – bleibt der Stand?
 //   E03  „Neues Spiel" räumt wirklich auf. Vor allem die Uhr: ein zweiter

@@ -1,5 +1,5 @@
-// Browserlauf für die fünf Spiele ohne Server: Minenfeld, Sudoku, Wortgitter,
-// Patience, Wasserfarben. Sie haben keine Verbindung, die eine Probe abklopfen könnte – was
+// Browserlauf für die sechs Spiele ohne Server: Minenfeld, Sudoku, Wortgitter,
+// Patience, Wasserfarben, Schafstall. Sie haben keine Verbindung, die eine Probe abklopfen könnte – was
 // bei ihnen schiefgeht, geht im Browser schief.
 //
 //   cd /root/werkzeug-screenshots && node pruefe-statisch.mjs
@@ -59,6 +59,21 @@ const SPIELE = [
     // einfarbige Flasche zu.
     klick: ".wregal .wflasche:first-child",
     danach: [".wflasche.gewaehlt", 1],
+  },
+  {
+    name: "schafstall",
+    // Beim ersten Besuch liegt die Frage „Wer spielt?" ueber der Weide.
+    // „Spaeter" legt Gast an und macht sie weg - bleibt sie liegen, faengt
+    // sie jeden Klick ab, und genau das waere der Fehler, den ein Besucher
+    // als „die Seite reagiert nicht" erlebt.
+    vorher: ["#leuteZu"],
+    warte: ".gitter .schaf",
+    // Runde 1 ist 4x4 mit sechs Schafen.
+    mindestens: [".gitter .schaf", 6],
+    // Der Tipp muss ein Schaf zeigen, das wirklich herauskommt. Er haengt an
+    // `freieSchafe()` - stirbt das Modul beim Laden, passiert hier nichts.
+    klick: "#tippBtn",
+    danach: [".schaf.tipp", 1],
   },
   {
     name: "patience",

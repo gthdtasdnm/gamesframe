@@ -453,6 +453,20 @@
         "bremse": "bremse.js",
         "statisch": "statisch.js"
       }
+    },
+    {
+      "name": "schafstall",
+      "titel": "Schafstall",
+      "pfad": "/schafstall/",
+      "kategorie": "Allein spielen",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null,
+      "hinweis": "Schiebe-Puzzle mit Schafen; jede Weide wird rueckwaerts gebaut und ist damit nachweislich zu raeumen",
+      "gemeinsam": {
+        "lobbyCss": "style.css",
+        "rahmenCss": "style.css"
+      }
     }
   ],
   "still": [

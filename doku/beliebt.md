@@ -30,8 +30,8 @@ Läufen steht in `/var/log/spielzahlen.log`.
 ## Wie gezählt wird
 
 Aus den Apache-Protokollen, nicht in den Spielen. Der Grund steht oben in
-`zaehlen.mjs`: siebenundzwanzig Spiele, fünf davon ganz ohne Server – ein
-Zähler *im* Spiel müsste in siebenundzwanzig Repos gepflegt werden, ein
+`zaehlen.mjs`: achtundzwanzig Spiele, sechs davon ganz ohne Server – ein
+Zähler *im* Spiel müsste in achtundzwanzig Repos gepflegt werden, ein
 gemeinsamer Zähldienst wäre eine Abhängigkeit, die alle Spiele teilen. Genau
 das soll es hier nicht geben.
 
