@@ -35,7 +35,13 @@ const browser = await chromium.launch();
 const konsole = [];
 
 async function spieler(name) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  // Seit die Oberflaeche dreisprachig ist, richtet sie sich beim ersten
+// Besuch nach der Browsersprache. Diese Probe liest deutsche Saetze -
+// also faehrt sie mit einem deutschen Browser.
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    locale: "de-DE",
+  });
   const p = await ctx.newPage();
   p.on("console", (m) => { if (m.type() === "error") konsole.push(`${name}: ${m.text()}`); });
   p.on("pageerror", (e) => konsole.push(`${name}: ${e}`));

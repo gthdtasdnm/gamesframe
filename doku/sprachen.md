@@ -1,8 +1,8 @@
 # Deutsch, Türkisch, Englisch
 
-Stand: 02.09.2026. Die Mechanik steht, `/spiele/`, die Startseite und **ein**
-Spiel (`/paare/`) sind durchgezogen. Die übrigen 27 Spiele sind noch deutsch –
-was fehlt, steht unten unter „Was noch aussteht".
+Stand: 02.09.2026. **Alle 28 Spiele, der Bugreport, die Spieleübersicht und die
+Startseite sind dreisprachig** – die Oberfläche jedenfalls. Was bewusst deutsch
+bleibt, steht unten unter „Was nicht übersetzt wird".
 
 ## Die eine Regel
 
@@ -27,7 +27,7 @@ Das Wörterbuch führt **nur** `tr` und `en`. Zwei Gründe:
 | Datei | Was | Verteilt? |
 |---|---|---|
 | `gemeinsam/sprache.js` | die Mechanik: Auswahl, Umschalter, Ersetzen | ja, als `sprache` |
-| `gemeinsam/schale-texte.js` | tr/en für alles, was in **jedem** Schalenspiel gleich dasteht | ja, als `schaleTexte` |
+| `gemeinsam/schale-texte.js` | tr/en für alles, was in **jedem** Warteraum gleich dasteht | ja, als `schaleTexte` |
 | `<ort>/texte.js` | tr/en für das Eigene dieses Ortes | nein, gehört dem Ort |
 
 `spiele.json` sagt, wer was bekommt – auch die beiden Seiten ohne Dienst stehen
@@ -109,6 +109,47 @@ In dieser Reihenfolge:
 3. die Sprache des Browsers, wenn wir sie können
 4. Deutsch
 
+## Die Schlüssel
+
+Sie sind beim Umstellen **maschinell vergeben** worden und tragen deshalb die
+ersten Wörter des deutschen Satzes im Namen: `k.cubes.jederbekommt16`,
+`nochnie.jederundewir22`. Das sieht ungewohnt aus, hat aber einen Zweck – man
+findet die Stelle im Markup wieder, ohne suchen zu müssen. Von Hand vergebene
+Schlüssel (`mm.sagtMau`, `sw.feuer`) stehen daneben; beides ist in Ordnung.
+
+Zwei Familien sind gemeinsam und stehen in `schale-texte.js`:
+
+* `schale.*` – der Warteraum der sieben Schalenspiele, Wort für Wort wie in
+  `schale.js`.
+* `c.*` – dieselben Sachen für die Spiele mit **eigener** Klempnerei
+  („Gruppe C"): anderer Wortlaut, untereinander aber gleich.
+
+Ein Spiel bindet beide über seine `texte.js` ein und legt nur noch die eigenen
+Sätze darüber. Deshalb kostete das letzte Spiel weniger als das erste.
+
+## Wo `t` schon vergeben ist
+
+In `cardchaos` heißt die verstrichene Zeit `t` (`renderLive(st, t)`), im
+Bugreport das Toast-Element. Dort heißt der Übersetzer `uebersetzt`:
+
+```js
+import { t as uebersetzt } from "../sprache.js";
+```
+
+Das ist kein Schönheitsfehler, sondern der Grund, warum es dort einmal
+`TypeError: t is not a function` gab.
+
+## Klassische Skripte
+
+`ameisen` und der `bugreport` laden ihr `app.js` weiterhin **ohne**
+`type="module"`. Bei Ameisen schaut die Browserprobe auf die globale Variable
+`S`; ein Modul hätte sie weggekapselt. Beide holen sich die Texte deshalb über
+`globalThis.sprache` – dasselbe Muster wie das Skript der Spieleübersicht:
+
+```js
+const t = (k, w, deutsch) => globalThis.sprache?.t(k, w, deutsch) ?? deutsch;
+```
+
 ## Was nicht übersetzt wird
 
 * **Die Spielnamen.** Der Name ist die Adresse und das, was auf dem Bildschirm
@@ -119,7 +160,13 @@ In dieser Reihenfolge:
   Startseite tragen die beiden Links „(German)". Selbst juristisch zu
   übersetzen wäre eine zweite Fassung, die niemand pflegt.
 * **Die Alternativtexte der Screenshots.** Die Bilder zeigen deutsche
-  Oberflächen, solange die Spiele selbst nicht übersetzt sind.
+  Oberflächen.
+* **Die Inhaltslisten.** Karten, Fragen, Begriffe, Wortlisten: Kings Cup,
+  „Ich hab noch nie", Wer am ehesten, Flaschendrehen, Imposter, Wortgitter,
+  Wortleger. Das ist keine Übersetzungsarbeit, sondern **eigene Listen je
+  Sprache** – türkische Trinkspielkarten schreibt man neu, man übersetzt sie
+  nicht, und ein deutsches Wortgitter besteht aus deutschen Wörtern. Bei Kings
+  Cup und Wortgitter sagt die Hilfe das jetzt auch dazu.
 
 ## Prüfen
 
@@ -139,37 +186,25 @@ JavaScript bleibt alles deutsch und vollständig**.
 
 ## Ein Spiel nachziehen
 
-Die Reihenfolge, in der es bei Paare gemacht wurde:
+Alle sind nachgezogen; für ein **neues** Spiel legt `werkzeug/neuspiel.sh` bzw.
+`neusolo.sh` das Gerüst an. Der Weg, falls doch einmal etwas von Hand kommt:
 
-1. `spiele.json`: `"sprache": "public/sprache.js"` und – bei Schalenspielen –
-   `"schaleTexte": "public/schale-texte.js"` eintragen, dann
-   `node werkzeug/verteilen.mjs --nur <spiel>`.
+1. `spiele.json`: `"sprache"` (und bei einem Warteraum `"schaleTexte"`)
+   eintragen, dann `node werkzeug/verteilen.mjs --nur <spiel>`.
 2. Im Markup `data-t` setzen. Was der Warteraum trägt, hat schon Schlüssel:
-   `schale.*` aus `schale-texte.js` – abschreiben, nicht neu erfinden.
-3. `public/texte.js` anlegen (Vorlage: `paare/public/texte.js`), die beiden
-   Wörterbücher zusammenführen.
-4. In `app.js` `starteSprache(WOERTER)` **vor** `starteSchale()`.
+   `schale.*` bzw. `c.*` – abschreiben, nicht neu erfinden.
+3. `public/texte.js` anlegen (Vorlage: `paare/public/texte.js`).
+4. `starteSprache(WOERTER)` **vor** allem, was zeichnet.
 5. Servermeldungen auf `{ text, k, w }` umstellen und im Client durch `satz()`
    schicken.
 6. Was im Code entsteht, auf `t(schlüssel, werte, deutsch)` umstellen; was nach
    dem Start ins Dokument kommt, mit `uebersetze(...)` nachziehen.
 7. `deno task probe` und `node pruefe-sprache.mjs`.
 
-Ein Abend je Spiel, bei den textarmen weniger. Neue Spiele bringen das Gerüst
-schon mit: `werkzeug/neuspiel.sh` und `neusolo.sh` legen `sprache.js`,
-`texte.js` und die `data-t` von sich aus an.
-
 ## Was noch aussteht
 
-* **27 Spiele.** Vorschlag für die Reihenfolge: erst die textarmen (Snake,
-  Wurm, Revier, Minenfeld, Sudoku, Cubes, Patience), zuletzt die textreichen.
-* **Die Wortspiele sind der teure Teil und keine Übersetzungsarbeit.**
-  Wortgitter und Wortleger brauchen je Sprache eine **eigene** Wortliste,
-  Imposter/Nochnie/Wer-am-ehesten/Kings Cup eigene Karten. Türkische Vokale und
-  `i/İ` brechen jede naive `toUpperCase()`-Prüfung – das gehört in die Probe
-  des jeweiligen Spiels.
-* **Der Umschalter steht bei Paare nur auf dem Startbildschirm.** Gewählt wird
-  vor dem Spielen, und die Wahl gilt geräteweit. Sollte er einmal in mehr
-  Spielen stehen, gehört sein CSS nach `gemeinsam/lobby.css` statt in jede
-  `style.css` – noch trägt es nur eines.
-* **Screenshots** bleiben deutsch.
+* **Die Inhaltslisten** (siehe oben) – das ist die nächste, eigene Aufgabe und
+  kein Nachziehen: sie müssen je Sprache neu geschrieben werden.
+* **Die Screenshots** auf `/spiele/` zeigen deutsche Oberflächen.
+* **Die Anleitungen im Repo** (`README.md` je Spiel) sind deutsch. Sie richten
+  sich an den, der hier baut, nicht an die Spielenden.

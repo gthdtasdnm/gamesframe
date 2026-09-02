@@ -25,6 +25,9 @@ node pruefe-wortleger.mjs      # trifft man 13 Spalten auf einem Handy?
 node pruefe-imposter.mjs      # Imposter: liegt der Deckel wirklich auf dem Wort? (eigene Fassung, Port 8086)
 node pruefe-amehesten-ab18.mjs # Wer am ehesten: die 18+-Abfrage – sie haengt ganz im Client
 node pruefe-sprache.mjs        # Deutsch/Tuerkisch/Englisch – und: ohne JS bleibt alles deutsch
+#   Die Browserproben fahren seit dem 02.09.2026 mit `locale: "de-DE"`: die
+#   Seiten richten sich beim ersten Besuch nach der Browsersprache, und die
+#   Proben lesen deutsche Saetze.
 node pruefe-statisch.mjs       # bauen sich die sechs Spiele ohne Server auf?
 node pruefe-statisch-tief.mjs  # … und was danach kommt: Neuladen, Uhr, Wortlisten
 node pruefe-bugreport.mjs      # kennt der Bugreport jedes Spiel aus spiele.json?

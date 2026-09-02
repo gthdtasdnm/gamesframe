@@ -70,9 +70,13 @@ deshalb **kopiert, nicht importiert** – siehe `doku/gemeinsam.md`.
 Zu jedem neuen Spiel gehören: Anleitung, Screenshot und eine Kachel auf
 `spiele/`. Ohne grünen Prüflauf gilt nichts als fertig.
 
-**Jedes neue Spiel wird dreisprachig geboren** (seit 02.09.2026). Deutsch steht
-im HTML, Türkisch und Englisch liegen darüber; `werkzeug/neuspiel.sh` und
-`neusolo.sh` legen das Gerüst dafür schon an. Einzelheiten: `doku/sprachen.md`.
+**Alles spricht drei Sprachen** (seit 02.09.2026): Deutsch, Türkisch,
+Englisch. Deutsch steht im HTML, die beiden anderen liegen darüber – ohne
+JavaScript bleibt jede Seite vollständig deutsch. Jedes neue Spiel wird
+dreisprachig geboren; `werkzeug/neuspiel.sh` und `neusolo.sh` legen das Gerüst
+dafür an. **Nicht übersetzt sind die Inhaltslisten** (Karten, Fragen, Begriffe,
+Wortlisten) – die bräuchten eigene Listen je Sprache. Einzelheiten:
+`doku/sprachen.md`.
 
 ## Die vier Fallen
 

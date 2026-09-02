@@ -29,7 +29,9 @@
       "repo": "git@github.com:gthdtasdnm/PickUp.git",
       "gemeinsam": {
         "bremse": "server/bremse.js",
-        "lobbyCss": "public/styles.css"
+        "lobbyCss": "public/styles.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -44,7 +46,9 @@
       "repo": "git@github.com:gthdtasdnm/magictowers.git",
       "gemeinsam": {
         "bremse": "server/bremse.js",
-        "lobbyCss": "public/css/style.css"
+        "lobbyCss": "public/css/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -59,7 +63,9 @@
       "repo": "git@github.com:gthdtasdnm/double.git",
       "gemeinsam": {
         "bremse": "bremse.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -74,7 +80,9 @@
       "repo": "git@github.com:gthdtasdnm/reflex.git",
       "gemeinsam": {
         "bremse": "bremse.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -90,7 +98,9 @@
       "hinweis": "einziges Spiel mit 18+-Stapel",
       "gemeinsam": {
         "bremse": "bremse.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -105,7 +115,9 @@
       "repo": "git@github.com:gthdtasdnm/maexchen.git",
       "gemeinsam": {
         "bremse": "bremse.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -123,7 +135,9 @@
         "bremse": "bremse.js",
         "raum": "raum.js",
         "statisch": "statisch.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -138,7 +152,9 @@
       "repo": "git@github.com:gthdtasdnm/imposter.git",
       "gemeinsam": {
         "bremse": "bremse.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -153,7 +169,9 @@
       "repo": "git@github.com:gthdtasdnm/flasche.git",
       "gemeinsam": {
         "bremse": "bremse.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -170,7 +188,9 @@
         "bremse": "bremse.js",
         "raum": "raum.js",
         "statisch": "statisch.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -188,7 +208,9 @@
         "bremse": "bremse.js",
         "raum": "raum.js",
         "statisch": "statisch.js",
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -202,7 +224,8 @@
       "art": "werkzeug",
       "repo": "git@github.com:gthdtasdnm/bugreport.git",
       "gemeinsam": {
-        "lobbyCss": "public/style.css"
+        "lobbyCss": "public/style.css",
+        "sprache": "public/sprache.js"
       }
     },
     {
@@ -220,7 +243,9 @@
         "raum": "raum.js",
         "statisch": "statisch.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -239,7 +264,9 @@
         "statisch": "statisch.js",
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -258,7 +285,9 @@
         "statisch": "statisch.js",
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -277,7 +306,9 @@
         "statisch": "statisch.js",
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -296,7 +327,9 @@
         "statisch": "statisch.js",
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -316,7 +349,9 @@
         "statisch": "statisch.js",
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -335,7 +370,9 @@
         "statisch": "statisch.js",
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -367,7 +404,10 @@
       "kategorie": "Allein spielen",
       "art": "statisch",
       "leute": "1",
-      "repo": "git@github.com:gthdtasdnm/minenfeld.git"
+      "repo": "git@github.com:gthdtasdnm/minenfeld.git",
+      "gemeinsam": {
+        "sprache": "sprache.js"
+      }
     },
     {
       "name": "sudoku",
@@ -376,7 +416,10 @@
       "kategorie": "Allein spielen",
       "art": "statisch",
       "leute": "1",
-      "repo": "git@github.com:gthdtasdnm/sudoku.git"
+      "repo": "git@github.com:gthdtasdnm/sudoku.git",
+      "gemeinsam": {
+        "sprache": "sprache.js"
+      }
     },
     {
       "name": "wortgitter",
@@ -386,7 +429,10 @@
       "art": "statisch",
       "leute": "1",
       "repo": "git@github.com:gthdtasdnm/wortgitter.git",
-      "hinweis": "Wortliste aus wortleger/woerter.txt erzeugt; Name Wordle ist NYT-Marke"
+      "hinweis": "Wortliste aus wortleger/woerter.txt erzeugt; Name Wordle ist NYT-Marke",
+      "gemeinsam": {
+        "sprache": "sprache.js"
+      }
     },
     {
       "name": "patience",
@@ -395,7 +441,10 @@
       "kategorie": "Allein spielen",
       "art": "statisch",
       "leute": "1",
-      "repo": "git@github.com:gthdtasdnm/patience.git"
+      "repo": "git@github.com:gthdtasdnm/patience.git",
+      "gemeinsam": {
+        "sprache": "sprache.js"
+      }
     },
     {
       "name": "wasserfarben",
@@ -408,7 +457,8 @@
       "hinweis": "Water-Sort-Puzzle; jede Mischung wird vor der Ausgabe nachweislich geloest",
       "gemeinsam": {
         "lobbyCss": "style.css",
-        "rahmenCss": "style.css"
+        "rahmenCss": "style.css",
+        "sprache": "sprache.js"
       }
     },
     {
@@ -423,7 +473,8 @@
       "repo": null,
       "gemeinsam": {
         "bremse": "bremse.js",
-        "statisch": "statisch.js"
+        "statisch": "statisch.js",
+        "sprache": "public/sprache.js"
       }
     },
     {
@@ -438,7 +489,8 @@
       "repo": null,
       "gemeinsam": {
         "bremse": "bremse.js",
-        "statisch": "statisch.js"
+        "statisch": "statisch.js",
+        "sprache": "public/sprache.js"
       }
     },
     {
@@ -453,7 +505,8 @@
       "repo": null,
       "gemeinsam": {
         "bremse": "bremse.js",
-        "statisch": "statisch.js"
+        "statisch": "statisch.js",
+        "sprache": "public/sprache.js"
       }
     },
     {
@@ -467,7 +520,8 @@
       "hinweis": "Schiebe-Puzzle mit Schafen; jede Weide wird rueckwaerts gebaut und ist damit nachweislich zu raeumen",
       "gemeinsam": {
         "lobbyCss": "style.css",
-        "rahmenCss": "style.css"
+        "rahmenCss": "style.css",
+        "sprache": "sprache.js"
       }
     }
   ],
