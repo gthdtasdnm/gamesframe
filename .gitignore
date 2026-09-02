@@ -15,6 +15,10 @@
 !/README.md
 !/CLAUDE.md
 !/index.html
+# Die Sprachdateien der Startseite. Sie gehoeren zu index.html - ohne sie
+# stuende die Seite im Repo ohne ihre Uebersetzungen da (02.09.2026).
+!/sprache.js
+!/texte.js
 !/recht.css
 !/spiele.json
 !/spiele/
