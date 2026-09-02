@@ -30,6 +30,9 @@ const browser = await chromium.launch();
 /** Ein Handy mit Fingerbedienung – `hasTouch` schaltet `tap()` frei. */
 async function handy(name) {
   const kontext = await browser.newContext({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE",
     viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true,
   });
   const seite = await kontext.newPage();

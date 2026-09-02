@@ -50,7 +50,10 @@ const browser = await chromium.launch();
 
 /** Eine Seite mit Konsolenwache. Wirft der Aufbau etwas, ist das ein Befund. */
 async function seiteAuf(spiel, vorLaden, wert) {
-  const seite = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const seite = await browser.newPage({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport: { width: 390, height: 844 } });
   const konsole = [];
   seite.on("console", (m) => { if (m.type() === "error") konsole.push(m.text()); });
   seite.on("pageerror", (e) => konsole.push(String(e)));

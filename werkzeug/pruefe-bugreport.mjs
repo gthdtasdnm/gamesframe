@@ -6,7 +6,10 @@ import { chromium } from 'playwright';
 const ZIEL = process.env.ZIEL ?? 'https://inf-zeus.de';
 const AUS = process.argv[2] ?? '/tmp';
 const browser = await chromium.launch();
-const seite = await browser.newPage({ viewport: { width: 390, height: 844 } });
+const seite = await browser.newPage({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport: { width: 390, height: 844 } });
 const fehler = [];
 seite.on('console', (m) => { if (m.type() === 'error') fehler.push(m.text()); });
 seite.on('pageerror', (e) => fehler.push(String(e)));

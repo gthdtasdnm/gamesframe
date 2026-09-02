@@ -131,7 +131,10 @@ if (!await portAntwortet(PORT)) throw new Error(`kam nicht hoch:\n${fehler.slice
 
 const browser = await chromium.launch();
 try {
-  const seite = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+  const seite = await (await browser.newContext({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport: { width: 390, height: 844 } })).newPage();
   const laut = [];
   seite.on("console", (m) => { if (m.type() === "error") laut.push(m.text()); });
   seite.on("pageerror", (e) => laut.push(String(e)));

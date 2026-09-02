@@ -93,7 +93,10 @@ const glutBreite = async (seite) =>
 await dienstAn();
 const browser = await chromium.launch();
 try {
-  const kontext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const kontext = await browser.newContext({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport: { width: 390, height: 844 } });
   const seite = await kontext.newPage();
   const laut = [];
   seite.on("console", (m) => { if (m.type() === "error") laut.push(m.text()); });

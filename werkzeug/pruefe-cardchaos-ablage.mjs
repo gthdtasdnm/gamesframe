@@ -30,7 +30,10 @@ const browser = await chromium.launch();
 
 /** Allein an einen Tisch setzen und die erste Runde starten (minPlayers = 1). */
 async function inDieRunde(viewport, name) {
-  const kontext = await browser.newContext({ viewport, hasTouch: true, isMobile: true });
+  const kontext = await browser.newContext({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport, hasTouch: true, isMobile: true });
   const seite = await kontext.newPage();
   seite.konsole = [];
   seite.on("console", (m) => { if (m.type() === "error") seite.konsole.push(m.text()); });

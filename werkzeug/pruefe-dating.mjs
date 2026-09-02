@@ -43,7 +43,10 @@ const browser = await chromium.launch();
 
 /** Frische Seite; Rueckfragen werden bejaht, sonst haengt „Platz freigeben". */
 async function neueSeite(breit = 1280) {
-  const seite = await browser.newPage({ viewport: { width: breit, height: 900 } });
+  const seite = await browser.newPage({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport: { width: breit, height: 900 } });
   seite.on('dialog', (d) => d.accept());
   return seite;
 }
@@ -73,20 +76,40 @@ async function tafel() {
   pruefe(kaputt.length === 0, `D01 nichts fehlt (${kaputt.length} tote Anfragen)`);
 
   const zeit = (await seite.locator('#terminZeit').textContent()).trim();
-  pruefe(/^\d{2}:\d{2} Uhr$/.test(zeit), `D01 der Termin steht oben: ${zeit}`);
+  pruefe(/^\d{2}:\d{2} Uhr$/.test(zeit), `D01 oben steht der Termin: ${zeit}`);
 
   pruefe(
     await seite.locator('#reservierenBtn').isDisabled(),
     'D02 ohne Name und Seite ist der Knopf aus',
   );
 
-  // D03: der Countdown muss laufen, nicht nur dastehen.
-  const a = sekunden(await seite.locator('#countdown').textContent());
+  // D03: gross steht jetzt die aktuelle Uhrzeit, nicht mehr die Restzeit.
+  // Zwei Dinge muessen stimmen, und beide sind schon einmal falsch gewesen:
+  // sie muss laufen (sonst steht nur eine Zahl da, die wie kaputt aussieht),
+  // und sie muss die Zeit des Abends zeigen – Europe/Berlin –, nicht die des
+  // Browsers, der hier zufaellig auf UTC steht.
+  const liesUhr = async () =>
+    sekunden((await seite.locator('#jetztUhr').textContent()).trim());
+  const a = await liesUhr();
   await warte(3000);
-  const b = sekunden(await seite.locator('#countdown').textContent());
+  const b = await liesUhr();
+  const gelaufen = (b - a + 86400) % 86400;
   pruefe(
-    Number.isFinite(a) && Number.isFinite(b) && a - b >= 2 && a - b <= 5,
-    `D03 der Countdown laeuft: ${a} s, drei Sekunden spaeter ${b} s`,
+    Number.isFinite(a) && Number.isFinite(b) && gelaufen >= 2 && gelaufen <= 6,
+    `D03 die Uhr laeuft mit: ${gelaufen} s in drei Sekunden`,
+  );
+
+  const berlin = new Intl.DateTimeFormat('de-DE', {
+    timeZone: 'Europe/Berlin',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date());
+  const abstand = Math.abs(sekunden(berlin) - b);
+  pruefe(
+    Math.min(abstand, 86400 - abstand) <= 90,
+    `D03 und sie zeigt Berliner Zeit: Seite ${b} s, hier ${berlin}`,
   );
 
   // D04: reservieren, auf der Tafel nachsehen, wieder absagen.
@@ -291,6 +314,142 @@ async function runde(spielName, { messen = false, versuch = 1 } = {}) {
   await seite.close();
 }
 
+/**
+ * Einmal von der anderen Seite. Die vier Runden oben spielen einen **Mann** –
+ * der steht nur da. Alles, was eine Frau tut, wird dort nie angefasst: der
+ * Vorlauf-Countdown, die Spielnamen ueber den Maennern, das Ansehen, ohne
+ * dabei loszulaufen, und der Joystick, der auf dem Handy das Hovern ersetzt.
+ *
+ * **Zwei Runden, nicht eine.** Beide Wege enden damit, dass sie bei jemandem
+ * ankommt – danach ist die Runde vorbei. Und sie duerfen sich nicht mischen:
+ * wer nach dem Joystick-Test mitten im Ring stehen bleibt, wird vom drehenden
+ * Karussell von selbst eingesammelt, und ein Klicktest danach prueft nur noch,
+ * was ohnehin schon passiert ist. (Genau daran ist die erste Fassung gescheitert.)
+ *
+ * @param {'maus'|'finger'} art welcher Weg geprueft wird
+ */
+async function frauenrunde(art) {
+  const seite = await neueSeite();
+  const laut = [];
+  seite.on('console', (m) => { if (m.type() === 'error') laut.push(m.text()); });
+  await seite.goto(PFAD, { waitUntil: 'networkidle' });
+
+  await seite.fill('#name', 'Probandin');
+  await seite.click('#anmeldung [data-seite="w"]');
+  await seite.click('#uebungBtn');
+  // Als Frau gibt es keine Spielwahl – es geht sofort in den Kreis.
+  await seite.waitForSelector('#screen-kreis.active', { timeout: 15000 });
+
+  const meinOrt = async () => await seite.evaluate(() => {
+    const n = document.querySelector('.fig.frau.ich');
+    return n ? [parseFloat(n.style.left), parseFloat(n.style.top)] : [NaN, NaN];
+  });
+
+  if (art === 'maus') {
+    const spiele = (await seite.locator('.fig.mann .fig-spiel').allTextContents())
+      .map((t) => t.trim()).filter(Boolean);
+    pruefe(
+      spiele.length === 4,
+      `D12 ueber jedem Mann steht sein Spiel: ${spiele.join(', ')}`,
+    );
+
+    // D13: der kleine Countdown vor der Runde – und waehrend er laeuft, laeuft
+    // sonst niemand. Ohne ihn bleibt keine Zeit, zwoelf Spiele zu lesen.
+    const zahl = async () => Number((await seite.locator('#startZahl').textContent()).trim());
+    const z1 = await zahl();
+    const freiWaehrend = await seite.locator('.fig.frau.frei').count();
+    await warte(1500);
+    const z2 = await zahl();
+    pruefe(
+      z1 >= 2 && z2 < z1 && freiWaehrend === 0,
+      `D13 Countdown vor der Runde: ${z1} → ${z2}, und noch laeuft niemand ` +
+        `(${freiWaehrend} freigeschaltet)`,
+    );
+
+    pruefe(
+      !(await seite.locator('#stick').isVisible()),
+      'D14 am breiten Schirm gibt es keinen Joystick – dort hovert die Maus',
+    );
+
+    // D15: mit der Maus ueber einen Mann fahren. Die Karte muss aufgehen, die
+    // eigene Figur aber stehen bleiben – frueher zog jede Mausbewegung sie
+    // mit, und wer nachsehen wollte, lief dabei schon los. `force`, weil die
+    // Maenner sich drehen und Playwright sonst auf ein stillstehendes Ziel
+    // wartet, das es nie gibt.
+    await seite.waitForSelector('.fig.frau.ich.frei', { timeout: 40000 });
+    const [vx, vy] = await meinOrt();
+    await seite.locator('.fig.mann:not(.fort)').first().hover({ force: true });
+    await warte(1200);
+    const karteMaus = await seite.locator('#karte').isVisible();
+    const [nx, ny] = await meinOrt();
+    const weg = Math.hypot(nx - vx, ny - vy);
+    pruefe(
+      karteMaus && Number.isFinite(weg) && weg < 1.5,
+      `D15 Ansehen bewegt nicht: Karte offen (${karteMaus}), Figur ${weg.toFixed(2)} % gewandert`,
+    );
+
+    // D16: und ein Klick auf einen Mann schickt sie los – ihm nach, nicht auf
+    // die Stelle, an der er stand. Ankommen ist der Beweis: der Kreis dreht
+    // sich weiter, ein fester Punkt waere daneben.
+    await seite.locator('.fig.mann:not(.fort)').first().click({ force: true });
+    const gewaehlt = await seite.locator('.fig.mann.gewaehlt').count();
+    await seite.waitForSelector('#screen-paar.active', { timeout: 60000 });
+    pruefe(gewaehlt === 1, 'D16 ein Klick auf einen Mann – und sie kommt bei ihm an');
+  } else {
+    // D14: der Joystick fuehrt die **eigene Figur**, unmittelbar. Ausschlag
+    // Richtung Arenamitte, dort kreisen die Maenner.
+    await seite.setViewportSize({ width: 390, height: 844 });
+    await warte(400);
+    pruefe(await seite.locator('#stick').isVisible(), 'D14 am schmalen Schirm ist er da');
+    await seite.waitForSelector('.fig.frau.ich.frei', { timeout: 40000 });
+
+    const [ax, ay] = await meinOrt();
+    const pad = await seite.locator('#stick').boundingBox();
+    const mx = pad.x + pad.width / 2;
+    const my = pad.y + pad.height / 2;
+    const laenge = Math.hypot(50 - ax, 50 - ay) || 1;
+    await seite.mouse.move(mx, my);
+    await seite.mouse.down();
+    await seite.mouse.move(
+      mx + ((50 - ax) / laenge) * pad.width * 0.45,
+      my + ((50 - ay) / laenge) * pad.height * 0.45,
+      { steps: 4 },
+    );
+
+    // Fahren, bis die Karte von selbst aufgeht: das ist das Hovern fuer den
+    // Finger. `KONTAKT` ist 44, die Karte kommt bei 160 – dazwischen liegt
+    // das Fenster, in dem man liest, ohne sich schon entschieden zu haben.
+    let karteFinger = false;
+    let beruehrt = false;
+    for (let i = 0; i < 25 && !karteFinger && !beruehrt; i++) {
+      await warte(150);
+      karteFinger = await seite.locator('#karte').isVisible();
+      beruehrt = (await seite.locator('#screen-paar.active').count()) > 0;
+    }
+    const [bx, by] = await meinOrt();
+    const rVor = Math.hypot(ax - 50, ay - 50);
+    const rNach = Math.hypot(bx - 50, by - 50);
+    pruefe(
+      beruehrt || rNach < rVor - 2,
+      `D14 der Joystick fährt die eigene Figur: ${rVor.toFixed(1)} % → ` +
+        `${rNach.toFixed(1)} % Abstand zur Mitte`,
+    );
+    pruefe(
+      karteFinger && !beruehrt,
+      'D14 und wer an einem Mann vorbeifährt, sieht sein Spiel – bevor er ihn berührt',
+    );
+
+    // Weiterfahren: mit dem Joystick allein muss sie auch ankommen.
+    await seite.waitForSelector('#screen-paar.active', { timeout: 60000 });
+    await seite.mouse.up();
+    pruefe(true, 'D14 und mit dem Joystick allein kommt sie bei ihm an');
+  }
+
+  pruefe(laut.length === 0, `D16 Konsole still (${laut.join(' | ')})`);
+  await seite.click('#fertigBtn').catch(() => {});
+  await seite.close();
+}
+
 // ---------------------------------------------------------------------------
 
 console.log(
@@ -300,6 +459,8 @@ await runde('schwimmen', { messen: true });   // Schale: Sitz hinlegen
 await runde('keep');                          // Socket.IO + sessionStorage
 await runde('cardchaos');                     // eigener Dialekt, eigenes Markup
 await runde('wurm');                          // offene Welt, kein Raum
+await frauenrunde('maus');                    // die andere Seite: sehen, klicken, laufen
+await frauenrunde('finger');                  // dieselbe Seite am Handy: Joystick
 
 // D11: die Seite muss Suchmaschinen absagen – sie soll geheim bleiben.
 const kopf = await neueSeite();

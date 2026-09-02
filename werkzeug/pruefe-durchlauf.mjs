@@ -89,7 +89,10 @@ const MITSCHRIFT = () => {
 };
 
 async function geraet(spiel, viewport = { width: 1280, height: 900 }) {
-  const kontext = await browser.newContext({ viewport });
+  const kontext = await browser.newContext({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport });
   await kontext.addInitScript(MITSCHRIFT);
   const seite = await kontext.newPage();
   seite.konsole = [];

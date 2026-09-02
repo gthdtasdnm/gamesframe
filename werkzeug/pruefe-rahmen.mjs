@@ -37,7 +37,10 @@ const browser = await chromium.launch();
  * Seite steht ja trotzdem da, nur eben halb.
  */
 async function ladeUndHorche(pfad, viewport = { width: 1280, height: 900 }) {
-  const seite = await browser.newPage({ viewport });
+  const seite = await browser.newPage({
+    // Deutscher Browser: die Seiten sind dreisprachig und richten sich
+    // beim ersten Besuch nach der Spracheinstellung.
+    locale: "de-DE", viewport });
   const konsole = [], kaputt = [];
   seite.on("console", (m) => { if (m.type() === "error") konsole.push(m.text()); });
   seite.on("pageerror", (e) => konsole.push(String(e)));
