@@ -14,8 +14,8 @@ Spielregeln sind frei, **Namen, Grafiken und Anleitungstexte nicht**.
 
 ## Jugendschutz
 
-**Zwei** Spiele haben 18+-Inhalte: `/nochnie/` und – seit dem 19.08.2026 –
-`/amehesten/`. Beide nach demselben Muster:
+**Drei** Spiele haben 18+-Inhalte: `/nochnie/`, seit dem 19.08.2026
+`/amehesten/` und seit dem 02.09.2026 `/imposter/`. Alle nach demselben Muster:
 
 - ein **eigener** Stapel, nie in die harmlosen untergemischt
 - eine Voreinstellung ohne 18+ (`harmlos` bzw. `gemischt`)
@@ -23,12 +23,20 @@ Spielregeln sind frei, **Namen, Grafiken und Anleitungstexte nicht**.
   schon so eingestellt ist – der zweite Fall ist der wichtigere, dort hat man
   die Entscheidung nicht selbst getroffen
 - die Bestätigung im `localStorage`, je Spiel ein eigener Schlüssel
-  (`nochnie_ab18`, `amehesten_ab18`)
+  (`nochnie_ab18`, `amehesten_ab18`, `imposter_ab18`)
 - die jeweilige `probe.js` weist nach, dass kein 18+-Text in einen der anderen
   Modi durchrutscht
 
 Ob das reicht (JMStG), steht als offene Frage in `RISIKEN-TODO.md` – die gilt
-jetzt für beide.
+jetzt für alle drei.
+
+Bei **Imposter** hängt das 18+ nicht am Spiel, sondern an *einer* seiner zwei
+Betriebsarten: die derben Wortpaare gibt es nur in „Zwei Wörter", die
+klassische Art fasst `paare.js` gar nicht erst an. Im Paar steht links das
+unverfängliche und rechts das anstößige Wort – eine Zusage, auf der die Probe
+steht: kein Wort der rechten Spalte darf in einem harmlosen Raum, im harmlosen
+Stapel, in `begriffe.js` oder in der klassischen Art vorkommen. Die linke
+Spalte darf sich überschneiden (Sauna, Museum, Angeln).
 
 **Flaschendrehen** umgeht das weiterhin bewusst: seine Karten kommen ohne
 Alkohol, Sex und Körperkontakt aus. `probe.js` prüft dort jede Karte gegen eine

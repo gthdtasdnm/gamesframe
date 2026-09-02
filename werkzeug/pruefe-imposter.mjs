@@ -1,4 +1,6 @@
-// Imposter, Umbau vom 19.08.2026: die Karte liegt zugedeckt.
+// Imposter: die Karte liegt zugedeckt (19.08.2026), und seit dem 02.09.2026
+// gibt es eine zweite Betriebsart – „Zwei Woerter", in der jeder ein Wort
+// bekommt und niemand weiss, wer abweicht.
 //
 // Vorher stand das Wort offen auf dem Schirm. Wer es gelesen hatte, drehte das
 // Handy um oder schaltete es aus – und ein ausgeschaltetes Handy ist eine
@@ -132,6 +134,87 @@ try {
   await schlaf(300);
   pruefe(await wortSichtbar(B) === true, "nach dem Auflösen liegt die Karte offen – kein Deckel mehr");
   pruefe(await B.locator("#deckel").isHidden(), "der Deckel ist weg, nicht nur hochgeschoben");
+
+  // --- Zweite Art: „Zwei Woerter" plus der 18+-Vorhang ---------------------
+  //
+  // Der Vorhang ist der Grund, warum das hier im Browser geprueft wird und
+  // nicht nur in `probe.js`: er ist reine Bildschirmsache. Wichtig sind zwei
+  // Faelle – das Einschalten (da entscheidet man selbst) und der **Beitritt**
+  // in einen Raum, der schon so steht (da hat man es nicht entschieden).
+
+  for (const p of [A, B, C]) await p.click("[data-raus]").catch(() => {});
+  await schlaf(300);
+  for (const p of [A, B, C]) await p.waitForSelector("#screen-home.active", { timeout: 15000 });
+
+  await A.click('[data-art="blind"]');
+  pruefe(await A.locator("#stapelZeile").isVisible(),
+    "erst die blinde Art bringt den Stapel zur Auswahl");
+
+  await A.click('[data-stapel="derb"]');
+  await schlaf(200);
+  pruefe(await A.locator("#ab18Gate").isVisible(), "18+ fragt vor dem Einschalten nach");
+  await A.click("#ab18Nein");
+  await schlaf(200);
+  pruefe(await A.locator('[data-stapel="harmlos"]').evaluate((e) => e.classList.contains("sel")),
+    `„Lieber harmlos" stellt zurueck`);
+
+  await A.click('[data-stapel="derb"]');
+  await A.click("#ab18Ja");
+  await schlaf(200);
+  pruefe(await A.locator('[data-stapel="derb"]').evaluate((e) => e.classList.contains("sel")),
+    "bestaetigt: 18+ ist eingeschaltet");
+
+  await A.click("#createBtn");
+  await A.waitForSelector("#screen-lobby.active", { timeout: 15000 });
+  const code2 = (await A.textContent("#roomCode")).trim();
+
+  // C kommt herein, will das nicht und geht wieder.
+  await C.fill("#codeInput", code2);
+  await C.click("#joinBtn");
+  await C.waitForSelector("#ab18Gate:not([hidden])", { timeout: 15000 });
+  pruefe(true, "wer in einen 18+-Raum kommt, wird gefragt – auch ohne selbst umgestellt zu haben");
+  await C.click("#ab18Nein");
+  await C.waitForSelector("#screen-home.active", { timeout: 15000 });
+  pruefe(true, `„Raum verlassen" bringt aus dem 18+-Raum wieder heraus`);
+
+  for (const g of [B, C]) {
+    await g.fill("#codeInput", code2);
+    await g.click("#joinBtn");
+    await g.waitForSelector("#ab18Gate:not([hidden])", { timeout: 15000 });
+    await g.click("#ab18Ja");
+    await g.waitForSelector("#screen-lobby.active", { timeout: 15000 });
+  }
+  pruefe(/Zwei Wörter/.test(await B.textContent("#lobbyArt")),
+    "auch die Gaeste sehen im Warteraum, welche Art eingestellt ist");
+
+  await A.click("#startBtn");
+  for (const p of [A, B, C]) await p.waitForSelector("#screen-game.active", { timeout: 15000 });
+  await schlaf(400);
+
+  const blind = [];
+  for (const p of [A, B, C]) {
+    await schieben(p);
+    await p.mouse.up();
+    blind.push([(await p.textContent("#karteKopf")).trim(), (await p.textContent("#karteWort")).trim()]);
+  }
+  pruefe(blind.every(([kopf]) => kopf === "Dein Wort"),
+    `in der blinden Art steht bei jedem dasselbe darueber – niemand liest „du bist es"`);
+  pruefe(blind.every(([, w]) => w && w !== "IMPOSTER"), "jeder hat ein richtiges Wort");
+  const verteilung = new Map();
+  for (const [, w] of blind) verteilung.set(w, (verteilung.get(w) ?? 0) + 1);
+  const anzahlen = [...verteilung.values()].sort((a, b) => b - a);
+  pruefe(verteilung.size === 2 && anzahlen[0] === 2 && anzahlen[1] === 1,
+    `zwei Woerter, 2 zu 1 verteilt (${[...verteilung.keys()].join(" / ")})`);
+
+  await A.click("#aktionen .btn.primary");
+  await B.waitForSelector("#aufloesung:not([hidden])", { timeout: 15000 });
+  await schlaf(300);
+  const aufText = (await B.textContent("#aufloesung")).replace(/\s+/g, " ").trim();
+  const einer = [...verteilung.entries()].find(([, n]) => n === 1)[0];
+  pruefe(/hatte(st)? ein anderes Wort/.test(aufText),
+    `die Aufloesung nennt den Abweichler: „${aufText.slice(0, 70)}"`);
+  pruefe((await B.textContent(".auf-wort")).trim() === einer,
+    `und zeigt sein Wort: „${einer}"`);
 
   // --- Und die Seite bleibt heil ------------------------------------------
   const ueberlauf = await A.evaluate(() =>
