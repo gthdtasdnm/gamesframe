@@ -355,7 +355,9 @@
         "statisch": "statisch.js",
         "schale": "public/schale.js",
         "lobbyCss": "public/style.css",
-        "rahmenCss": "public/style.css"
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     },
     {
@@ -482,6 +484,28 @@
       "gemeinsam": {
         "bremse": "bremse.js",
         "statisch": "statisch.js"
+      }
+    }
+  ],
+  "seiten": [
+    {
+      "name": "spiele",
+      "titel": "Spieleuebersicht",
+      "pfad": "/spiele/",
+      "art": "seite",
+      "hinweis": "Die Kachelseite. Kein Dienst, kein Port - steht hier nur, damit verteilen.mjs ihre Kopie von sprache.js mitfuehrt. Deutsch steht im HTML, tr/en in spiele/texte.js.",
+      "gemeinsam": {
+        "sprache": "sprache.js"
+      }
+    },
+    {
+      "name": ".",
+      "titel": "Startseite",
+      "pfad": "/",
+      "art": "seite",
+      "hinweis": "index.html im DocumentRoot. Wie /spiele/: kein Dienst, nur die Kopie von sprache.js.",
+      "gemeinsam": {
+        "sprache": "sprache.js"
       }
     }
   ]

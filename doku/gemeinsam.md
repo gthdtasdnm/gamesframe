@@ -18,11 +18,18 @@ geschlossen. Der Preis ist Drift – und genau die fängt das Verteilskript ab.
 | `raum` | `gemeinsam/raum.js` | Raumcode, Host, Bereit, Karenzzeit, Raumliste, Senden |
 | `statisch` | `gemeinsam/statisch.js` | statische Dateien, WebSocket-Annahme, Start |
 | `schale` | `gemeinsam/schale.js` | Client-Schale: Verbindung, Lobby, Bildschirme |
+| `sprache` | `gemeinsam/sprache.js` | Türkisch und Englisch über das deutsche Markup legen |
+| `schaleTexte` | `gemeinsam/schale-texte.js` | tr/en für alles, was in jedem Schalenspiel gleich dasteht |
 | `lobbyCss` | `gemeinsam/lobby.css` | CSS-Block bis zum Endmarker |
 | `rahmenCss` | `werkzeug/rahmen.css` | CSS-Abschnitt zwischen zwei Markern |
 
 Welches Spiel welchen Teil bekommt und wohin, steht in `spiele.json` unter
 `gemeinsam`. Ein Spiel, das einen Teil nicht braucht, führt ihn dort nicht auf.
+
+Seit dem 02.09.2026 gibt es dort neben `spiele` und `still` einen dritten
+Schlüssel: **`seiten`** – Seiten ohne Dienst, die trotzdem einen gemeinsamen
+Teil tragen. Heute zwei: die Spieleübersicht und die Startseite, beide wegen
+`sprache.js`. Ohne diesen Eintrag driftete ihre Kopie still vor sich hin.
 
 ## Verteilen
 
@@ -175,6 +182,17 @@ der Spieler-Id, und `localStorage["spiele_name"]` – wer bei einem Spiel seinen
 Namen eintippt, findet ihn beim nächsten vor. Beides steckt im Client jedes
 Spiels. Der Client-Kern ist der nächste Kandidat fürs Verteilen; er ist noch
 nicht ausgelagert, weil er im Gegensatz zum Server pro Spiel stärker abweicht.
+
+## Sprachen (`sprache.js`, `schale-texte.js`)
+
+Seit dem 02.09.2026. Deutsch steht im HTML, Türkisch und Englisch liegen
+darüber – ohne JavaScript bleibt jede Seite vollständig deutsch. `schale.js`
+holt seit demselben Tag seine eigenen Texte über eine Hilfsfunktion, die ohne
+`sprache.js` wörtlich denselben deutschen Satz liefert wie vorher; ein Spiel
+ohne Übersetzung merkt davon nichts.
+
+Alles Weitere – Markup, Servermeldungen, Prüflauf, wie man ein Spiel nachzieht
+– steht in `doku/sprachen.md`.
 
 ## Die Client-Schale (`schale.js`)
 

@@ -39,6 +39,7 @@ bewusst kein `lobbyCss`: es hat ein eigenes, dunkelrotes Aussehen, das
 | Welche Spiele, welcher Port, welcher Dienst, welches Repo? | **`spiele.json`** – maschinenlesbar, einzige Quelle |
 | Neues Spiel bauen | `doku/neues-spiel.md` – Gerüst: `werkzeug/neuspiel.sh`, solo: `werkzeug/neusolo.sh` |
 | Was ist gemeinsam, wie wird es verteilt? | `doku/gemeinsam.md` |
+| Deutsch, Türkisch, Englisch | `doku/sprachen.md` |
 | Prüfen, Proben, Screenshots | `doku/pruefen.md` |
 | Dienste, Apache, Rechte, Git-Ebenen | `doku/betrieb.md` |
 | Was darf inhaltlich auf die Seite? | `doku/inhalte.md` |
@@ -68,6 +69,10 @@ deshalb **kopiert, nicht importiert** – siehe `doku/gemeinsam.md`.
 
 Zu jedem neuen Spiel gehören: Anleitung, Screenshot und eine Kachel auf
 `spiele/`. Ohne grünen Prüflauf gilt nichts als fertig.
+
+**Jedes neue Spiel wird dreisprachig geboren** (seit 02.09.2026). Deutsch steht
+im HTML, Türkisch und Englisch liegen darüber; `werkzeug/neuspiel.sh` und
+`neusolo.sh` legen das Gerüst dafür schon an. Einzelheiten: `doku/sprachen.md`.
 
 ## Die vier Fallen
 

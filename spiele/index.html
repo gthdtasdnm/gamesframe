@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Spiele – inf-zeus.de</title>
-<meta name="description" content="Achtundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
+<title data-t="seite.titel">Spiele – inf-zeus.de</title>
+<meta name="description" data-t-attr="content:seite.beschreibung" content="Achtundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -54,6 +54,53 @@ header {
   color: var(--dim);
   margin-bottom: 10px;
 }
+
+/* Kopfzeile: Marke links, Sprachwahl rechts. Beim ersten Umbruch rutscht die
+   Sprachwahl unter die Marke, statt sie zu quetschen. */
+.kopfzeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.kopfzeile .eyebrow { margin-bottom: 0; }
+
+/* Der Umschalter wird von sprache.js gefuellt und bleibt ohne JavaScript leer
+   – deshalb hat er keinen eigenen Rahmen, der dann als leerer Kasten dastuende. */
+.sprachwahl {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+}
+.sprachwahl:empty { display: none; }
+
+.sprachknopf {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease;
+}
+.sprachknopf:hover { color: var(--ink); }
+.sprachknopf.sel {
+  background: rgba(160, 120, 255, .22);
+  color: var(--ink);
+}
+.sprachknopf:focus-visible { outline: 2px solid #a06bff; outline-offset: 2px; }
+
+/* Nur sichtbar, solange nicht Deutsch gewaehlt ist – siehe Skript unten. */
+.rechtshinweis { margin-top: 10px; opacity: .8; }
+.rechtshinweis[hidden] { display: none; }
 
 h1 {
   font-size: clamp(42px, 13vw, 76px);
@@ -637,9 +684,14 @@ footer a { color: inherit; }
 <body>
 
 <header>
-  <div class="eyebrow">inf-zeus.de</div>
-  <h1>Spiele</h1>
-  <p class="sub">Achtundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
+  <div class="kopfzeile">
+    <div class="eyebrow">inf-zeus.de</div>
+    <!-- Der Umschalter wird von sprache.js gefuellt. Ohne JavaScript bleibt er
+         leer und die Seite deutsch – genau so ist es gemeint. -->
+    <div data-sprachwahl aria-label="Sprache"></div>
+  </div>
+  <h1 data-t="seite.h1">Spiele</h1>
+  <p class="sub" data-t-html="seite.sub">Achtundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -647,6 +699,7 @@ footer a { color: inherit; }
   <label class="suchfeld">
     <span class="lupe" aria-hidden="true">🔍</span>
     <input id="suche" type="search" autocomplete="off" spellcheck="false"
+           data-t-attr="placeholder:suche.platz|aria-label:suche.label"
            placeholder="Spiel suchen – Name, Stichwort, Anzahl"
            aria-label="Spiele durchsuchen">
   </label>
@@ -654,14 +707,14 @@ footer a { color: inherit; }
 </div>
 
 <section class="gruppe" aria-labelledby="gruppe-beliebt">
-  <h2 class="gruppe-titel" id="gruppe-beliebt">Am meisten gespielt</h2>
-  <p class="gruppe-sub">Was hier oben steht, entscheiden die letzten vier Wochen – und es aendert sich nur, wenn ein Spiel deutlich haeufiger aufgemacht wird.</p>
+  <h2 class="gruppe-titel" id="gruppe-beliebt" data-t="gruppe.beliebt.titel">Am meisten gespielt</h2>
+  <p class="gruppe-sub" data-t-html="gruppe.beliebt.sub">Was hier oben steht, entscheiden die letzten vier Wochen – und es aendert sich nur, wenn ein Spiel deutlich haeufiger aufgemacht wird.</p>
 </section>
 
 <main class="raster">
   <article class="game" style="--accent:#8a6cff; --accent2:#f5c542;;"
            data-spiel="keep" data-heimat="gruppe-tempo" data-platz="4" data-bild="bilder/keep-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Keep gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Keep gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/keep/">
       <img class="schnappschuss" src="bilder/klein/keep-spiel.webp" alt="Bildschirmfoto aus einer Partie Keep"
            width="640" height="435" loading="lazy" decoding="async">
@@ -669,31 +722,31 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🎰</span>
         <h3>Keep</h3>
       </div>
-      <p class="kurz">Ein Automat, fünf Runden, und die Uhr wird jedes Mal knapper.</p>
-      <p class="lang">Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die wertvollste Kombination legt, räumt ab.</p>
+      <p class="kurz" data-t-html="k.keep.kurz">Ein Automat, fünf Runden, und die Uhr wird jedes Mal knapper.</p>
+      <p class="lang" data-t-html="k.keep.lang">Drehen, halten, kombinieren. Fünf Runden, die immer kürzer werden – wer die wertvollste Kombination legt, räumt ab.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">1–4 Spieler</span>
-        <span class="tag">Glück &amp; Nerven</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p1_4">1–4 Spieler</span>
+        <span class="tag" data-t-html="tag.glueck">Glück &amp; Nerven</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zu zweit bis zu viert. Allein geht auch: der Startknopf wartet nicht auf jemanden.</li>
-        <li>Fünf Runden, und jede ist kürzer als die davor: von 90 Sekunden herunter auf 25.</li>
-        <li>Die Walze dreht von allein. Danach darfst du zweimal nachziehen und dazwischen entscheiden, welche Symbole liegen bleiben.</li>
-        <li>Aus dem, was steht, eine gültige Kombination wählen. Die Punkte hängen daran, wie selten sie ist – ein Fünfling zahlt das Zwanzigfache eines Drillings, und zwar in jeder Farbe. Das Symbol gibt nur einen kleinen Zuschlag: Herz vier Prozent, Kleeblatt zwei Promille.</li>
-        <li>Unter der Uhr glüht ein zweiter Balken. Er fällt ständig und wird von jeder Kombination aufgeladen, von seltenen stärker – ein Fünfling füllt ihn ganz. Je heißer er steht, desto größer der Multiplikator, bis auf das Doppelte.</li>
-        <li>Wer schnell spielt, hält ihn oben: ein zügiger Zug kostet weniger Glut, als ein Drilling einbringt. Findest du nichts mehr, ist die Runde vorbei.</li>
+        <li data-t-html="k.keep.s1">Raum aufmachen, Link weitergeben – zu zweit bis zu viert. Allein geht auch: der Startknopf wartet nicht auf jemanden.</li>
+        <li data-t-html="k.keep.s2">Fünf Runden, und jede ist kürzer als die davor: von 90 Sekunden herunter auf 25.</li>
+        <li data-t-html="k.keep.s3">Die Walze dreht von allein. Danach darfst du zweimal nachziehen und dazwischen entscheiden, welche Symbole liegen bleiben.</li>
+        <li data-t-html="k.keep.s4">Aus dem, was steht, eine gültige Kombination wählen. Die Punkte hängen daran, wie selten sie ist – ein Fünfling zahlt das Zwanzigfache eines Drillings, und zwar in jeder Farbe. Das Symbol gibt nur einen kleinen Zuschlag: Herz vier Prozent, Kleeblatt zwei Promille.</li>
+        <li data-t-html="k.keep.s5">Unter der Uhr glüht ein zweiter Balken. Er fällt ständig und wird von jeder Kombination aufgeladen, von seltenen stärker – ein Fünfling füllt ihn ganz. Je heißer er steht, desto größer der Multiplikator, bis auf das Doppelte.</li>
+        <li data-t-html="k.keep.s6">Wer schnell spielt, hält ihn oben: ein zügiger Zug kostet weniger Glut, als ein Drilling einbringt. Findest du nichts mehr, ist die Runde vorbei.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#ff2e88; --accent2:#ffd447;;"
            data-spiel="cardchaos" data-heimat="gruppe-tempo" data-platz="3" data-bild="bilder/cardchaos-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Card Chaos gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Card Chaos gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/cardchaos/">
       <img class="schnappschuss" src="bilder/klein/cardchaos-spiel.webp" alt="Bildschirmfoto aus einer Partie Card Chaos"
            width="640" height="435" loading="lazy" decoding="async">
@@ -701,30 +754,30 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🃏</span>
         <h3>Card Chaos</h3>
       </div>
-      <p class="kurz">Drei Kartenpyramiden, zehn Runden, und am Ende darfst du zocken.</p>
-      <p class="lang">Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut, räumt die Türme ab.</p>
+      <p class="kurz" data-t-html="k.cardchaos.kurz">Drei Kartenpyramiden, zehn Runden, und am Ende darfst du zocken.</p>
+      <p class="lang" data-t-html="k.cardchaos.lang">Drei Pyramiden, ein Timer, zehn Runden. Wer am schnellsten Ketten baut, räumt die Türme ab.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">1–4 Spieler</span>
-        <span class="tag">Karten</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p1_4">1–4 Spieler</span>
+        <span class="tag" data-t-html="tag.karten">Karten</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Tisch aufmachen, vierstelligen Code weitergeben – zu zweit bis zu viert. Allein geht auch: dann spielst du gegen deine eigene Bestzeit.</li>
-        <li>Alle spielen gleichzeitig ihr eigenes Brett gegen dieselbe Uhr.</li>
-        <li>Eine offene Karte geht, wenn sie genau eins über oder unter der Ablage liegt. König, Ass und Zwei zählen dabei rundherum.</li>
-        <li>Passt nichts mehr, ziehst du eine neue Karte – das kostet dich deine Kette.</li>
-        <li>Je länger die Kette, desto höher der Multiplikator. Nach der Runde darfst du die Hälfte deiner Punkte auf einen Münzwurf setzen.</li>
+        <li data-t-html="k.cardchaos.s1">Tisch aufmachen, vierstelligen Code weitergeben – zu zweit bis zu viert. Allein geht auch: dann spielst du gegen deine eigene Bestzeit.</li>
+        <li data-t-html="k.cardchaos.s2">Alle spielen gleichzeitig ihr eigenes Brett gegen dieselbe Uhr.</li>
+        <li data-t-html="k.cardchaos.s3">Eine offene Karte geht, wenn sie genau eins über oder unter der Ablage liegt. König, Ass und Zwei zählen dabei rundherum.</li>
+        <li data-t-html="k.cardchaos.s4">Passt nichts mehr, ziehst du eine neue Karte – das kostet dich deine Kette.</li>
+        <li data-t-html="k.cardchaos.s5">Je länger die Kette, desto höher der Multiplikator. Nach der Runde darfst du die Hälfte deiner Punkte auf einen Münzwurf setzen.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#ff9f1c; --accent2:#ff2e88;;"
            data-spiel="nochnie" data-heimat="gruppe-runde" data-platz="0" data-bild="bilder/nochnie-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Ich hab noch nie gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Ich hab noch nie gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/nochnie/">
       <img class="schnappschuss" src="bilder/klein/nochnie-spiel.webp" alt="Bildschirmfoto aus einer Partie Ich hab noch nie"
            width="640" height="435" loading="lazy" decoding="async">
@@ -732,32 +785,32 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🙈</span>
         <h3>Ich hab noch nie</h3>
       </div>
-      <p class="kurz">Einer gesteht, der Rest wird ertappt. Das einzige Spiel hier, bei dem geredet statt gedrückt wird.</p>
-      <p class="lang">Das Spiel für die Runde am Tisch: Einer gesteht, alle anderen werden ertappt. Kein Zeitdruck, keine Reaktion – nur reden. Harmlose Karten sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
+      <p class="kurz" data-t-html="k.nochnie.kurz">Einer gesteht, der Rest wird ertappt. Das einzige Spiel hier, bei dem geredet statt gedrückt wird.</p>
+      <p class="lang" data-t-html="k.nochnie.lang">Das Spiel für die Runde am Tisch: Einer gesteht, alle anderen werden ertappt. Kein Zeitdruck, keine Reaktion – nur reden. Harmlose Karten sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–8 Spieler</span>
-        <span class="tag">Party</span>
-        <span class="tag">18+ optional</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_8">2–8 Spieler</span>
+        <span class="tag" data-t-html="tag.party">Party</span>
+        <span class="tag" data-t-html="tag.ab18">18+ optional</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.</li>
-        <li>Jede Runde sucht der Server eine Person aus. Sie sagt laut einen Satz, der mit „Ich hab noch nie …“ anfängt und für sie stimmt.</li>
-        <li>Fällt ihr nichts ein, drückt sie auf „Mir fällt nichts ein“ und bekommt eine Karte – die sehen dann alle.</li>
-        <li>Alle anderen gestehen: „Hab ich schon“ oder „Noch nie“. Aufgedeckt wird erst, wenn alle gedrückt haben, damit niemand abschaut.</li>
-        <li>Wer erwischt wurde, steht rot in der Liste. Ob daraus ein Schluck wird, die Geschichte dazu oder nichts, entscheidet ihr – das Spiel zählt nur mit.</li>
-        <li>Der Host stellt ein, was auf den Karten steht: harmlos, gemischt oder nur 18+. Vor den 18+-Karten fragt jedes Gerät einmal nach.</li>
+        <li data-t-html="k.nochnie.s1">Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.</li>
+        <li data-t-html="k.nochnie.s2">Jede Runde sucht der Server eine Person aus. Sie sagt laut einen Satz, der mit „Ich hab noch nie …“ anfängt und für sie stimmt.</li>
+        <li data-t-html="k.nochnie.s3">Fällt ihr nichts ein, drückt sie auf „Mir fällt nichts ein“ und bekommt eine Karte – die sehen dann alle.</li>
+        <li data-t-html="k.nochnie.s4">Alle anderen gestehen: „Hab ich schon“ oder „Noch nie“. Aufgedeckt wird erst, wenn alle gedrückt haben, damit niemand abschaut.</li>
+        <li data-t-html="k.nochnie.s5">Wer erwischt wurde, steht rot in der Liste. Ob daraus ein Schluck wird, die Geschichte dazu oder nichts, entscheidet ihr – das Spiel zählt nur mit.</li>
+        <li data-t-html="k.nochnie.s6">Der Host stellt ein, was auf den Karten steht: harmlos, gemischt oder nur 18+. Vor den 18+-Karten fragt jedes Gerät einmal nach.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#ff8a3d; --accent2:#ffd447;"
            data-spiel="minenfeld" data-heimat="gruppe-allein" data-platz="0" data-bild="bilder/minenfeld-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Minenfeld gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Minenfeld gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/minenfeld/">
       <img class="schnappschuss" src="bilder/klein/minenfeld-spiel.webp" alt="Bildschirmfoto aus einer Partie Minenfeld"
            width="640" height="435" loading="lazy" decoding="async">
@@ -765,36 +818,36 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">💣</span>
         <h3>Minenfeld</h3>
       </div>
-      <p class="kurz">Zahlen lesen, Fahnen setzen, nicht raten. Der erste Klick ist immer sicher.</p>
-      <p class="lang">Der Klassiker, aufs Handy gebracht: tippen deckt auf, langer Druck setzt eine Fahne. Drei Größen, Bestzeit pro Größe. Läuft ganz im Browser, ohne Konto und ohne Server.</p>
+      <p class="kurz" data-t-html="k.minenfeld.kurz">Zahlen lesen, Fahnen setzen, nicht raten. Der erste Klick ist immer sicher.</p>
+      <p class="lang" data-t-html="k.minenfeld.lang">Der Klassiker, aufs Handy gebracht: tippen deckt auf, langer Druck setzt eine Fahne. Drei Größen, Bestzeit pro Größe. Läuft ganz im Browser, ohne Konto und ohne Server.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">allein</span>
-        <span class="tag">Knobeln</span>
-        <span class="tag">offline</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.knobeln">Knobeln</span>
+        <span class="tag" data-t-html="tag.offline">offline</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Größe wählen: klein, mittel oder groß.</li>
-        <li>Tippen deckt ein Feld auf. Der erste Klick trifft nie eine Mine.</li>
-        <li>Jede Zahl sagt, wie viele Minen in den acht Feldern ringsum liegen.</li>
-        <li>Langer Druck setzt eine Fahne – am Rechner geht auch Rechtsklick.</li>
-        <li>Eine offene Zahl antippen deckt ringsum auf, sobald genug Fahnen stehen.</li>
-        <li>Alle Felder ohne Mine aufgedeckt: geschafft. Die Bestzeit bleibt in deinem Browser.</li>
+        <li data-t-html="k.minenfeld.s1">Größe wählen: klein, mittel oder groß.</li>
+        <li data-t-html="k.minenfeld.s2">Tippen deckt ein Feld auf. Der erste Klick trifft nie eine Mine.</li>
+        <li data-t-html="k.minenfeld.s3">Jede Zahl sagt, wie viele Minen in den acht Feldern ringsum liegen.</li>
+        <li data-t-html="k.minenfeld.s4">Langer Druck setzt eine Fahne – am Rechner geht auch Rechtsklick.</li>
+        <li data-t-html="k.minenfeld.s5">Eine offene Zahl antippen deckt ringsum auf, sobald genug Fahnen stehen.</li>
+        <li data-t-html="k.minenfeld.s6">Alle Felder ohne Mine aufgedeckt: geschafft. Die Bestzeit bleibt in deinem Browser.</li>
     </template>
   </article>
 </main>
 
 <section class="gruppe" aria-labelledby="gruppe-runde">
-  <h2 class="gruppe-titel" id="gruppe-runde">In der Runde, jeder sein Handy</h2>
-  <p class="gruppe-sub">Ihr sitzt zusammen und redet; das Handy zählt nur mit. Einer eröffnet einen Raum, die anderen tippen den Code ein.</p>
+  <h2 class="gruppe-titel" id="gruppe-runde" data-t="gruppe.runde.titel">In der Runde, jeder sein Handy</h2>
+  <p class="gruppe-sub" data-t-html="gruppe.runde.sub">Ihr sitzt zusammen und redet; das Handy zählt nur mit. Einer eröffnet einen Raum, die anderen tippen den Code ein.</p>
 </section>
 
 <main class="raster">
   <article class="game" style="--accent:#ffd447; --accent2:#ff8a3d;;"
            data-spiel="amehesten" data-heimat="gruppe-runde" data-platz="1" data-bild="bilder/amehesten-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Wer am ehesten gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Wer am ehesten gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/amehesten/">
       <img class="schnappschuss" src="bilder/klein/amehesten-spiel.webp" alt="Bildschirmfoto aus einer Partie Wer am ehesten?"
            width="640" height="435" loading="lazy" decoding="async">
@@ -802,33 +855,33 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">👉</span>
         <h3>Wer am ehesten?</h3>
       </div>
-      <p class="kurz">Eine Frage, alle zeigen gleichzeitig. Die Auflösung ist der Gesprächsanlass.</p>
-      <p class="lang">Eine Frage, und alle zeigen gleichzeitig auf eine Person. Aufgedeckt wird erst, wenn jeder gewählt hat – dann zeigen Balken, wer wie oft gemeint war und von wem. Der schnellste Einstieg von allen. Harmlose Fragen sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
+      <p class="kurz" data-t-html="k.amehesten.kurz">Eine Frage, alle zeigen gleichzeitig. Die Auflösung ist der Gesprächsanlass.</p>
+      <p class="lang" data-t-html="k.amehesten.lang">Eine Frage, und alle zeigen gleichzeitig auf eine Person. Aufgedeckt wird erst, wenn jeder gewählt hat – dann zeigen Balken, wer wie oft gemeint war und von wem. Der schnellste Einstieg von allen. Harmlose Fragen sind voreingestellt, 18+ schaltet die Runde selbst frei.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">3–10 Spieler</span>
-        <span class="tag">Party</span>
-        <span class="tag">18+ optional</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p3_10">3–10 Spieler</span>
+        <span class="tag" data-t-html="tag.party">Party</span>
+        <span class="tag" data-t-html="tag.ab18">18+ optional</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – drei bis zehn Leute, jeder mit eigenem Handy.</li>
-        <li>Jede Runde kommt eine Frage, die den Satz „Wer von euch …?“ ergänzt. Darunter stehen alle Namen aus dem Raum.</li>
-        <li>Alle tippen gleichzeitig auf die Person, auf die es am ehesten zutrifft – auch auf sich selbst, wenn der Host das erlaubt hat.</li>
-        <li>Solange nicht alle durch sind, kann man umentscheiden. Die eigene Wahl bleibt sichtbar, die der anderen nicht.</li>
-        <li>Aufgedeckt wird erst, wenn alle gewählt haben. Dann kommen die Balken: wer wie viele Stimmen bekommen hat – und von wem.</li>
-        <li>Jede Stimme ist ein Punkt für den Gewählten, wer eine Runde anführt bekommt eine Krone. Am Ende steht, über wen am meisten geredet wurde.</li>
-        <li>Vier Stapel: Harmlos geht am Familientisch, Frech zielt auf Macken und Peinlichkeiten, Gemischt ist beides – und 18+ ist ein eigener Stapel, den der Host freischalten muss.</li>
+        <li data-t-html="k.amehesten.s1">Raum aufmachen, Link weitergeben – drei bis zehn Leute, jeder mit eigenem Handy.</li>
+        <li data-t-html="k.amehesten.s2">Jede Runde kommt eine Frage, die den Satz „Wer von euch …?“ ergänzt. Darunter stehen alle Namen aus dem Raum.</li>
+        <li data-t-html="k.amehesten.s3">Alle tippen gleichzeitig auf die Person, auf die es am ehesten zutrifft – auch auf sich selbst, wenn der Host das erlaubt hat.</li>
+        <li data-t-html="k.amehesten.s4">Solange nicht alle durch sind, kann man umentscheiden. Die eigene Wahl bleibt sichtbar, die der anderen nicht.</li>
+        <li data-t-html="k.amehesten.s5">Aufgedeckt wird erst, wenn alle gewählt haben. Dann kommen die Balken: wer wie viele Stimmen bekommen hat – und von wem.</li>
+        <li data-t-html="k.amehesten.s6">Jede Stimme ist ein Punkt für den Gewählten, wer eine Runde anführt bekommt eine Krone. Am Ende steht, über wen am meisten geredet wurde.</li>
+        <li data-t-html="k.amehesten.s7">Vier Stapel: Harmlos geht am Familientisch, Frech zielt auf Macken und Peinlichkeiten, Gemischt ist beides – und 18+ ist ein eigener Stapel, den der Host freischalten muss.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#a06bff; --accent2:#35e6ff;;"
            data-spiel="imposter" data-heimat="gruppe-runde" data-platz="2" data-bild="bilder/imposter-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Imposter gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Imposter gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/imposter/">
       <img class="schnappschuss" src="bilder/klein/imposter-spiel.webp" alt="Bildschirmfoto aus einer Partie Imposter"
            width="640" height="435" loading="lazy" decoding="async">
@@ -836,37 +889,37 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🕵️</span>
         <h3>Imposter</h3>
       </div>
-      <p class="kurz">Alle kennen das Wort. Bis auf einen – und der muss so tun, als ob.</p>
-      <p class="lang">Alle bekommen dasselbe Wort – bis auf einen. Das Handy zeigt nur das Wort und teilt sonst nichts ein: reihum reden, aufeinander zeigen und streiten macht ihr am Tisch. In der zweiten Art bekommt jeder ein Wort, aber eines weicht ab – und der, den es trifft, weiß es selbst nicht. Der längste Abend von allen.</p>
+      <p class="kurz" data-t-html="k.imposter.kurz">Alle kennen das Wort. Bis auf einen – und der muss so tun, als ob.</p>
+      <p class="lang" data-t-html="k.imposter.lang">Alle bekommen dasselbe Wort – bis auf einen. Das Handy zeigt nur das Wort und teilt sonst nichts ein: reihum reden, aufeinander zeigen und streiten macht ihr am Tisch. In der zweiten Art bekommt jeder ein Wort, aber eines weicht ab – und der, den es trifft, weiß es selbst nicht. Der längste Abend von allen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">3–10 Spieler</span>
-        <span class="tag">Rollen</span>
-        <span class="tag">18+ optional</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p3_10">3–10 Spieler</span>
+        <span class="tag" data-t-html="tag.rollen">Rollen</span>
+        <span class="tag" data-t-html="tag.ab18">18+ optional</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – drei bis zehn Leute an einem Tisch, jeder mit eigenem Handy. Kein Bereitmelden: wer im Raum ist, ist dabei.</li>
-        <li>Handy weglegen, Anruf, leerer Akku? Der Platz bleibt reserviert. Wer zurückkommt, ist wieder derselbe – mit derselben Karte, in derselben Runde.</li>
-        <li>Der Host tippt auf „Austeilen“. Alle bekommen dasselbe Wort, zum Beispiel „Schleifpapier“. Einer bekommt es nicht – der sieht nur, dass er der Imposter ist. Mehr bekommt er auch nicht.</li>
-        <li>Die Karte liegt <b>zugedeckt</b>: zum Ansehen den Deckel hochschieben und halten, beim Loslassen fällt er wieder zu. Das Handy kann offen liegen bleiben – anlassen ist sogar besser, sonst reißt die Verbindung.</li>
-        <li>Oben steht, <b>wer anfängt und wie herum es geht</b>. Alle lesen denselben Satz; das Handy sagt trotzdem niemandem, dass er dran ist – gezählt wird am Tisch.</li>
-        <li>Reihum sagt jeder laut ein Wort dazu.</li>
-        <li>Nicht zu deutlich, sonst weiß der Imposter gleich Bescheid – aber auch nicht zu vage, sonst hält man dich selbst für ihn.</li>
-        <li>Am Ende zeigt ihr aufeinander. Laut, gleichzeitig, wie ihr wollt. Das Handy stimmt nicht ab und zählt keine Punkte.</li>
-        <li>Der Host tippt auf „Auflösen“: alle sehen, wer es war und wie das Wort hieß. Dann teilt er neu aus.</li>
-        <li><b>Zweite Art, „Zwei Wörter“:</b> jeder bekommt ein Wort, aber eines davon ist ein anderes – die einen Museum, einer Bordell. Niemand weiß, wer abweicht, auch der Abweichler nicht. Alle reden in gutem Glauben, und es dauert, bis etwas nicht mehr zusammenpasst.</li>
-        <li>Die Paare sind mit Absicht schräg: die Beschreibungen passen auf beides, die Bedeutung liegt weit auseinander. Harmlos ist voreingestellt, 18+ schaltet der Host frei – jedes Gerät fragt davor einmal nach.</li>
+        <li data-t-html="k.imposter.s1">Raum aufmachen, Link weitergeben – drei bis zehn Leute an einem Tisch, jeder mit eigenem Handy. Kein Bereitmelden: wer im Raum ist, ist dabei.</li>
+        <li data-t-html="k.imposter.s2">Handy weglegen, Anruf, leerer Akku? Der Platz bleibt reserviert. Wer zurückkommt, ist wieder derselbe – mit derselben Karte, in derselben Runde.</li>
+        <li data-t-html="k.imposter.s3">Der Host tippt auf „Austeilen“. Alle bekommen dasselbe Wort, zum Beispiel „Schleifpapier“. Einer bekommt es nicht – der sieht nur, dass er der Imposter ist. Mehr bekommt er auch nicht.</li>
+        <li data-t-html="k.imposter.s4">Die Karte liegt <b>zugedeckt</b>: zum Ansehen den Deckel hochschieben und halten, beim Loslassen fällt er wieder zu. Das Handy kann offen liegen bleiben – anlassen ist sogar besser, sonst reißt die Verbindung.</li>
+        <li data-t-html="k.imposter.s5">Oben steht, <b>wer anfängt und wie herum es geht</b>. Alle lesen denselben Satz; das Handy sagt trotzdem niemandem, dass er dran ist – gezählt wird am Tisch.</li>
+        <li data-t-html="k.imposter.s6">Reihum sagt jeder laut ein Wort dazu.</li>
+        <li data-t-html="k.imposter.s7">Nicht zu deutlich, sonst weiß der Imposter gleich Bescheid – aber auch nicht zu vage, sonst hält man dich selbst für ihn.</li>
+        <li data-t-html="k.imposter.s8">Am Ende zeigt ihr aufeinander. Laut, gleichzeitig, wie ihr wollt. Das Handy stimmt nicht ab und zählt keine Punkte.</li>
+        <li data-t-html="k.imposter.s9">Der Host tippt auf „Auflösen“: alle sehen, wer es war und wie das Wort hieß. Dann teilt er neu aus.</li>
+        <li data-t-html="k.imposter.s10"><b>Zweite Art, „Zwei Wörter“:</b> jeder bekommt ein Wort, aber eines davon ist ein anderes – die einen Museum, einer Bordell. Niemand weiß, wer abweicht, auch der Abweichler nicht. Alle reden in gutem Glauben, und es dauert, bis etwas nicht mehr zusammenpasst.</li>
+        <li data-t-html="k.imposter.s11">Die Paare sind mit Absicht schräg: die Beschreibungen passen auf beides, die Bedeutung liegt weit auseinander. Harmlos ist voreingestellt, 18+ schaltet der Host frei – jedes Gerät fragt davor einmal nach.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;;"
            data-spiel="maexchen" data-heimat="gruppe-runde" data-platz="3" data-bild="bilder/maexchen-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Mäxchen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Mäxchen gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/maexchen/">
       <img class="schnappschuss" src="bilder/klein/maexchen-spiel.webp" alt="Bildschirmfoto aus einer Partie Mäxchen"
            width="640" height="435" loading="lazy" decoding="async">
@@ -874,32 +927,32 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🎲</span>
         <h3>Mäxchen</h3>
       </div>
-      <p class="kurz">Gewürfelt wird, damit man lügen kann. Zwei Würfel, ein Becher, und nur du siehst darunter.</p>
-      <p class="lang">Zwei Würfel unter dem Becher, und nur du siehst sie. Sag an, was du angeblich hast – höher als der vor dir. Der Nächste glaubt es oder deckt auf. Einer verliert dabei immer ein Leben.</p>
+      <p class="kurz" data-t-html="k.maexchen.kurz">Gewürfelt wird, damit man lügen kann. Zwei Würfel, ein Becher, und nur du siehst darunter.</p>
+      <p class="lang" data-t-html="k.maexchen.lang">Zwei Würfel unter dem Becher, und nur du siehst sie. Sag an, was du angeblich hast – höher als der vor dir. Der Nächste glaubt es oder deckt auf. Einer verliert dabei immer ein Leben.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–8 Spieler</span>
-        <span class="tag">Bluff</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_8">2–8 Spieler</span>
+        <span class="tag" data-t-html="tag.bluff">Bluff</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.</li>
-        <li>Wer am Zug ist, schüttelt den Becher. Die zwei Würfel erscheinen nur auf seinem Bildschirm – der Server verrät sie sonst niemandem.</li>
-        <li>Dann sagt er an, was er angeblich hat. Die Ansage muss die vorherige überbieten; ob sie zum eigenen Wurf passt, ist seine Sache.</li>
-        <li>Der Nächste entscheidet: „Ich glaube“ – dann würfelt er selbst und muss noch höher ansagen. Oder „Ich glaub’s nicht“ – dann wird aufgedeckt.</li>
-        <li>Beim Aufdecken verliert immer eine Seite ein Leben: war gelogen, der Ansager. War es wahr, der Zweifler.</li>
-        <li>Die Rangfolge: 31 ist das Schlechteste, dann aufwärts bis 65, darüber die Doppel. Ganz oben steht die 21 – das Mäxchen. Es lässt sich nicht überbieten, nur anzweifeln, und das kostet doppelt.</li>
-        <li>Wer keine Leben mehr hat, ist raus. Der Letzte am Tisch gewinnt.</li>
+        <li data-t-html="k.maexchen.s1">Raum aufmachen, Link weitergeben – zwei bis acht Leute, jeder mit eigenem Handy.</li>
+        <li data-t-html="k.maexchen.s2">Wer am Zug ist, schüttelt den Becher. Die zwei Würfel erscheinen nur auf seinem Bildschirm – der Server verrät sie sonst niemandem.</li>
+        <li data-t-html="k.maexchen.s3">Dann sagt er an, was er angeblich hat. Die Ansage muss die vorherige überbieten; ob sie zum eigenen Wurf passt, ist seine Sache.</li>
+        <li data-t-html="k.maexchen.s4">Der Nächste entscheidet: „Ich glaube“ – dann würfelt er selbst und muss noch höher ansagen. Oder „Ich glaub’s nicht“ – dann wird aufgedeckt.</li>
+        <li data-t-html="k.maexchen.s5">Beim Aufdecken verliert immer eine Seite ein Leben: war gelogen, der Ansager. War es wahr, der Zweifler.</li>
+        <li data-t-html="k.maexchen.s6">Die Rangfolge: 31 ist das Schlechteste, dann aufwärts bis 65, darüber die Doppel. Ganz oben steht die 21 – das Mäxchen. Es lässt sich nicht überbieten, nur anzweifeln, und das kostet doppelt.</li>
+        <li data-t-html="k.maexchen.s7">Wer keine Leben mehr hat, ist raus. Der Letzte am Tisch gewinnt.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#ff2e88;"
            data-spiel="flasche" data-heimat="gruppe-runde" data-platz="4" data-bild="bilder/flasche-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Flaschendrehen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Flaschendrehen gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/flasche/">
       <img class="schnappschuss" src="bilder/klein/flasche-spiel.webp" alt="Bildschirmfoto aus einer Partie Flaschendrehen"
            width="640" height="435" loading="lazy" decoding="async">
@@ -907,34 +960,34 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🍾</span>
         <h3>Flaschendrehen</h3>
       </div>
-      <p class="kurz">Die Flasche entscheidet, wer dran ist – auf allen Handys gleichzeitig.</p>
-      <p class="lang">Reihum dreht einer die Flasche – sie dreht sich auf allen Bildschirmen
+      <p class="kurz" data-t-html="k.flasche.kurz">Die Flasche entscheidet, wer dran ist – auf allen Handys gleichzeitig.</p>
+      <p class="lang" data-t-html="k.flasche.lang">Reihum dreht einer die Flasche – sie dreht sich auf allen Bildschirmen
         gleichzeitig und bleibt bei allen auf derselben Person stehen. Danach
         Wahrheit oder Pflicht. Oder nur die Flasche, wenn euch das reicht.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">3–10 Spieler</span>
-        <span class="tag">Party</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p3_10">3–10 Spieler</span>
+        <span class="tag" data-t-html="tag.party">Party</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – drei bis zehn Leute, jeder mit eigenem Handy.</li>
-        <li>Reihum dreht einer die Flasche. Sie dreht sich bei allen gleichzeitig und bleibt überall auf derselben Person stehen – der Server bestimmt das Ziel, nicht euer Gerät.</li>
-        <li>Wen sie trifft, ist dran. Im Modus „Nur drehen“ ist die Runde damit vorbei; was dann passiert, macht ihr euch selbst aus.</li>
-        <li>Sonst wählt die getroffene Person zwischen Wahrheit und Pflicht und bekommt eine Karte. Alle sehen sie.</li>
-        <li>Passt die Karte nicht, gibt es mit einem Druck eine andere. Auslassen ist immer erlaubt und kostet nichts – es wird nur mitgezählt.</li>
-        <li>Die Karten kommen ohne Alkohol, ohne Sex und ohne Körperkontakt aus. „Frech“ heißt hier peinlich, nicht anzüglich, und jede Pflicht lässt sich im Sitzen erfüllen.</li>
-        <li>Am Ende steht, wen die Flasche am häufigsten getroffen hat.</li>
+        <li data-t-html="k.flasche.s1">Raum aufmachen, Link weitergeben – drei bis zehn Leute, jeder mit eigenem Handy.</li>
+        <li data-t-html="k.flasche.s2">Reihum dreht einer die Flasche. Sie dreht sich bei allen gleichzeitig und bleibt überall auf derselben Person stehen – der Server bestimmt das Ziel, nicht euer Gerät.</li>
+        <li data-t-html="k.flasche.s3">Wen sie trifft, ist dran. Im Modus „Nur drehen“ ist die Runde damit vorbei; was dann passiert, macht ihr euch selbst aus.</li>
+        <li data-t-html="k.flasche.s4">Sonst wählt die getroffene Person zwischen Wahrheit und Pflicht und bekommt eine Karte. Alle sehen sie.</li>
+        <li data-t-html="k.flasche.s5">Passt die Karte nicht, gibt es mit einem Druck eine andere. Auslassen ist immer erlaubt und kostet nichts – es wird nur mitgezählt.</li>
+        <li data-t-html="k.flasche.s6">Die Karten kommen ohne Alkohol, ohne Sex und ohne Körperkontakt aus. „Frech“ heißt hier peinlich, nicht anzüglich, und jede Pflicht lässt sich im Sitzen erfüllen.</li>
+        <li data-t-html="k.flasche.s7">Am Ende steht, wen die Flasche am häufigsten getroffen hat.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#a06bff; --accent2:#ffd447;"
            data-spiel="werwolf" data-heimat="gruppe-runde" data-platz="5" data-bild="bilder/werwolf-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Nachtwache gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Nachtwache gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/werwolf/">
       <img class="schnappschuss" src="bilder/klein/werwolf-spiel.webp" alt="Bildschirmfoto aus einer Partie Nachtwache"
            width="640" height="435" loading="lazy" decoding="async">
@@ -942,29 +995,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🐺</span>
         <h3>Nachtwache</h3>
       </div>
-      <p class="kurz">Nachts holen sich die Wölfe einen. Tagsüber redet das Dorf – und irrt sich.</p>
-      <p class="lang">Vier bis zwölf Leute, fünf Rollen: Werwolf, Dorfbewohner, Seherin, Hexe, Amor. Den Erzähler macht der Server, ihr müsst nur reden und euch gegenseitig verdächtigen.</p>
+      <p class="kurz" data-t-html="k.werwolf.kurz">Nachts holen sich die Wölfe einen. Tagsüber redet das Dorf – und irrt sich.</p>
+      <p class="lang" data-t-html="k.werwolf.lang">Vier bis zwölf Leute, fünf Rollen: Werwolf, Dorfbewohner, Seherin, Hexe, Amor. Den Erzähler macht der Server, ihr müsst nur reden und euch gegenseitig verdächtigen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">4–12 Spieler</span>
-        <span class="tag">Bluff</span>
-        <span class="tag">Rollen</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p4_12">4–12 Spieler</span>
+        <span class="tag" data-t-html="tag.bluff">Bluff</span>
+        <span class="tag" data-t-html="tag.rollen">Rollen</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – ab vier Leuten geht es los, ab sechs wird es gut.</li>
-        <li>Jeder bekommt seine Rollenkarte auf sein eigenes Handy und bestätigt sie.</li>
-        <li>Nachts weckt der Server die Wölfe, danach Seherin und Hexe. Wer nicht dran ist, legt das Handy weg.</li>
-        <li>Am Morgen sagt der Server, wer die Nacht nicht überlebt hat – und welche Rolle er hatte.</li>
-        <li>Tagsüber wird geredet, laut und im Raum. Danach stimmen alle ab, wer hängt.</li>
-        <li>Das Dorf gewinnt ohne Wölfe, die Wölfe gewinnen in der Überzahl. Das Liebespaar gewinnt zu zweit.</li>
+        <li data-t-html="k.werwolf.s1">Raum aufmachen, Link weitergeben – ab vier Leuten geht es los, ab sechs wird es gut.</li>
+        <li data-t-html="k.werwolf.s2">Jeder bekommt seine Rollenkarte auf sein eigenes Handy und bestätigt sie.</li>
+        <li data-t-html="k.werwolf.s3">Nachts weckt der Server die Wölfe, danach Seherin und Hexe. Wer nicht dran ist, legt das Handy weg.</li>
+        <li data-t-html="k.werwolf.s4">Am Morgen sagt der Server, wer die Nacht nicht überlebt hat – und welche Rolle er hatte.</li>
+        <li data-t-html="k.werwolf.s5">Tagsüber wird geredet, laut und im Raum. Danach stimmen alle ab, wer hängt.</li>
+        <li data-t-html="k.werwolf.s6">Das Dorf gewinnt ohne Wölfe, die Wölfe gewinnen in der Überzahl. Das Liebespaar gewinnt zu zweit.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#ffd447;"
            data-spiel="becher" data-heimat="gruppe-runde" data-platz="6" data-bild="bilder/becher-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Becherbluff gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Becherbluff gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/becher/">
       <img class="schnappschuss" src="bilder/klein/becher-spiel.webp" alt="Bildschirmfoto aus einer Partie Becherbluff"
            width="640" height="435" loading="lazy" decoding="async">
@@ -972,29 +1025,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🎲</span>
         <h3>Becherbluff</h3>
       </div>
-      <p class="kurz">Jeder fünf Würfel unter dem Becher. Geboten wird auf alles, was am Tisch liegen könnte.</p>
-      <p class="lang">Verwandt mit Mäxchen, aber jeder hat seine eigenen Würfel: „vier Fünfen“ heißt, es liegen mindestens vier Fünfen – egal bei wem. Einser sind Joker. Wer nicht glaubt, zweifelt, und einer verliert einen Würfel.</p>
+      <p class="kurz" data-t-html="k.becher.kurz">Jeder fünf Würfel unter dem Becher. Geboten wird auf alles, was am Tisch liegen könnte.</p>
+      <p class="lang" data-t-html="k.becher.lang">Verwandt mit Mäxchen, aber jeder hat seine eigenen Würfel: „vier Fünfen“ heißt, es liegen mindestens vier Fünfen – egal bei wem. Einser sind Joker. Wer nicht glaubt, zweifelt, und einer verliert einen Würfel.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–6 Spieler</span>
-        <span class="tag">Bluff</span>
-        <span class="tag">Würfel</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_6">2–6 Spieler</span>
+        <span class="tag" data-t-html="tag.bluff">Bluff</span>
+        <span class="tag" data-t-html="tag.wuerfel">Würfel</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zwei bis sechs Leute.</li>
-        <li>Jeder bekommt fünf Würfel, sichtbar nur auf dem eigenen Handy.</li>
-        <li>Reihum wird geboten: Anzahl und Augenzahl, immer höher als das Gebot davor.</li>
-        <li>Einser zählen als Joker für jede Augenzahl mit – auf Einser selbst wird nicht geboten.</li>
-        <li>Statt zu bieten kannst du zweifeln. Dann decken alle auf und gezählt wird.</li>
-        <li>Wer falsch lag, verliert einen Würfel. Wer keine mehr hat, ist raus.</li>
+        <li data-t-html="k.becher.s1">Raum aufmachen, Link weitergeben – zwei bis sechs Leute.</li>
+        <li data-t-html="k.becher.s2">Jeder bekommt fünf Würfel, sichtbar nur auf dem eigenen Handy.</li>
+        <li data-t-html="k.becher.s3">Reihum wird geboten: Anzahl und Augenzahl, immer höher als das Gebot davor.</li>
+        <li data-t-html="k.becher.s4">Einser zählen als Joker für jede Augenzahl mit – auf Einser selbst wird nicht geboten.</li>
+        <li data-t-html="k.becher.s5">Statt zu bieten kannst du zweifeln. Dann decken alle auf und gezählt wird.</li>
+        <li data-t-html="k.becher.s6">Wer falsch lag, verliert einen Würfel. Wer keine mehr hat, ist raus.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#ffd447; --accent2:#ff8a3d;"
            data-spiel="kingscup" data-heimat="gruppe-runde" data-platz="7" data-bild="bilder/kingscup-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Kings Cup gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Kings Cup gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/kingscup/">
       <img class="schnappschuss" src="bilder/klein/kingscup-spiel.webp" alt="Bildschirmfoto aus einer Partie Kings Cup"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1002,36 +1055,36 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">👑</span>
         <h3>Kings Cup</h3>
       </div>
-      <p class="kurz">Eine Karte, eine Regel, die ganze Runde macht mit. Trinkfrei voreingestellt.</p>
-      <p class="lang">Reihum zieht einer eine Karte, und alle sehen dieselbe Regel auf ihrem Handy. Voreingestellt ist die trinkfreie Fassung: dieselben Karten, statt Schlucken kleine Aufgaben. Beim vierten König ist Schluss.</p>
+      <p class="kurz" data-t-html="k.kingscup.kurz">Eine Karte, eine Regel, die ganze Runde macht mit. Trinkfrei voreingestellt.</p>
+      <p class="lang" data-t-html="k.kingscup.lang">Reihum zieht einer eine Karte, und alle sehen dieselbe Regel auf ihrem Handy. Voreingestellt ist die trinkfreie Fassung: dieselben Karten, statt Schlucken kleine Aufgaben. Beim vierten König ist Schluss.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–10 Spieler</span>
-        <span class="tag">Party</span>
-        <span class="tag">trinkfrei</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_10">2–10 Spieler</span>
+        <span class="tag" data-t-html="tag.party">Party</span>
+        <span class="tag" data-t-html="tag.trinkfrei">trinkfrei</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zwei bis zehn Leute.</li>
-        <li>Der Host wählt die Fassung: trinkfrei (Voreinstellung) oder mit Schlucken.</li>
-        <li>Reihum zieht einer eine Karte. Alle sehen sie gleichzeitig samt Regel.</li>
-        <li>Zahlen sind kurze Aufgaben, Bube/Dame/Ass machen Regeln, die weiterlaufen.</li>
-        <li>Wenn die Regel erledigt ist, drückt der Ziehende auf „weiter“.</li>
-        <li>Beim vierten König endet die Runde.</li>
+        <li data-t-html="k.kingscup.s1">Raum aufmachen, Link weitergeben – zwei bis zehn Leute.</li>
+        <li data-t-html="k.kingscup.s2">Der Host wählt die Fassung: trinkfrei (Voreinstellung) oder mit Schlucken.</li>
+        <li data-t-html="k.kingscup.s3">Reihum zieht einer eine Karte. Alle sehen sie gleichzeitig samt Regel.</li>
+        <li data-t-html="k.kingscup.s4">Zahlen sind kurze Aufgaben, Bube/Dame/Ass machen Regeln, die weiterlaufen.</li>
+        <li data-t-html="k.kingscup.s5">Wenn die Regel erledigt ist, drückt der Ziehende auf „weiter“.</li>
+        <li data-t-html="k.kingscup.s6">Beim vierten König endet die Runde.</li>
     </template>
   </article>
 </main>
 
 <section class="gruppe" aria-labelledby="gruppe-ruhe">
-  <h2 class="gruppe-titel" id="gruppe-ruhe">Zug um Zug, in Ruhe</h2>
-  <p class="gruppe-sub">Einer ist dran, die anderen überlegen mit. Kein Zeitdruck außer der Bedenkzeit, die ihr selbst einstellt – oder abschaltet.</p>
+  <h2 class="gruppe-titel" id="gruppe-ruhe" data-t="gruppe.ruhe.titel">Zug um Zug, in Ruhe</h2>
+  <p class="gruppe-sub" data-t-html="gruppe.ruhe.sub">Einer ist dran, die anderen überlegen mit. Kein Zeitdruck außer der Bedenkzeit, die ihr selbst einstellt – oder abschaltet.</p>
 </section>
 
 <main class="raster">
   <article class="game" style="--accent:#ffb02e; --accent2:#52ffa8;"
            data-spiel="wortleger" data-heimat="gruppe-ruhe" data-platz="0" data-bild="bilder/wortleger-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Wortleger gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Wortleger gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/wortleger/">
       <img class="schnappschuss" src="bilder/klein/wortleger-spiel.webp" alt="Bildschirmfoto aus einer Partie Wortleger"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1039,31 +1092,31 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🔤</span>
         <h3>Wortleger</h3>
       </div>
-      <p class="kurz">Buchstaben mit Werten auf ein Brett mit Bonusfeldern. Geprüft wird gegen eine Wortliste, nicht gegen die Geduld der Mitspieler.</p>
-      <p class="lang">Sieben Steine auf dem Regal, ein 13×13-Brett mit Bonusfeldern. Legt Wörter, kreuzt die der anderen und nehmt die dreifachen Felder mit, bevor es jemand anders tut.</p>
+      <p class="kurz" data-t-html="k.wortleger.kurz">Buchstaben mit Werten auf ein Brett mit Bonusfeldern. Geprüft wird gegen eine Wortliste, nicht gegen die Geduld der Mitspieler.</p>
+      <p class="lang" data-t-html="k.wortleger.lang">Sieben Steine auf dem Regal, ein 13×13-Brett mit Bonusfeldern. Legt Wörter, kreuzt die der anderen und nehmt die dreifachen Felder mit, bevor es jemand anders tut.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–4 Spieler</span>
-        <span class="tag">Wörter</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_4">2–4 Spieler</span>
+        <span class="tag" data-t-html="tag.woerter">Wörter</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Code weitergeben – zu zweit bis zu viert. Jeder zieht sieben Steine, die nur er sieht.</li>
-        <li>Reihum ist einer am Zug. Stein im Regal antippen, freies Feld antippen – so legst du ihn ab. Nochmal antippen holt ihn zurück.</li>
-        <li>Das erste Wort muss durch den Stern in der Mitte. Danach muss jedes neue Wort an etwas anschließen, das schon liegt.</li>
-        <li>Ein Zug legt Steine in einer Reihe oder einer Spalte, ohne Lücke. Alles, was dabei entsteht – auch quer –, muss ein Wort sein.</li>
-        <li>Geprüft wird gegen eine deutsche Wortliste mit 488&nbsp;344 Einträgen. Umlaute haben eigene Steine, ß wird als SS geschrieben.</li>
-        <li>Bonusfelder verdoppeln oder verdreifachen Buchstabe oder Wort – aber nur in dem Zug, in dem sie belegt werden.</li>
-        <li>Alle sieben Steine in einem Zug bringen 40 Punkte Zuschlag. Wer nichts findet, tauscht Steine oder passt.</li>
-        <li>Zwei Joker liegen im Beutel. Sie werden zu jedem Buchstaben, zählen aber null.</li>
-        <li>Wer zuerst sein Regal leer hat, wenn der Beutel leer ist, bekommt obendrauf, was die anderen noch halten – die ziehen ihre Reststeine ab.</li>
+        <li data-t-html="k.wortleger.s1">Raum aufmachen, Code weitergeben – zu zweit bis zu viert. Jeder zieht sieben Steine, die nur er sieht.</li>
+        <li data-t-html="k.wortleger.s2">Reihum ist einer am Zug. Stein im Regal antippen, freies Feld antippen – so legst du ihn ab. Nochmal antippen holt ihn zurück.</li>
+        <li data-t-html="k.wortleger.s3">Das erste Wort muss durch den Stern in der Mitte. Danach muss jedes neue Wort an etwas anschließen, das schon liegt.</li>
+        <li data-t-html="k.wortleger.s4">Ein Zug legt Steine in einer Reihe oder einer Spalte, ohne Lücke. Alles, was dabei entsteht – auch quer –, muss ein Wort sein.</li>
+        <li data-t-html="k.wortleger.s5">Geprüft wird gegen eine deutsche Wortliste mit 488&nbsp;344 Einträgen. Umlaute haben eigene Steine, ß wird als SS geschrieben.</li>
+        <li data-t-html="k.wortleger.s6">Bonusfelder verdoppeln oder verdreifachen Buchstabe oder Wort – aber nur in dem Zug, in dem sie belegt werden.</li>
+        <li data-t-html="k.wortleger.s7">Alle sieben Steine in einem Zug bringen 40 Punkte Zuschlag. Wer nichts findet, tauscht Steine oder passt.</li>
+        <li data-t-html="k.wortleger.s8">Zwei Joker liegen im Beutel. Sie werden zu jedem Buchstaben, zählen aber null.</li>
+        <li data-t-html="k.wortleger.s9">Wer zuerst sein Regal leer hat, wenn der Beutel leer ist, bekommt obendrauf, was die anderen noch halten – die ziehen ihre Reststeine ab.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#ff2e88; --accent2:#35e6ff;"
            data-spiel="luegen" data-heimat="gruppe-ruhe" data-platz="1" data-bild="bilder/luegen-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Lügen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Lügen gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/luegen/">
       <img class="schnappschuss" src="bilder/klein/luegen-spiel.webp" alt="Bildschirmfoto aus einer Partie Lügen"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1071,29 +1124,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🤥</span>
         <h3>Lügen</h3>
       </div>
-      <p class="kurz">Verdeckt ablegen und ansagen. Wer nicht glaubt, deckt auf – einer nimmt den Stapel.</p>
-      <p class="lang">Das ganze Deck wird verteilt, alle wollen ihre Karten loswerden. Abgelegt wird verdeckt, die Ansage steigt jede Runde um einen Rang. Ob du wirklich drei Achten gelegt hast, sieht niemand.</p>
+      <p class="kurz" data-t-html="k.luegen.kurz">Verdeckt ablegen und ansagen. Wer nicht glaubt, deckt auf – einer nimmt den Stapel.</p>
+      <p class="lang" data-t-html="k.luegen.lang">Das ganze Deck wird verteilt, alle wollen ihre Karten loswerden. Abgelegt wird verdeckt, die Ansage steigt jede Runde um einen Rang. Ob du wirklich drei Achten gelegt hast, sieht niemand.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">3–6 Spieler</span>
-        <span class="tag">Bluff</span>
-        <span class="tag">Karten</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p3_6">3–6 Spieler</span>
+        <span class="tag" data-t-html="tag.bluff">Bluff</span>
+        <span class="tag" data-t-html="tag.karten">Karten</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – drei bis sechs Leute, jeder mit eigenem Handy.</li>
-        <li>Alle Karten werden verteilt. Wer zuerst keine mehr hat, gewinnt.</li>
-        <li>Reihum legt jeder ein bis vier Karten verdeckt ab und sagt an, was es angeblich ist.</li>
-        <li>Die Ansage steigt jede Runde um einen Rang – du musst legen, was dran ist, ob du es hast oder nicht.</li>
-        <li>Wer nicht glaubt, drückt „Lüge!“. Aufgedeckt: hat der Leger gelogen, nimmt er den Stapel, sonst der Zweifler.</li>
-        <li>Ein Ass wird nicht weitergegeben – danach fängt der Nächste eine neue Ansage an.</li>
+        <li data-t-html="k.luegen.s1">Raum aufmachen, Link weitergeben – drei bis sechs Leute, jeder mit eigenem Handy.</li>
+        <li data-t-html="k.luegen.s2">Alle Karten werden verteilt. Wer zuerst keine mehr hat, gewinnt.</li>
+        <li data-t-html="k.luegen.s3">Reihum legt jeder ein bis vier Karten verdeckt ab und sagt an, was es angeblich ist.</li>
+        <li data-t-html="k.luegen.s4">Die Ansage steigt jede Runde um einen Rang – du musst legen, was dran ist, ob du es hast oder nicht.</li>
+        <li data-t-html="k.luegen.s5">Wer nicht glaubt, drückt „Lüge!“. Aufgedeckt: hat der Leger gelogen, nimmt er den Stapel, sonst der Zweifler.</li>
+        <li data-t-html="k.luegen.s6">Ein Ass wird nicht weitergegeben – danach fängt der Nächste eine neue Ansage an.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#ffd447; --accent2:#52ffa8;"
            data-spiel="maumau" data-heimat="gruppe-ruhe" data-platz="2" data-bild="bilder/maumau-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Mau-Mau gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Mau-Mau gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/maumau/">
       <img class="schnappschuss" src="bilder/klein/maumau-spiel.webp" alt="Bildschirmfoto aus einer Partie Mau-Mau"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1101,29 +1154,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🃏</span>
         <h3>Mau-Mau</h3>
       </div>
-      <p class="kurz">Farbe oder Zahl bedienen. Sieben zieht, Acht setzt aus, Bube wünscht.</p>
-      <p class="lang">Der gemeinfreie Klassiker mit 32 Karten. Welche Sonderregeln gelten, stellt der Host vorher ein – und wer auf eine Karte kommt, muss „Mau“ sagen, sonst kostet es zwei.</p>
+      <p class="kurz" data-t-html="k.maumau.kurz">Farbe oder Zahl bedienen. Sieben zieht, Acht setzt aus, Bube wünscht.</p>
+      <p class="lang" data-t-html="k.maumau.lang">Der gemeinfreie Klassiker mit 32 Karten. Welche Sonderregeln gelten, stellt der Host vorher ein – und wer auf eine Karte kommt, muss „Mau“ sagen, sonst kostet es zwei.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–6 Spieler</span>
-        <span class="tag">Karten</span>
-        <span class="tag">Klassiker</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_6">2–6 Spieler</span>
+        <span class="tag" data-t-html="tag.karten">Karten</span>
+        <span class="tag" data-t-html="tag.klassiker">Klassiker</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zwei bis sechs Leute.</li>
-        <li>Der Host schaltet die Sonderregeln an oder aus: Sieben zieht zwei, Acht setzt aus, Bube wünscht.</li>
-        <li>Jeder bekommt fünf Karten. Bedient wird nach Farbe oder Zahl der obersten Karte.</li>
-        <li>Passt nichts, ziehst du eine Karte und bist fertig mit dem Zug.</li>
-        <li>Wer auf eine Karte kommt, drückt vorher „Mau!“. Vergessen kostet zwei Karten.</li>
-        <li>Wer zuerst leer ist, gewinnt; die anderen zählen ihre Reste.</li>
+        <li data-t-html="k.maumau.s1">Raum aufmachen, Link weitergeben – zwei bis sechs Leute.</li>
+        <li data-t-html="k.maumau.s2">Der Host schaltet die Sonderregeln an oder aus: Sieben zieht zwei, Acht setzt aus, Bube wünscht.</li>
+        <li data-t-html="k.maumau.s3">Jeder bekommt fünf Karten. Bedient wird nach Farbe oder Zahl der obersten Karte.</li>
+        <li data-t-html="k.maumau.s4">Passt nichts, ziehst du eine Karte und bist fertig mit dem Zug.</li>
+        <li data-t-html="k.maumau.s5">Wer auf eine Karte kommt, drückt vorher „Mau!“. Vergessen kostet zwei Karten.</li>
+        <li data-t-html="k.maumau.s6">Wer zuerst leer ist, gewinnt; die anderen zählen ihre Reste.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;"
            data-spiel="schwimmen" data-heimat="gruppe-ruhe" data-platz="3" data-bild="bilder/schwimmen-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Schwimmen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Schwimmen gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/schwimmen/">
       <img class="schnappschuss" src="bilder/klein/schwimmen-spiel.webp" alt="Bildschirmfoto aus einer Partie Schwimmen"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1131,29 +1184,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🏊</span>
         <h3>Schwimmen</h3>
       </div>
-      <p class="kurz">Drei Karten, drei Leben. Wer am wenigsten hat, verliert eins.</p>
-      <p class="lang">31 in einer Farbe, drei Karten auf der Hand, drei offen in der Mitte. Tauschen, schieben oder klopfen – und hoffen, dass jemand anders weniger hat als du.</p>
+      <p class="kurz" data-t-html="k.schwimmen.kurz">Drei Karten, drei Leben. Wer am wenigsten hat, verliert eins.</p>
+      <p class="lang" data-t-html="k.schwimmen.lang">31 in einer Farbe, drei Karten auf der Hand, drei offen in der Mitte. Tauschen, schieben oder klopfen – und hoffen, dass jemand anders weniger hat als du.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–6 Spieler</span>
-        <span class="tag">Karten</span>
-        <span class="tag">Klassiker</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_6">2–6 Spieler</span>
+        <span class="tag" data-t-html="tag.karten">Karten</span>
+        <span class="tag" data-t-html="tag.klassiker">Klassiker</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zwei bis sechs Leute.</li>
-        <li>Jeder bekommt drei Karten, drei weitere liegen offen in der Mitte.</li>
-        <li>Gezählt wird die höchste Summe in einer Farbe: 7 bis 10 wie aufgedruckt, Bube bis König zehn, Ass elf. Drei gleiche Zahlen zählen 30,5.</li>
-        <li>Wer dran ist, tauscht eine Karte, alle drei – oder schiebt.</li>
-        <li>Klopfen heißt: alle anderen haben noch einen Zug, dann wird aufgedeckt.</li>
-        <li>Wer am wenigsten hat, verliert ein Leben. Nach dem dritten schwimmt man, beim nächsten Mal ist man raus.</li>
+        <li data-t-html="k.schwimmen.s1">Raum aufmachen, Link weitergeben – zwei bis sechs Leute.</li>
+        <li data-t-html="k.schwimmen.s2">Jeder bekommt drei Karten, drei weitere liegen offen in der Mitte.</li>
+        <li data-t-html="k.schwimmen.s3">Gezählt wird die höchste Summe in einer Farbe: 7 bis 10 wie aufgedruckt, Bube bis König zehn, Ass elf. Drei gleiche Zahlen zählen 30,5.</li>
+        <li data-t-html="k.schwimmen.s4">Wer dran ist, tauscht eine Karte, alle drei – oder schiebt.</li>
+        <li data-t-html="k.schwimmen.s5">Klopfen heißt: alle anderen haben noch einen Zug, dann wird aufgedeckt.</li>
+        <li data-t-html="k.schwimmen.s6">Wer am wenigsten hat, verliert ein Leben. Nach dem dritten schwimmt man, beim nächsten Mal ist man raus.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#52ffa8; --accent2:#a06bff;"
            data-spiel="paare" data-heimat="gruppe-ruhe" data-platz="4" data-bild="bilder/paare-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Paare gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Paare gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/paare/">
       <img class="schnappschuss" src="bilder/klein/paare-spiel.webp" alt="Bildschirmfoto aus einer Partie Paare"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1161,36 +1214,36 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🧠</span>
         <h3>Paare</h3>
       </div>
-      <p class="kurz">Ein Brett, alle schauen zu, dran ist einer. Wer zwei gleiche findet, darf noch mal.</p>
-      <p class="lang">Das Merkspiel für die Runde: ein gemeinsames Feld, jeder sieht es auf seinem eigenen Handy. Verdeckte Karten kennt auch dein Browser nicht – nachschauen im Quelltext bringt nichts. Acht, fünfzehn oder vierundzwanzig Paare, allein geht es auch.</p>
+      <p class="kurz" data-t-html="k.paare.kurz">Ein Brett, alle schauen zu, dran ist einer. Wer zwei gleiche findet, darf noch mal.</p>
+      <p class="lang" data-t-html="k.paare.lang">Das Merkspiel für die Runde: ein gemeinsames Feld, jeder sieht es auf seinem eigenen Handy. Verdeckte Karten kennt auch dein Browser nicht – nachschauen im Quelltext bringt nichts. Acht, fünfzehn oder vierundzwanzig Paare, allein geht es auch.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">1–6 Spieler</span>
-        <span class="tag">Merken</span>
-        <span class="tag">Klassiker</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p1_6">1–6 Spieler</span>
+        <span class="tag" data-t-html="tag.merken">Merken</span>
+        <span class="tag" data-t-html="tag.klassiker">Klassiker</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – bis zu sechs Leute, allein geht es auch.</li>
-        <li>Der Host wählt die Größe: 8, 15 oder 24 Paare.</li>
-        <li>Wer dran ist, deckt zwei Karten auf. Alle sehen dasselbe Brett gleichzeitig.</li>
-        <li>Passen sie zusammen, gehören sie dir – und du bist noch mal dran.</li>
-        <li>Passen sie nicht, bleiben sie kurz offen liegen, damit sich alle die Stelle merken können.</li>
-        <li>Wer am Ende die meisten Paare hat, gewinnt.</li>
+        <li data-t-html="k.paare.s1">Raum aufmachen, Link weitergeben – bis zu sechs Leute, allein geht es auch.</li>
+        <li data-t-html="k.paare.s2">Der Host wählt die Größe: 8, 15 oder 24 Paare.</li>
+        <li data-t-html="k.paare.s3">Wer dran ist, deckt zwei Karten auf. Alle sehen dasselbe Brett gleichzeitig.</li>
+        <li data-t-html="k.paare.s4">Passen sie zusammen, gehören sie dir – und du bist noch mal dran.</li>
+        <li data-t-html="k.paare.s5">Passen sie nicht, bleiben sie kurz offen liegen, damit sich alle die Stelle merken können.</li>
+        <li data-t-html="k.paare.s6">Wer am Ende die meisten Paare hat, gewinnt.</li>
     </template>
   </article>
 </main>
 
 <section class="gruppe" aria-labelledby="gruppe-tempo">
-  <h2 class="gruppe-titel" id="gruppe-tempo">Tempo und Geschick</h2>
-  <p class="gruppe-sub">Karten, Symbole, Reflexe. Kurze Runden, harte Punktestände – jeder mit eigenem Gerät.</p>
+  <h2 class="gruppe-titel" id="gruppe-tempo" data-t="gruppe.tempo.titel">Tempo und Geschick</h2>
+  <p class="gruppe-sub" data-t-html="gruppe.tempo.sub">Karten, Symbole, Reflexe. Kurze Runden, harte Punktestände – jeder mit eigenem Gerät.</p>
 </section>
 
 <main class="raster">
   <article class="game" style="--accent:#35e6ff; --accent2:#a06bff;"
            data-spiel="cubes" data-heimat="gruppe-tempo" data-platz="0" data-bild="bilder/cubes-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Cubes gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Cubes gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/cubes/">
       <img class="schnappschuss" src="bilder/klein/cubes-spiel.webp" alt="Bildschirmfoto aus einer Partie Cubes"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1198,34 +1251,34 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🟪</span>
         <h3>Cubes</h3>
       </div>
-      <p class="kurz">Ein volles Raster, deine Farbe darin. Die der anderen kannst du nicht antippen.</p>
-      <p class="lang">Jeder bekommt eine Farbe. Das Raster ist immer voll und wechselt ständig – triff deine eigenen, bevor sie weg sind. Drei Runden, jede mit einer neuen Gemeinheit.</p>
+      <p class="kurz" data-t-html="k.cubes.kurz">Ein volles Raster, deine Farbe darin. Die der anderen kannst du nicht antippen.</p>
+      <p class="lang" data-t-html="k.cubes.lang">Jeder bekommt eine Farbe. Das Raster ist immer voll und wechselt ständig – triff deine eigenen, bevor sie weg sind. Drei Runden, jede mit einer neuen Gemeinheit.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–6 Spieler</span>
-        <span class="tag">Reaktion</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_6">2–6 Spieler</span>
+        <span class="tag" data-t-html="tag.reaktion">Reaktion</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Code weitergeben – zu zweit bis zu sechst. Jeder bekommt eine eigene Farbe.</li>
-        <li>Alle sehen dasselbe Raster. Antippen kannst du nur die Quadrate in deiner Farbe; die fremden sind blass und reagieren nicht.</li>
-        <li>Das Raster ist immer voll – jede Lücke ist sofort wieder besetzt, und die Hälfte gehört den anderen. Seine eigenen zu finden ist die halbe Aufgabe.</li>
-        <li><b>Runde 1 – Antippen:</b> deine Quadrate tauchen auf und verschwinden von allein wieder. Wer rechtzeitig trifft, bekommt den Punkt. Der Balken unten zeigt, wie lange es noch da ist.</li>
-        <li><b>Runde 2 – Mehrfach:</b> dasselbe, aber jedes Quadrat braucht zwei bis vier Treffer. Punkte gibt es erst beim letzten – ein halb abgeräumtes zählt nicht.</li>
-        <li><b>Runde 3 – Plus und Minus:</b> jetzt stehen Zahlen drin, auch negative. Tipp die positiven, lass die negativen liegen: sie gehen von selbst weg.</li>
-        <li>Die negativen sehen aus wie die positiven – nur die Zahl verrät sie. Genau darum greift man im Eifer daneben.</li>
-        <li>Niemand kann dir dein Minusfeld drücken – das entscheidet der Server, nicht die Höflichkeit der anderen.</li>
-        <li>Am Ende zählen die Punkte aus allen Runden zusammen.</li>
+        <li data-t-html="k.cubes.s1">Raum aufmachen, Code weitergeben – zu zweit bis zu sechst. Jeder bekommt eine eigene Farbe.</li>
+        <li data-t-html="k.cubes.s2">Alle sehen dasselbe Raster. Antippen kannst du nur die Quadrate in deiner Farbe; die fremden sind blass und reagieren nicht.</li>
+        <li data-t-html="k.cubes.s3">Das Raster ist immer voll – jede Lücke ist sofort wieder besetzt, und die Hälfte gehört den anderen. Seine eigenen zu finden ist die halbe Aufgabe.</li>
+        <li data-t-html="k.cubes.s4"><b>Runde 1 – Antippen:</b> deine Quadrate tauchen auf und verschwinden von allein wieder. Wer rechtzeitig trifft, bekommt den Punkt. Der Balken unten zeigt, wie lange es noch da ist.</li>
+        <li data-t-html="k.cubes.s5"><b>Runde 2 – Mehrfach:</b> dasselbe, aber jedes Quadrat braucht zwei bis vier Treffer. Punkte gibt es erst beim letzten – ein halb abgeräumtes zählt nicht.</li>
+        <li data-t-html="k.cubes.s6"><b>Runde 3 – Plus und Minus:</b> jetzt stehen Zahlen drin, auch negative. Tipp die positiven, lass die negativen liegen: sie gehen von selbst weg.</li>
+        <li data-t-html="k.cubes.s7">Die negativen sehen aus wie die positiven – nur die Zahl verrät sie. Genau darum greift man im Eifer daneben.</li>
+        <li data-t-html="k.cubes.s8">Niemand kann dir dein Minusfeld drücken – das entscheidet der Server, nicht die Höflichkeit der anderen.</li>
+        <li data-t-html="k.cubes.s9">Am Ende zählen die Punkte aus allen Runden zusammen.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#37e2a4; --accent2:#7c6cff;;"
            data-spiel="seconds" data-heimat="gruppe-tempo" data-platz="1" data-bild="bilder/seconds-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Seconds gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Seconds gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/seconds/">
       <img class="schnappschuss" src="bilder/klein/seconds-spiel.webp" alt="Bildschirmfoto aus einer Partie Seconds"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1233,30 +1286,30 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🎯</span>
         <h3>Seconds</h3>
       </div>
-      <p class="kurz">Zwei Karten, immer genau ein gemeinsames Symbol. Finde es zuerst.</p>
-      <p class="lang">Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es zuerst antippt, bekommt den Punkt.</p>
+      <p class="kurz" data-t-html="k.seconds.kurz">Zwei Karten, immer genau ein gemeinsames Symbol. Finde es zuerst.</p>
+      <p class="lang" data-t-html="k.seconds.lang">Deine Karte und die in der Mitte haben genau ein gemeinsames Symbol. Wer es zuerst antippt, bekommt den Punkt.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–4 Spieler</span>
-        <span class="tag">Augen &amp; Tempo</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_4">2–4 Spieler</span>
+        <span class="tag" data-t-html="tag.augen">Augen &amp; Tempo</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zu zweit bis zu viert.</li>
-        <li>In der Mitte liegt eine Karte, davor deine eigene.</li>
-        <li>Die beiden haben immer genau ein Symbol gemeinsam – nie mehr, nie weniger. Das ist keine Glückssache, sondern steckt im Aufbau des Decks.</li>
-        <li>Wer es zuerst auf der eigenen Karte antippt, bekommt den Punkt, und sofort kommt die nächste Karte.</li>
-        <li>Danebengetippt heißt anderthalb Sekunden Sperre, während die anderen weiterspielen. Wer die Zielpunktzahl zuerst hat, gewinnt.</li>
+        <li data-t-html="k.seconds.s1">Raum aufmachen, Link weitergeben – zu zweit bis zu viert.</li>
+        <li data-t-html="k.seconds.s2">In der Mitte liegt eine Karte, davor deine eigene.</li>
+        <li data-t-html="k.seconds.s3">Die beiden haben immer genau ein Symbol gemeinsam – nie mehr, nie weniger. Das ist keine Glückssache, sondern steckt im Aufbau des Decks.</li>
+        <li data-t-html="k.seconds.s4">Wer es zuerst auf der eigenen Karte antippt, bekommt den Punkt, und sofort kommt die nächste Karte.</li>
+        <li data-t-html="k.seconds.s5">Danebengetippt heißt anderthalb Sekunden Sperre, während die anderen weiterspielen. Wer die Zielpunktzahl zuerst hat, gewinnt.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#8e2de2; --accent2:#29e7ff;;"
            data-spiel="luckyreflex" data-heimat="gruppe-tempo" data-platz="2" data-bild="bilder/luckyreflex-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Lucky Reflex gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Lucky Reflex gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/luckyreflex/">
       <img class="schnappschuss" src="bilder/klein/luckyreflex-spiel.webp" alt="Bildschirmfoto aus einer Partie Lucky Reflex"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1264,30 +1317,30 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">⚡</span>
         <h3>Lucky Reflex</h3>
       </div>
-      <p class="kurz">Schnell sein reicht nicht – du musst auch richtig liegen.</p>
-      <p class="lang">Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen und Fallen für alle, die einfach dauerdrücken.</p>
+      <p class="kurz" data-t-html="k.luckyreflex.kurz">Schnell sein reicht nicht – du musst auch richtig liegen.</p>
+      <p class="lang" data-t-html="k.luckyreflex.lang">Schnell reagieren – aber nur, wenn es stimmt. 17 Rundenarten, Automaten-Walzen und Fallen für alle, die einfach dauerdrücken.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">2–4 Spieler</span>
-        <span class="tag">Reaktion</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p2_4">2–4 Spieler</span>
+        <span class="tag" data-t-html="tag.reaktion">Reaktion</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <!-- Die Rundenanleitung fuer den Dialog. Sie steht hier und nicht in einem
          JS-Objekt, damit jedes Spiel genau einmal in dieser Datei beschrieben
          ist. -->
     <template class="ablauf">
-        <li>Raum aufmachen, Code weitergeben – zu zweit bis zu viert.</li>
-        <li>Die ganze Fläche ist der Knopf: irgendwo hintippen, am Rechner die Leertaste.</li>
-        <li>Pro Runde kommen fünf Aufgaben derselben Art. Zwei oder drei passen – bei den übrigen ist Stillhalten die richtige Antwort.</li>
-        <li>Zu früh gedrückt oder auf die falsche Aufgabe: Punkt weg. Im Bild oben ist der Bildschirm grün, gesucht ist aber Orange.</li>
-        <li>17 verschiedene Rundenarten sorgen dafür, dass blindes Dauerdrücken nicht funktioniert.</li>
+        <li data-t-html="k.luckyreflex.s1">Raum aufmachen, Code weitergeben – zu zweit bis zu viert.</li>
+        <li data-t-html="k.luckyreflex.s2">Die ganze Fläche ist der Knopf: irgendwo hintippen, am Rechner die Leertaste.</li>
+        <li data-t-html="k.luckyreflex.s3">Pro Runde kommen fünf Aufgaben derselben Art. Zwei oder drei passen – bei den übrigen ist Stillhalten die richtige Antwort.</li>
+        <li data-t-html="k.luckyreflex.s4">Zu früh gedrückt oder auf die falsche Aufgabe: Punkt weg. Im Bild oben ist der Bildschirm grün, gesucht ist aber Orange.</li>
+        <li data-t-html="k.luckyreflex.s5">17 verschiedene Rundenarten sorgen dafür, dass blindes Dauerdrücken nicht funktioniert.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#52ffa8; --accent2:#35e6ff;"
            data-spiel="snake" data-heimat="gruppe-tempo" data-platz="5" data-bild="bilder/snake-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Snake gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Snake gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/snake/">
       <img class="schnappschuss" src="bilder/klein/snake-spiel.webp" alt="Bildschirmfoto aus einer Partie Snake"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1295,29 +1348,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🐍</span>
         <h3>Snake</h3>
       </div>
-      <p class="kurz">Alle Schlangen auf einem Feld. Die Bewegung läuft auf dem Server, nicht im Handy.</p>
-      <p class="lang">Eine bis sechs Schlangen auf einem gemeinsamen Raster. Äpfel machen länger, Wände und fremde Schwänze sind tödlich. Gewischt wird auf dem eigenen Handy, gerechnet wird zentral – damit alle denselben Zusammenstoß sehen.</p>
+      <p class="kurz" data-t-html="k.snake.kurz">Alle Schlangen auf einem Feld. Die Bewegung läuft auf dem Server, nicht im Handy.</p>
+      <p class="lang" data-t-html="k.snake.lang">Eine bis sechs Schlangen auf einem gemeinsamen Raster. Äpfel machen länger, Wände und fremde Schwänze sind tödlich. Gewischt wird auf dem eigenen Handy, gerechnet wird zentral – damit alle denselben Zusammenstoß sehen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">1–6 Spieler</span>
-        <span class="tag">Tempo</span>
-        <span class="tag">auch allein</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p1_6">1–6 Spieler</span>
+        <span class="tag" data-t-html="tag.tempo">Tempo</span>
+        <span class="tag" data-t-html="tag.auchallein">auch allein</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Raum aufmachen, Link weitergeben – zwei bis sechs Leute, jeder mit eigenem Handy. Allein starten geht auch, dann ist es das Snake, das jeder kennt.</li>
-        <li>Der Host stellt ein, über wie viele Runden gespielt wird.</li>
-        <li>Wischen oder Pfeiltasten ändern die Richtung. Kehrtwende geht nicht.</li>
-        <li>Äpfel geben zehn Punkte und machen die Schlange länger.</li>
-        <li>Wand, fremde Schlange, eigener Körper – alles tödlich. Wer als Letzter lebt, bekommt zwanzig Punkte – allein gibt es die nicht.</li>
-        <li>Nach der letzten Runde steht der Gesamtstand.</li>
+        <li data-t-html="k.snake.s1">Raum aufmachen, Link weitergeben – zwei bis sechs Leute, jeder mit eigenem Handy. Allein starten geht auch, dann ist es das Snake, das jeder kennt.</li>
+        <li data-t-html="k.snake.s2">Der Host stellt ein, über wie viele Runden gespielt wird.</li>
+        <li data-t-html="k.snake.s3">Wischen oder Pfeiltasten ändern die Richtung. Kehrtwende geht nicht.</li>
+        <li data-t-html="k.snake.s4">Äpfel geben zehn Punkte und machen die Schlange länger.</li>
+        <li data-t-html="k.snake.s5">Wand, fremde Schlange, eigener Körper – alles tödlich. Wer als Letzter lebt, bekommt zwanzig Punkte – allein gibt es die nicht.</li>
+        <li data-t-html="k.snake.s6">Nach der letzten Runde steht der Gesamtstand.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#ff8a3d; --accent2:#ff2e88;"
            data-spiel="revier" data-heimat="gruppe-tempo" data-platz="6" data-bild="bilder/revier-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Revier gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Revier gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/revier/">
       <img class="schnappschuss" src="bilder/klein/revier-spiel.webp" alt="Bildschirmfoto aus einer Partie Revier"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1325,30 +1378,30 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🐾</span>
         <h3>Revier</h3>
       </div>
-      <p class="kurz">Eine Welt, die nie aufhört. Reingehen und sofort mitfahren – Fläche einkreisen und behalten.</p>
-      <p class="lang">Kein Raum, kein Code, kein Rundenende: Seite auf, und du fährst mit. Außerhalb des eigenen Gebiets ziehst du eine Spur – zurück im Eigenen wird alles Umschlossene deins. Wer eine fremde Spur kreuzt, schaltet sie aus. Der Daumen tippt irgendwohin, und genau dort sitzt der Joystick.</p>
+      <p class="kurz" data-t-html="k.revier.kurz">Eine Welt, die nie aufhört. Reingehen und sofort mitfahren – Fläche einkreisen und behalten.</p>
+      <p class="lang" data-t-html="k.revier.lang">Kein Raum, kein Code, kein Rundenende: Seite auf, und du fährst mit. Außerhalb des eigenen Gebiets ziehst du eine Spur – zurück im Eigenen wird alles Umschlossene deins. Wer eine fremde Spur kreuzt, schaltet sie aus. Der Daumen tippt irgendwohin, und genau dort sitzt der Joystick.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">1–20 Spieler</span>
-        <span class="tag">läuft immer</span>
-        <span class="tag">gegeneinander</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p1_20">1–20 Spieler</span>
+        <span class="tag" data-t-html="tag.laeuftimmer">läuft immer</span>
+        <span class="tag" data-t-html="tag.gegeneinander">gegeneinander</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Link weitergeben und aufmachen – niemand muss warten, die Welt läuft schon. Wer später kommt, steigt einfach ein.</li>
-        <li>Irgendwo auf den Bildschirm tippen und ziehen: dort sitzt ab jetzt ein unsichtbarer Joystick. Loslassen heißt geradeaus weiter. Am Rechner gehen WASD und die Pfeiltasten.</li>
-        <li>Solange du auf eigenem Gebiet fährst, passiert nichts. Draußen ziehst du eine Spur hinter dir her.</li>
-        <li>Zurück im eigenen Revier wird alles, was die Spur umschlossen hat, deine Fläche – auch das, was vorher jemand anderem gehörte.</li>
-        <li>Tödlich sind die eigene Spur, die Außenwand und jeder, der über deine Spur fährt. Wer erwischt wird, verliert sein ganzes Gebiet.</li>
-        <li>Nach zweieinhalb Sekunden stehst du wieder irgendwo mit einem kleinen Startquadrat. Oben rechts steht, wer gerade wie viel Prozent der Welt hält.</li>
-        <li>Sind wenige Leute da, fahren Bots mit – damit nie eine leere Welt dasteht.</li>
+        <li data-t-html="k.revier.s1">Link weitergeben und aufmachen – niemand muss warten, die Welt läuft schon. Wer später kommt, steigt einfach ein.</li>
+        <li data-t-html="k.revier.s2">Irgendwo auf den Bildschirm tippen und ziehen: dort sitzt ab jetzt ein unsichtbarer Joystick. Loslassen heißt geradeaus weiter. Am Rechner gehen WASD und die Pfeiltasten.</li>
+        <li data-t-html="k.revier.s3">Solange du auf eigenem Gebiet fährst, passiert nichts. Draußen ziehst du eine Spur hinter dir her.</li>
+        <li data-t-html="k.revier.s4">Zurück im eigenen Revier wird alles, was die Spur umschlossen hat, deine Fläche – auch das, was vorher jemand anderem gehörte.</li>
+        <li data-t-html="k.revier.s5">Tödlich sind die eigene Spur, die Außenwand und jeder, der über deine Spur fährt. Wer erwischt wird, verliert sein ganzes Gebiet.</li>
+        <li data-t-html="k.revier.s6">Nach zweieinhalb Sekunden stehst du wieder irgendwo mit einem kleinen Startquadrat. Oben rechts steht, wer gerade wie viel Prozent der Welt hält.</li>
+        <li data-t-html="k.revier.s7">Sind wenige Leute da, fahren Bots mit – damit nie eine leere Welt dasteht.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#35e6ff; --accent2:#52ffa8;"
            data-spiel="wurm" data-heimat="gruppe-tempo" data-platz="7" data-bild="bilder/wurm-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Wurm gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Wurm gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/wurm/">
       <img class="schnappschuss" src="bilder/klein/wurm-spiel.webp" alt="Bildschirmfoto aus einer Partie Wurm"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1356,37 +1409,37 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🪱</span>
         <h3>Wurm</h3>
       </div>
-      <p class="kurz">Energie sammeln, wachsen, niemandem in den Weg kriechen. Die Welt läuft immer.</p>
-      <p class="lang">Anmelden und sofort mitkriechen: überall liegen Energiebälle, jeder macht dich länger und dicker. Fährst du in einen anderen hinein, zerfällst du zu Energie – er nicht. Zweiter Finger gibt Turbo, fast dreimal so schnell und entsprechend teuer. Nach oben ist nichts zugemacht.</p>
+      <p class="kurz" data-t-html="k.wurm.kurz">Energie sammeln, wachsen, niemandem in den Weg kriechen. Die Welt läuft immer.</p>
+      <p class="lang" data-t-html="k.wurm.lang">Anmelden und sofort mitkriechen: überall liegen Energiebälle, jeder macht dich länger und dicker. Fährst du in einen anderen hinein, zerfällst du zu Energie – er nicht. Zweiter Finger gibt Turbo, fast dreimal so schnell und entsprechend teuer. Nach oben ist nichts zugemacht.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">1–20 Spieler</span>
-        <span class="tag">läuft immer</span>
-        <span class="tag">gegeneinander</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.p1_20">1–20 Spieler</span>
+        <span class="tag" data-t-html="tag.laeuftimmer">läuft immer</span>
+        <span class="tag" data-t-html="tag.gegeneinander">gegeneinander</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Namen eintippen und anmelden – niemand muss warten, die Welt läuft schon. Wer später kommt, steigt einfach ein.</li>
-        <li>Irgendwo auf den Bildschirm tippen und ziehen: dort sitzt ab jetzt ein unsichtbarer Joystick. Loslassen heißt geradeaus weiter. Am Rechner gehen WASD und die Pfeiltasten.</li>
-        <li>Die bunten Bälle sind Energie. Jeder macht dich länger und ein bisschen dicker – große bringen mehr, und die liegen dort, wo gerade jemand gestorben ist. Eine Obergrenze gibt es nicht: wer durchhält, wird beliebig groß, und die Ansicht zoomt mit.</li>
-        <li>Zweiter Finger auf den Schirm, der Knopf unten rechts oder die Leertaste: Turbo. Fast dreimal so schnell, wendet dafür träger und kostet laufend Energie, die hinter dir wieder herausfällt – anteilig, ein Riese zahlt also mehr als ein Wurm.</li>
-        <li>Tödlich ist jeder fremde Körper und die Außenwand – dein eigener nicht. Wer in dich hineinkriecht, zerfällt zu Energie, und die kannst du gleich einsammeln.</li>
-        <li>Nach gut zwei Sekunden kriechst du wieder irgendwo klein los. Oben rechts steht, wer gerade wie viel Energie hat.</li>
-        <li>Bots kriechen mit, damit nie eine leere Welt dasteht. Jeder hört bei einer anderen Größe auf zu fressen – einholbar sind sie alle.</li>
+        <li data-t-html="k.wurm.s1">Namen eintippen und anmelden – niemand muss warten, die Welt läuft schon. Wer später kommt, steigt einfach ein.</li>
+        <li data-t-html="k.wurm.s2">Irgendwo auf den Bildschirm tippen und ziehen: dort sitzt ab jetzt ein unsichtbarer Joystick. Loslassen heißt geradeaus weiter. Am Rechner gehen WASD und die Pfeiltasten.</li>
+        <li data-t-html="k.wurm.s3">Die bunten Bälle sind Energie. Jeder macht dich länger und ein bisschen dicker – große bringen mehr, und die liegen dort, wo gerade jemand gestorben ist. Eine Obergrenze gibt es nicht: wer durchhält, wird beliebig groß, und die Ansicht zoomt mit.</li>
+        <li data-t-html="k.wurm.s4">Zweiter Finger auf den Schirm, der Knopf unten rechts oder die Leertaste: Turbo. Fast dreimal so schnell, wendet dafür träger und kostet laufend Energie, die hinter dir wieder herausfällt – anteilig, ein Riese zahlt also mehr als ein Wurm.</li>
+        <li data-t-html="k.wurm.s5">Tödlich ist jeder fremde Körper und die Außenwand – dein eigener nicht. Wer in dich hineinkriecht, zerfällt zu Energie, und die kannst du gleich einsammeln.</li>
+        <li data-t-html="k.wurm.s6">Nach gut zwei Sekunden kriechst du wieder irgendwo klein los. Oben rechts steht, wer gerade wie viel Energie hat.</li>
+        <li data-t-html="k.wurm.s7">Bots kriechen mit, damit nie eine leere Welt dasteht. Jeder hört bei einer anderen Größe auf zu fressen – einholbar sind sie alle.</li>
     </template>
   </article>
 </main>
 
 <section class="gruppe" aria-labelledby="gruppe-allein">
-  <h2 class="gruppe-titel" id="gruppe-allein">Allein spielen</h2>
-  <p class="gruppe-sub">Kein Raum, kein Code, niemand, den man erst überreden muss. Die vier Rätselspiele laufen ganz im Browser und brauchen keine Verbindung mehr, sobald die Seite geladen ist; Ameisen dagegen läuft immer weiter, weil dein Bau auf dem Server liegt.</p>
+  <h2 class="gruppe-titel" id="gruppe-allein" data-t="gruppe.allein.titel">Allein spielen</h2>
+  <p class="gruppe-sub" data-t-html="gruppe.allein.sub">Kein Raum, kein Code, niemand, den man erst überreden muss. Die vier Rätselspiele laufen ganz im Browser und brauchen keine Verbindung mehr, sobald die Seite geladen ist; Ameisen dagegen läuft immer weiter, weil dein Bau auf dem Server liegt.</p>
 </section>
 
 <main class="raster">
   <article class="game" style="--accent:#35e6ff; --accent2:#a06bff;"
            data-spiel="sudoku" data-heimat="gruppe-allein" data-platz="1" data-bild="bilder/sudoku-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Sudoku gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Sudoku gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/sudoku/">
       <img class="schnappschuss" src="bilder/klein/sudoku-spiel.webp" alt="Bildschirmfoto aus einer Partie Sudoku"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1394,29 +1447,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🔢</span>
         <h3>Sudoku</h3>
       </div>
-      <p class="kurz">Neun mal neun, drei Stufen – und jedes Rätsel hat genau eine Lösung.</p>
-      <p class="lang">Der Generator baut jedes Rätsel frisch und zählt beim Aushöhlen nach: findet der Löser zwei Lösungen, kommt die Zahl zurück. Raten ist also nie nötig. Mit Notizmodus, Fehleranzeige und Bestzeit.</p>
+      <p class="kurz" data-t-html="k.sudoku.kurz">Neun mal neun, drei Stufen – und jedes Rätsel hat genau eine Lösung.</p>
+      <p class="lang" data-t-html="k.sudoku.lang">Der Generator baut jedes Rätsel frisch und zählt beim Aushöhlen nach: findet der Löser zwei Lösungen, kommt die Zahl zurück. Raten ist also nie nötig. Mit Notizmodus, Fehleranzeige und Bestzeit.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">allein</span>
-        <span class="tag">Knobeln</span>
-        <span class="tag">offline</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.knobeln">Knobeln</span>
+        <span class="tag" data-t-html="tag.offline">offline</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Stufe wählen: leicht, mittel oder schwer.</li>
-        <li>Feld antippen, dann die Zahl auf dem Feld darunter.</li>
-        <li>✎ schaltet den Notizmodus – kleine Zahlen, die beim Setzen automatisch aufgeräumt werden.</li>
-        <li>Ein falscher Eintrag wird rot. Die Zahl der Fehler steht oben.</li>
-        <li>Jedes Rätsel hat genau eine Lösung; der Generator prüft das nach dem Aushöhlen nach.</li>
-        <li>Fertig gelöst? Zeit und Fehler stehen unten, die Bestzeit bleibt im Browser.</li>
+        <li data-t-html="k.sudoku.s1">Stufe wählen: leicht, mittel oder schwer.</li>
+        <li data-t-html="k.sudoku.s2">Feld antippen, dann die Zahl auf dem Feld darunter.</li>
+        <li data-t-html="k.sudoku.s3">✎ schaltet den Notizmodus – kleine Zahlen, die beim Setzen automatisch aufgeräumt werden.</li>
+        <li data-t-html="k.sudoku.s4">Ein falscher Eintrag wird rot. Die Zahl der Fehler steht oben.</li>
+        <li data-t-html="k.sudoku.s5">Jedes Rätsel hat genau eine Lösung; der Generator prüft das nach dem Aushöhlen nach.</li>
+        <li data-t-html="k.sudoku.s6">Fertig gelöst? Zeit und Fehler stehen unten, die Bestzeit bleibt im Browser.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#52ffa8; --accent2:#ffd447;"
            data-spiel="wortgitter" data-heimat="gruppe-allein" data-platz="2" data-bild="bilder/wortgitter-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Wortgitter gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Wortgitter gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/wortgitter/">
       <img class="schnappschuss" src="bilder/klein/wortgitter-spiel.webp" alt="Bildschirmfoto aus einer Partie Wortgitter"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1424,29 +1477,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🔠</span>
         <h3>Wortgitter</h3>
       </div>
-      <p class="kurz">Fünf Buchstaben, sechs Versuche, ein Wort pro Tag – für alle dasselbe.</p>
-      <p class="lang">Grün heißt richtig, gelb heißt woanders, grau heißt gar nicht. Geprüft wird gegen dieselbe CC0-Wortliste wie bei Wortleger; gelöst wird nur mit Wörtern, die man auch kennt. Serie und Statistik bleiben in deinem Browser.</p>
+      <p class="kurz" data-t-html="k.wortgitter.kurz">Fünf Buchstaben, sechs Versuche, ein Wort pro Tag – für alle dasselbe.</p>
+      <p class="lang" data-t-html="k.wortgitter.lang">Grün heißt richtig, gelb heißt woanders, grau heißt gar nicht. Geprüft wird gegen dieselbe CC0-Wortliste wie bei Wortleger; gelöst wird nur mit Wörtern, die man auch kennt. Serie und Statistik bleiben in deinem Browser.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">allein</span>
-        <span class="tag">täglich</span>
-        <span class="tag">Wörter</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.taeglich">täglich</span>
+        <span class="tag" data-t-html="tag.woerter">Wörter</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Ein Wort mit fünf Buchstaben erraten, sechs Versuche.</li>
-        <li>Grün: Buchstabe steht richtig. Gelb: kommt vor, aber woanders. Grau: kommt nicht vor.</li>
-        <li>Doppelte Buchstaben werden korrekt gezählt – hat das Wort nur ein E, wird auch nur ein E eingefärbt.</li>
-        <li>Jeden Tag um Mitternacht gibt es ein neues Wort, und alle bekommen dasselbe.</li>
-        <li>Am Ende kannst du dein Ergebnis als Kästchenmuster kopieren.</li>
-        <li>Serie und Statistik bleiben in diesem Browser – nichts davon geht an einen Server.</li>
+        <li data-t-html="k.wortgitter.s1">Ein Wort mit fünf Buchstaben erraten, sechs Versuche.</li>
+        <li data-t-html="k.wortgitter.s2">Grün: Buchstabe steht richtig. Gelb: kommt vor, aber woanders. Grau: kommt nicht vor.</li>
+        <li data-t-html="k.wortgitter.s3">Doppelte Buchstaben werden korrekt gezählt – hat das Wort nur ein E, wird auch nur ein E eingefärbt.</li>
+        <li data-t-html="k.wortgitter.s4">Jeden Tag um Mitternacht gibt es ein neues Wort, und alle bekommen dasselbe.</li>
+        <li data-t-html="k.wortgitter.s5">Am Ende kannst du dein Ergebnis als Kästchenmuster kopieren.</li>
+        <li data-t-html="k.wortgitter.s6">Serie und Statistik bleiben in diesem Browser – nichts davon geht an einen Server.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#52ffa8; --accent2:#ffd447;"
            data-spiel="patience" data-heimat="gruppe-allein" data-platz="3" data-bild="bilder/patience-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Patience gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Patience gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/patience/">
       <img class="schnappschuss" src="bilder/klein/patience-spiel.webp" alt="Bildschirmfoto aus einer Partie Patience"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1454,29 +1507,29 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🂡</span>
         <h3>Patience</h3>
       </div>
-      <p class="kurz">Klondike mit sieben Reihen und vier Assen. Antippen statt ziehen.</p>
-      <p class="lang">Der Solitär-Klassiker, so gebaut, dass er auf dem Handy funktioniert: erst die Karte antippen, dann das Ziel – Drag & Drop trifft in einer Kartenspalte niemand. Eine oder drei Karten ziehen, „Aufräumen“ für den Schluss.</p>
+      <p class="kurz" data-t-html="k.patience.kurz">Klondike mit sieben Reihen und vier Assen. Antippen statt ziehen.</p>
+      <p class="lang" data-t-html="k.patience.lang">Der Solitär-Klassiker, so gebaut, dass er auf dem Handy funktioniert: erst die Karte antippen, dann das Ziel – Drag & Drop trifft in einer Kartenspalte niemand. Eine oder drei Karten ziehen, „Aufräumen“ für den Schluss.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">allein</span>
-        <span class="tag">Karten</span>
-        <span class="tag">offline</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.karten">Karten</span>
+        <span class="tag" data-t-html="tag.offline">offline</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Ziel: alle vier Farben oben von Ass bis König stapeln.</li>
-        <li>Auf dem Tisch wird abwärts und in wechselnder Farbe gelegt – Rot auf Schwarz, Schwarz auf Rot.</li>
-        <li>Erst die Karte antippen, dann das Ziel. Eine Karte mitten in der Spalte nimmt alles darunter mit.</li>
-        <li>Auf ein leeres Feld darf nur ein König.</li>
-        <li>Der Stapel oben links zieht eine oder drei Karten; ist er leer, dreht ihn ein Tippen wieder um.</li>
-        <li>„Aufräumen“ legt zum Schluss alles ab, was oben hinpasst.</li>
+        <li data-t-html="k.patience.s1">Ziel: alle vier Farben oben von Ass bis König stapeln.</li>
+        <li data-t-html="k.patience.s2">Auf dem Tisch wird abwärts und in wechselnder Farbe gelegt – Rot auf Schwarz, Schwarz auf Rot.</li>
+        <li data-t-html="k.patience.s3">Erst die Karte antippen, dann das Ziel. Eine Karte mitten in der Spalte nimmt alles darunter mit.</li>
+        <li data-t-html="k.patience.s4">Auf ein leeres Feld darf nur ein König.</li>
+        <li data-t-html="k.patience.s5">Der Stapel oben links zieht eine oder drei Karten; ist er leer, dreht ihn ein Tippen wieder um.</li>
+        <li data-t-html="k.patience.s6">„Aufräumen“ legt zum Schluss alles ab, was oben hinpasst.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#e8a13a; --accent2:#8fc46a;"
            data-spiel="ameisen" data-heimat="gruppe-allein" data-platz="4" data-bild="bilder/ameisen-spiel.webp">
-    <button class="info" type="button" aria-label="Wie Ameisen gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Ameisen gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/ameisen/">
       <img class="schnappschuss" src="bilder/klein/ameisen-spiel.webp" alt="Bildschirmfoto aus einem Ameisenbau"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1484,24 +1537,24 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🐜</span>
         <h3>Ameisen</h3>
       </div>
-      <p class="kurz">Krümel hinwerfen und zusehen, wie sie gefunden und heimgetragen werden. Läuft weiter, wenn du weg bist.</p>
-      <p class="lang">Ein Hügel im Sand, ein Volk, das ausschwärmt. Du wirfst Futter dazwischen, die Ameisen suchen es, finden es und tragen es heim – und wer trägt, legt eine Duftspur, der die anderen nachlaufen. Aus einem Fund wird so nach kurzer Zeit eine Straße. Unten im Bau wird kleingemacht, daraus kommen Münzen, und die gehören in den Laden: mehr Ameisen, stärkere Kiefer, ein zweiter Ausgang. Dein Bau bleibt dir und arbeitet weiter, während du nicht hinsiehst.</p>
+      <p class="kurz" data-t-html="k.ameisen.kurz">Krümel hinwerfen und zusehen, wie sie gefunden und heimgetragen werden. Läuft weiter, wenn du weg bist.</p>
+      <p class="lang" data-t-html="k.ameisen.lang">Ein Hügel im Sand, ein Volk, das ausschwärmt. Du wirfst Futter dazwischen, die Ameisen suchen es, finden es und tragen es heim – und wer trägt, legt eine Duftspur, der die anderen nachlaufen. Aus einem Fund wird so nach kurzer Zeit eine Straße. Unten im Bau wird kleingemacht, daraus kommen Münzen, und die gehören in den Laden: mehr Ameisen, stärkere Kiefer, ein zweiter Ausgang. Dein Bau bleibt dir und arbeitet weiter, während du nicht hinsiehst.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">allein</span>
-        <span class="tag">läuft immer</span>
-        <span class="tag">zum Zusehen</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.laeuftimmer">läuft immer</span>
+        <span class="tag" data-t-html="tag.zusehen">zum Zusehen</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Aufmachen genügt – kein Name, kein Code. Beim ersten Mal bekommst du einen frischen Hügel mit drei Ameisen; dein Browser merkt sich die Kennung, und du landest jedes Mal wieder in demselben Bau.</li>
-        <li>Irgendwohin tippen wirft einen Krümel. Der Beutel füllt sich von selbst wieder auf. Auf den Hügel selbst kannst du nichts werfen – das müsste ja niemand tragen.</li>
-        <li>Die Ameisen laufen kreuz und quer und riechen, was in ihre Nähe kommt. Wirf mehrere Krümel an dieselbe Stelle: dann lohnt sich der Weg, und die Duftspur der ersten Trägerin zieht die anderen hinterher.</li>
-        <li>Getragenes Futter landet im Vorrat. Unten in der Kammer wird es kleingemacht, und daraus kommen laufend Münzen – schneller, je größer Kammer und Volk sind. Ist der Vorrat voll, geht Nachschub verloren.</li>
-        <li>Im Laden kostet jede Stufe mehr als die davor: Ameisen, Kiefer, Beine, Fühler, Duftspur, ein zweiter Ausgang, Kammer, Pilzgarten, Vorratskammer, Körnerbeutel.</li>
-        <li>Machst du zu, arbeitet der Bau weiter – aber niemand wirft dann Krümel. Eingesammelt wird nur, was von selbst herunterfällt: <b>Waldrand</b> und <b>Blattläuse</b> sind die Ausbauten für die Nacht, die Vorratskammer der Platz dafür.</li>
-        <li>Irgendwann gründest du einen neuen Hügel: alles fängt von vorn an, aber die Königinnen kommen mit und machen jede Lieferung dauerhaft ergiebiger.</li>
+        <li data-t-html="k.ameisen.s1">Aufmachen genügt – kein Name, kein Code. Beim ersten Mal bekommst du einen frischen Hügel mit drei Ameisen; dein Browser merkt sich die Kennung, und du landest jedes Mal wieder in demselben Bau.</li>
+        <li data-t-html="k.ameisen.s2">Irgendwohin tippen wirft einen Krümel. Der Beutel füllt sich von selbst wieder auf. Auf den Hügel selbst kannst du nichts werfen – das müsste ja niemand tragen.</li>
+        <li data-t-html="k.ameisen.s3">Die Ameisen laufen kreuz und quer und riechen, was in ihre Nähe kommt. Wirf mehrere Krümel an dieselbe Stelle: dann lohnt sich der Weg, und die Duftspur der ersten Trägerin zieht die anderen hinterher.</li>
+        <li data-t-html="k.ameisen.s4">Getragenes Futter landet im Vorrat. Unten in der Kammer wird es kleingemacht, und daraus kommen laufend Münzen – schneller, je größer Kammer und Volk sind. Ist der Vorrat voll, geht Nachschub verloren.</li>
+        <li data-t-html="k.ameisen.s5">Im Laden kostet jede Stufe mehr als die davor: Ameisen, Kiefer, Beine, Fühler, Duftspur, ein zweiter Ausgang, Kammer, Pilzgarten, Vorratskammer, Körnerbeutel.</li>
+        <li data-t-html="k.ameisen.s6">Machst du zu, arbeitet der Bau weiter – aber niemand wirft dann Krümel. Eingesammelt wird nur, was von selbst herunterfällt: <b>Waldrand</b> und <b>Blattläuse</b> sind die Ausbauten für die Nacht, die Vorratskammer der Platz dafür.</li>
+        <li data-t-html="k.ameisen.s7">Irgendwann gründest du einen neuen Hügel: alles fängt von vorn an, aber die Königinnen kommen mit und machen jede Lieferung dauerhaft ergiebiger.</li>
     </template>
   </article>
 
@@ -1509,7 +1562,7 @@ footer a { color: inherit; }
   <article class="game" style="--accent:#4ad9ff; --accent2:#ff6fb1;"
            data-spiel="wasserfarben" data-heimat="gruppe-allein" data-platz="5" data-bild="bilder/wasserfarben-spiel.webp"
            data-kurz="Farben umgießen, bis jede Flasche einfarbig ist – und jede Mischung ist garantiert lösbar.">
-    <button class="info" type="button" aria-label="Wie Wasserfarben gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Wasserfarben gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/wasserfarben/">
       <img class="schnappschuss" src="bilder/klein/wasserfarben-spiel.webp" alt="Bildschirmfoto aus einer Partie Wasserfarben"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1517,30 +1570,30 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🧪</span>
         <h3>Wasserfarben</h3>
       </div>
-      <p class="kurz">Farbige Schichten von Flasche zu Flasche gießen, bis jede nur noch eine Farbe hat. Das Water-Sort-Puzzle.</p>
-      <p class="lang">Vier bis zwölf Farben, in Flaschen durcheinandergeschichtet. Gegossen werden darf nur Gleiches auf Gleiches, und über den Rand geht nie etwas: passt nur die Hälfte, bleibt der Rest stehen. Klingt einfach und ist es in der leichten Stufe auch – bei zwölf Farben und zwei freien Flaschen sortiert man eine Weile. Jede Mischung ist nachweislich lösbar: der Erzeuger löst sie selbst, bevor du sie siehst. Name und Punkte bleiben im Browser.</p>
+      <p class="kurz" data-t-html="k.wasserfarben.kurz">Farbige Schichten von Flasche zu Flasche gießen, bis jede nur noch eine Farbe hat. Das Water-Sort-Puzzle.</p>
+      <p class="lang" data-t-html="k.wasserfarben.lang">Vier bis zwölf Farben, in Flaschen durcheinandergeschichtet. Gegossen werden darf nur Gleiches auf Gleiches, und über den Rand geht nie etwas: passt nur die Hälfte, bleibt der Rest stehen. Klingt einfach und ist es in der leichten Stufe auch – bei zwölf Farben und zwei freien Flaschen sortiert man eine Weile. Jede Mischung ist nachweislich lösbar: der Erzeuger löst sie selbst, bevor du sie siehst. Name und Punkte bleiben im Browser.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">allein</span>
-        <span class="tag">Knobeln</span>
-        <span class="tag">offline</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.knobeln">Knobeln</span>
+        <span class="tag" data-t-html="tag.offline">offline</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Stufe wählen: 4, 7, 10 oder 12 Farben. Zwei Flaschen sind immer frei.</li>
-        <li>Eine Flasche antippen – ihr oberster Block einer Farbe wird angehoben. Dann die Zielflasche antippen.</li>
-        <li>Gegossen wird nur auf dieselbe Farbe oder in eine leere Flasche. Vier Schichten passen hinein, mehr nie.</li>
-        <li>Gegossen wird der ganze obere Block. Passt nur ein Teil, bleibt der Rest in der Flasche.</li>
-        <li>Zurück nimmt beliebig viele Züge zurück und kostet keine Punkte – wer ohne auskommt, bekommt zwanzig extra.</li>
-        <li>Fertig: in jeder Flasche steht nur noch eine Farbe. Punkte gibt es je Stufe und für wenige Züge; sie sammeln sich unter deinem Namen im Browser weiter an.</li>
+        <li data-t-html="k.wasserfarben.s1">Stufe wählen: 4, 7, 10 oder 12 Farben. Zwei Flaschen sind immer frei.</li>
+        <li data-t-html="k.wasserfarben.s2">Eine Flasche antippen – ihr oberster Block einer Farbe wird angehoben. Dann die Zielflasche antippen.</li>
+        <li data-t-html="k.wasserfarben.s3">Gegossen wird nur auf dieselbe Farbe oder in eine leere Flasche. Vier Schichten passen hinein, mehr nie.</li>
+        <li data-t-html="k.wasserfarben.s4">Gegossen wird der ganze obere Block. Passt nur ein Teil, bleibt der Rest in der Flasche.</li>
+        <li data-t-html="k.wasserfarben.s5">Zurück nimmt beliebig viele Züge zurück und kostet keine Punkte – wer ohne auskommt, bekommt zwanzig extra.</li>
+        <li data-t-html="k.wasserfarben.s6">Fertig: in jeder Flasche steht nur noch eine Farbe. Punkte gibt es je Stufe und für wenige Züge; sie sammeln sich unter deinem Namen im Browser weiter an.</li>
     </template>
   </article>
 
   <article class="game" style="--accent:#8fe04a; --accent2:#ffd447;"
            data-spiel="schafstall" data-heimat="gruppe-allein" data-platz="6" data-bild="bilder/schafstall-spiel.webp"
            data-kurz="Schiebepuzzle mit Schafen: jedes läuft nur geradeaus, bis etwas im Weg steht – und neben dem Wolf bleibt besser keins stehen.">
-    <button class="info" type="button" aria-label="Wie Schafstall gespielt wird"><span aria-hidden="true">i</span>Anleitung</button>
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Schafstall gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
     <a class="game-link" href="/schafstall/">
       <img class="schnappschuss" src="bilder/klein/schafstall-spiel.webp" alt="Bildschirmfoto aus einer Runde Schafstall"
            width="640" height="435" loading="lazy" decoding="async">
@@ -1548,50 +1601,50 @@ footer a { color: inherit; }
         <span class="icon" aria-hidden="true">🐑</span>
         <h3>Schafstall</h3>
       </div>
-      <p class="kurz">Eine Weide voller Tiere, die sich gegenseitig im Weg stehen. Antippen, laufen lassen, schieben – bis alle im Stall sind.</p>
-      <p class="lang">Jedes Tier schaut in eine Richtung und läuft nur dorthin: bis vor das nächste Hindernis oder ganz aus der Weide hinaus. Damit räumt man von außen nach innen ab – und schiebt, wo es sein muss. Zwei Schafe laufen im Gespann, ein Elefant nimmt einen Viererblock ein und braucht zwei freie Bahnen nebeneinander. Der Wolf rührt sich nie vom Fleck, aber er schnappt nach allem, was in seiner Reichweite stehen bleibt – vorbeilaufen ist ungefährlich. Rückwärts läuft keins, also kann man sich festfahren: dafür gibt es Zurück und Von vorn, beides ohne Punktabzug. Jede Weide ist nachweislich zu räumen, mit einem Zug je Tier – genau dafür gibt es drei Sterne. Punkte, Runde und Sterne bleiben unter deinem Namen im Browser; mehrere Leute können sich ein Gerät teilen.</p>
+      <p class="kurz" data-t-html="k.schafstall.kurz">Eine Weide voller Tiere, die sich gegenseitig im Weg stehen. Antippen, laufen lassen, schieben – bis alle im Stall sind.</p>
+      <p class="lang" data-t-html="k.schafstall.lang">Jedes Tier schaut in eine Richtung und läuft nur dorthin: bis vor das nächste Hindernis oder ganz aus der Weide hinaus. Damit räumt man von außen nach innen ab – und schiebt, wo es sein muss. Zwei Schafe laufen im Gespann, ein Elefant nimmt einen Viererblock ein und braucht zwei freie Bahnen nebeneinander. Der Wolf rührt sich nie vom Fleck, aber er schnappt nach allem, was in seiner Reichweite stehen bleibt – vorbeilaufen ist ungefährlich. Rückwärts läuft keins, also kann man sich festfahren: dafür gibt es Zurück und Von vorn, beides ohne Punktabzug. Jede Weide ist nachweislich zu räumen, mit einem Zug je Tier – genau dafür gibt es drei Sterne. Punkte, Runde und Sterne bleiben unter deinem Namen im Browser; mehrere Leute können sich ein Gerät teilen.</p>
       <div class="meta">
         <span class="dot" data-status></span>
-        <span class="tag">allein</span>
-        <span class="tag">Knobeln</span>
-        <span class="tag">offline</span>
-        <span class="go">Spielen →</span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.knobeln">Knobeln</span>
+        <span class="tag" data-t-html="tag.offline">offline</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
       </div>
     </a>
     <template class="ablauf">
-        <li>Namen eintippen – oder „Später“, dann spielt Gast. Die Punkte gehören dem Namen und bleiben in diesem Browser.</li>
-        <li>Ein Tier antippen: es rennt in die Richtung, in die sein Pfeil zeigt – bis vor das nächste Hindernis, oder aus der Weide hinaus und in den Stall.</li>
-        <li>Der kürzeste Weg ist von außen nach innen: jede Weide lässt sich mit einem einzigen Zug je Tier räumen. Dafür gibt es drei Sterne.</li>
-        <li>Wer schiebt, kann sich festfahren – rückwärts läuft keins. „Zurück“ nimmt Züge zurück, „Von vorn“ stellt die Weide wieder hin. Punkte kostet beides keine.</li>
-        <li>Der Wolf 🐺 rührt sich nie – aber wer in seiner Reichweite (die schraffierten Felder) zum Stehen kommt, ist weg, und die Runde fängt von vorn an. Vorbeilaufen ist ungefährlich.</li>
-        <li>Ab Runde 4 laufen zwei Schafe im Gespann, ab 6 liegen Felsen herum, ab 8 kommt der Wolf, ab 10 ist der Rand zugezäunt, ab 12 steht ein Elefant im Weg – zwei mal zwei Zellen groß.</li>
-        <li>Alle im Stall: Punkte nach Runde, gesparten Zügen und Tempo, dazu bis zu drei Sterne. Die nächste Runde ist größer und voller.</li>
+        <li data-t-html="k.schafstall.s1">Namen eintippen – oder „Später“, dann spielt Gast. Die Punkte gehören dem Namen und bleiben in diesem Browser.</li>
+        <li data-t-html="k.schafstall.s2">Ein Tier antippen: es rennt in die Richtung, in die sein Pfeil zeigt – bis vor das nächste Hindernis, oder aus der Weide hinaus und in den Stall.</li>
+        <li data-t-html="k.schafstall.s3">Der kürzeste Weg ist von außen nach innen: jede Weide lässt sich mit einem einzigen Zug je Tier räumen. Dafür gibt es drei Sterne.</li>
+        <li data-t-html="k.schafstall.s4">Wer schiebt, kann sich festfahren – rückwärts läuft keins. „Zurück“ nimmt Züge zurück, „Von vorn“ stellt die Weide wieder hin. Punkte kostet beides keine.</li>
+        <li data-t-html="k.schafstall.s5">Der Wolf 🐺 rührt sich nie – aber wer in seiner Reichweite (die schraffierten Felder) zum Stehen kommt, ist weg, und die Runde fängt von vorn an. Vorbeilaufen ist ungefährlich.</li>
+        <li data-t-html="k.schafstall.s6">Ab Runde 4 laufen zwei Schafe im Gespann, ab 6 liegen Felsen herum, ab 8 kommt der Wolf, ab 10 ist der Rand zugezäunt, ab 12 steht ein Elefant im Weg – zwei mal zwei Zellen groß.</li>
+        <li data-t-html="k.schafstall.s7">Alle im Stall: Punkte nach Runde, gesparten Zügen und Tempo, dazu bis zu drei Sterne. Die nächste Runde ist größer und voller.</li>
     </template>
   </article>
 </main>
 
 
 <dialog id="spielDialog" aria-labelledby="spielTitel">
-  <button class="dialog-zu" type="button" aria-label="Schließen">✕</button>
+  <button class="dialog-zu" type="button" data-t-attr="aria-label:dialog.zu" aria-label="Schließen">✕</button>
   <div class="dialog-inhalt">
     <h2 id="spielTitel"></h2>
     <p class="dialog-kurz" id="spielKurz"></p>
     <p class="dialog-lang" id="spielLang"></p>
     <figure class="schau">
       <img id="spielBild" alt="" width="1000" height="680">
-      <figcaption>Echter Screenshot aus einer laufenden Partie.</figcaption>
+      <figcaption data-t="dialog.bild">Echter Screenshot aus einer laufenden Partie.</figcaption>
     </figure>
-    <h3>So läuft eine Runde</h3>
+    <h3 data-t="dialog.ablauf">So läuft eine Runde</h3>
     <ol id="spielSchritte"></ol>
-    <a class="btn-spielen" id="spielLink" href="/">Jetzt spielen →</a>
-    <a class="dialog-melden" id="spielMelden" href="/bugreport/">🐞 Fehler in diesem Spiel melden</a>
+    <a class="btn-spielen" id="spielLink" href="/" data-t="dialog.spielen">Jetzt spielen →</a>
+    <a class="dialog-melden" id="spielMelden" href="/bugreport/" data-t="dialog.melden">🐞 Fehler in diesem Spiel melden</a>
   </div>
 </dialog>
 
 <a class="melden" href="/bugreport/">
   <span class="icon">🐞</span>
-  <span>Etwas kaputt? Fehler melden – und nachsehen, was schon gemeldet ist.</span>
-  <span class="go">Bugreport →</span>
+  <span data-t="melden.text">Etwas kaputt? Fehler melden – und nachsehen, was schon gemeldet ist.</span>
+  <span class="go" data-t="melden.go">Bugreport →</span>
 </a>
 
 <!-- Spenden. Noch ohne Zahlweg: der Knopf bedankt sich und sonst nichts.
@@ -1599,31 +1652,34 @@ footer a { color: inherit; }
      ändert sich dann nichts mehr. -->
 <button class="melden spende" type="button" id="spendeBtn">
   <span class="icon">☕</span>
-  <span>Die Spiele sind kostenlos und werbefrei. Wer mag, kann den Server
+  <span data-t="spende.text">Die Spiele sind kostenlos und werbefrei. Wer mag, kann den Server
     mitfinanzieren.</span>
-  <span class="go">Unterstützen →</span>
+  <span class="go" data-t="spende.go">Unterstützen →</span>
 </button>
 
 <dialog id="spendeDialog" aria-labelledby="spendeTitel">
   <form method="dialog">
     <div class="danke-icon" aria-hidden="true">💜</div>
-    <h2 id="spendeTitel">Danke, dass du es versucht hast!</h2>
-    <p>Das Spenden ist noch nicht eingerichtet – der Knopf war schneller als
+    <h2 id="spendeTitel" data-t="spende.titel">Danke, dass du es versucht hast!</h2>
+    <p data-t-html="spende.eins">Das Spenden ist noch nicht eingerichtet – der Knopf war schneller als
       ich. Dass du daraufgedrückt hast, freut mich trotzdem ehrlich.</p>
-    <p class="klein">Schau später nochmal vorbei. Bis dahin: Der beste Beitrag
+    <p class="klein" data-t-html="spende.zwei">Schau später nochmal vorbei. Bis dahin: Der beste Beitrag
       ist, jemanden zum Mitspielen mitzubringen.</p>
-    <button class="btn-schliessen" value="zu" autofocus>Gern geschehen</button>
+    <button class="btn-schliessen" value="zu" autofocus data-t="spende.zu">Gern geschehen</button>
   </form>
 </dialog>
 
 <footer>
-  <p>Läuft auf Handy und Rechner, im selben WLAN oder über das Netz. Ein Gerät
+  <p data-t-html="fuss.text">Läuft auf Handy und Rechner, im selben WLAN oder über das Netz. Ein Gerät
     eröffnet den Raum, die anderen treten mit dem Code bei – jeder spielt auf
     seinem eigenen.</p>
   <nav class="recht">
-    <a href="/impressum/">Impressum</a>
-    <a href="/datenschutz/">Datenschutz</a>
+    <a href="/impressum/" data-t="fuss.impressum">Impressum</a>
+    <a href="/datenschutz/" data-t="fuss.datenschutz">Datenschutz</a>
   </nav>
+  <!-- Die Rechtstexte bleiben deutsch und verbindlich: eine uebersetzte
+       Datenschutzerklaerung waere eine zweite Fassung, die niemand pflegt. -->
+  <p class="rechtshinweis" data-t="fuss.rechtsprache" hidden>Impressum und Datenschutzerklärung sind nur auf Deutsch verfügbar.</p>
 </footer>
 
 <script>
@@ -1638,6 +1694,11 @@ footer a { color: inherit; }
   const feld = document.getElementById("suche");
   const info = document.getElementById("suchErgebnis");
 
+  // Kurzform fuer die Texte, die nicht im Markup stehen, sondern hier
+  // entstehen. `sprache.js` ist ein Modul und laeuft deshalb *nach* diesem
+  // Skript - bis dahin gilt der deutsche Wortlaut aus dem dritten Argument.
+  const T = (k, w, d) => globalThis.sprache?.t(k, w, d) ?? d;
+
   // Umlaute und Akzente fallen weg, damit „wurfel" auch „Würfel" findet.
   // Beide Seiten laufen durch dieselbe Funktion, deshalb trifft „wuerfel"
   // ebenso.
@@ -1647,7 +1708,12 @@ footer a { color: inherit; }
       .replace(/ß/g, "ss")
       .replace(/ae|oe|ue/g, (m) => m[0]);
 
-  const text = new Map(kacheln.map((k) => {
+  // Der Index wird aus dem gebaut, was gerade auf den Kacheln steht. Nach
+  // einem Sprachwechsel steht dort etwas anderes - deshalb ist das eine
+  // Funktion und keine einmalige Zuweisung. Ohne das faende die Suche in einer
+  // tuerkischen Seite weiterhin nur die deutschen Woerter.
+  let text = new Map();
+  const indexBauen = () => { text = new Map(kacheln.map((k) => {
     const link = k.querySelector(".game-link");
     const gruppe = k.closest(".raster")?.previousElementSibling;
     return [k, norm([
@@ -1668,7 +1734,8 @@ footer a { color: inherit; }
       // gerade beliebt ist.
       document.getElementById(k.dataset.heimat ?? "")?.textContent ?? "",
     ].join(" "))];
-  }));
+  })); };
+  indexBauen();
 
   function filtern() {
     const worte = norm(feld.value.trim()).split(/\s+/).filter(Boolean);
@@ -1694,10 +1761,11 @@ footer a { color: inherit; }
     info.textContent = !worte.length
       ? ""
       : treffer === 0
-      ? "Kein Spiel gefunden. Vielleicht anders geschrieben?"
+      ? T("suche.keins", {}, "Kein Spiel gefunden. Vielleicht anders geschrieben?")
       : treffer === 1
-      ? "Ein Spiel – die Eingabetaste öffnet es."
-      : `${treffer} von ${kacheln.length} Spielen.`;
+      ? T("suche.eins", {}, "Ein Spiel – die Eingabetaste öffnet es.")
+      : T("suche.viele", { n: treffer, alle: kacheln.length },
+          `${treffer} von ${kacheln.length} Spielen.`);
   }
 
   feld.addEventListener("input", filtern);
@@ -1710,7 +1778,18 @@ footer a { color: inherit; }
 
   document.getElementById("sucheBox").classList.add("an");
   filtern();
+
+  // Nach jedem Sprachwechsel: neuer Index, neue Meldung. Das Ereignis kommt
+  // auch beim ersten Anwenden, gleich nachdem `sprache.js` geladen hat.
+  document.addEventListener("sprachwechsel", () => { indexBauen(); filtern(); });
 }
+
+// Der Hinweis, dass Impressum und Datenschutz nur auf Deutsch vorliegen,
+// steht nur da, wenn die Seite gerade nicht deutsch ist.
+document.addEventListener("sprachwechsel", (e) => {
+  const hinweis = document.querySelector(".rechtshinweis");
+  if (hinweis) hinweis.hidden = e.detail.sprache === "de";
+});
 
 // Erreichbarkeit der Spiele anzeigen. Rein kosmetisch – ohne JS bleibt der
 // Punkt unsichtbar und die Links funktionieren trotzdem.
@@ -1767,9 +1846,15 @@ for (const knopf of document.querySelectorAll(".info")) {
     lang.hidden = !s.lang;
     spielBild.hidden = !s.bild;
     if (s.bild) spielBild.src = s.bild;
-    spielBild.alt = `Bildschirmfoto aus einer laufenden Partie ${s.titel}`;
+    spielBild.alt = (globalThis.sprache?.t("dialog.alt", { spiel: s.titel },
+      `Bildschirmfoto aus einer laufenden Partie ${s.titel}`)) ??
+      `Bildschirmfoto aus einer laufenden Partie ${s.titel}`;
     const liste = document.getElementById("spielSchritte");
     liste.replaceChildren(...s.schritte.map((li) => li.cloneNode(true)));
+    // Die Schritte stehen in einem <template> und sind damit ausserhalb des
+    // Dokuments - `sprache.js` sieht sie beim Anwenden nicht. Erst die Kopien
+    // hier sind erreichbar, und die werden jetzt uebersetzt.
+    globalThis.sprache?.uebersetze(liste);
     document.getElementById("spielLink").href = s.pfad;
     // Der Bugreport nimmt den Kurznamen als ?spiel= entgegen und waehlt ihn
     // im Formular vor. Er kommt aus dem Pfad der Kachel, damit auch hier
@@ -1792,6 +1877,14 @@ spielDialog.addEventListener("click", (e) => { if (e.target === spielDialog) spi
 const spendeBtn = document.getElementById("spendeBtn");
 const spendeDialog = document.getElementById("spendeDialog");
 spendeBtn.addEventListener("click", () => spendeDialog.showModal());
+</script>
+
+<!-- Sprachen. Deutsch steht im HTML darueber; dieses Modul legt Tuerkisch und
+     Englisch darauf. Ohne JavaScript bleibt alles deutsch und vollstaendig. -->
+<script type="module">
+  import { starteSprache } from "./sprache.js";
+  import { WOERTER } from "./texte.js";
+  starteSprache(WOERTER);
 </script>
 
 </body>

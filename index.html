@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>inf-zeus.de</title>
-<meta name="description" content="Startseite von inf-zeus.de: Nextcloud für den Jahrgang, zwei Auswertungswerkzeuge für Aktien und eine Sammlung Browserspiele.">
+<meta name="description" data-t-attr="content:start.beschreibung" content="Startseite von inf-zeus.de: Nextcloud für den Jahrgang, zwei Auswertungswerkzeuge für Aktien und eine Sammlung Browserspiele.">
 <meta name="theme-color" content="#f4f5f7">
 <meta name="robots" content="index, follow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231f3a5f'/><text x='16' y='22' font-family='system-ui,sans-serif' font-size='17' font-weight='700' fill='%23ffffff' text-anchor='middle'>Z</text></svg>">
@@ -47,6 +47,45 @@ body {
 /* --- Kopf ---------------------------------------------------------------- */
 
 header { width: 100%; max-width: 900px; }
+
+/* Kopfzeile: Marke links, Sprachwahl rechts. Der Umschalter wird von
+   sprache.js gefuellt und bleibt ohne JavaScript leer - deshalb :empty. */
+.kopfzeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.kopfzeile .marke { margin-bottom: 0; }
+
+.sprachwahl {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--linie);
+  border-radius: 999px;
+  background: var(--flaeche);
+}
+.sprachwahl:empty { display: none; }
+
+.sprachknopf {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  padding: 5px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--leise);
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease;
+}
+.sprachknopf:hover { color: var(--schrift); }
+.sprachknopf.sel { background: var(--akzent-hell); color: var(--akzent); }
+.sprachknopf:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
 
 .marke {
   display: inline-flex;
@@ -281,9 +320,13 @@ footer a:hover, footer a:focus-visible {
 <body>
 
 <header>
-  <div class="marke"><span class="zeichen" aria-hidden="true">Z</span>inf-zeus.de</div>
-  <h1>Drei Anwendungen auf einem Server</h1>
-  <p class="sub">Diese Seite ist nur der Einstieg. Dahinter liegen eine Nextcloud für
+  <div class="kopfzeile">
+    <div class="marke"><span class="zeichen" aria-hidden="true">Z</span>inf-zeus.de</div>
+    <!-- Wird von sprache.js gefuellt; ohne JavaScript bleibt er leer. -->
+    <div data-sprachwahl aria-label="Sprache"></div>
+  </div>
+  <h1 data-t="start.h1">Drei Anwendungen auf einem Server</h1>
+  <p class="sub" data-t-html="start.sub">Diese Seite ist nur der Einstieg. Dahinter liegen eine Nextcloud für
     meinen Jahrgang, zwei Auswertungswerkzeuge für Aktien und eine Sammlung
     Browserspiele. Jedes läuft eigenständig.</p>
 </header>
@@ -298,11 +341,11 @@ footer a:hover, footer a:focus-visible {
       </svg>
     </span>
     <h2>Nextcloud</h2>
-    <p>Dateien, Kalender und Termine für den Jahrgang – an einer Stelle, auf
+    <p data-t-html="start.cloud">Dateien, Kalender und Termine für den Jahrgang – an einer Stelle, auf
       eigenem Server statt bei einem Anbieter.</p>
     <span class="fuss">
-      <span class="hinweis">Konto erforderlich</span>
-      <span>Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
+      <span class="hinweis" data-t="start.konto">Konto erforderlich</span>
+      <span data-t-html="start.oeffnen">Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
     </span>
   </a>
 
@@ -319,7 +362,7 @@ footer a:hover, footer a:focus-visible {
       </span>
       <span class="text">
         <h2>Value</h2>
-        <p>Trading · Bewertung</p>
+        <p data-t="start.value">Trading · Bewertung</p>
       </span>
       <span class="pfeil" aria-hidden="true">→</span>
     </a>
@@ -335,7 +378,7 @@ footer a:hover, footer a:focus-visible {
       </span>
       <span class="text">
         <h2>Momentum</h2>
-        <p>Trading · Kursverlauf</p>
+        <p data-t="start.momentum">Trading · Kursverlauf</p>
       </span>
       <span class="pfeil" aria-hidden="true">→</span>
     </a>
@@ -352,24 +395,32 @@ footer a:hover, footer a:focus-visible {
         <circle cx="15.4" cy="15.4" r="1.15" fill="currentColor" stroke="none"/>
       </svg>
     </span>
-    <h2>Spiele</h2>
-    <p>Browserspiele für die Runde oder allein. Ohne Installation und ohne
+    <h2 data-t="start.spiele">Spiele</h2>
+    <p data-t-html="start.spieleText">Browserspiele für die Runde oder allein. Ohne Installation und ohne
       Konto: Link teilen, Namen eintippen, losspielen.</p>
     <span class="fuss">
-      <span class="hinweis">Frei zugänglich</span>
-      <span>Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
+      <span class="hinweis" data-t="start.frei">Frei zugänglich</span>
+      <span data-t-html="start.oeffnen">Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
     </span>
   </a>
 
 </main>
 
 <footer>
-  <span>inf-zeus.de – privat betriebener Server</span>
+  <span data-t="start.fuss">inf-zeus.de – privat betriebener Server</span>
   <nav>
-    <a href="/recht/impressum/">Impressum</a>
-    <a href="/recht/datenschutz/">Datenschutz</a>
+    <a href="/recht/impressum/" data-t="start.impressum">Impressum</a>
+    <a href="/recht/datenschutz/" data-t="start.datenschutz">Datenschutz</a>
   </nav>
 </footer>
+
+<!-- Sprachen. Deutsch steht im HTML darueber; dieses Modul legt Tuerkisch und
+     Englisch darauf. Ohne JavaScript bleibt alles deutsch und vollstaendig. -->
+<script type="module">
+  import { starteSprache } from "./sprache.js";
+  import { WOERTER } from "./texte.js";
+  starteSprache(WOERTER);
+</script>
 
 </body>
 </html>

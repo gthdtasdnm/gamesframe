@@ -8,6 +8,35 @@ n=$1; titel=$2; l1=$3; l2=$4; tagline=$5; emoji=$6
 cd /var/www/html
 mkdir -p "$n"
 cat gemeinsam/lobby.css werkzeug/rahmen.css werkzeug/solo.css > "$n/style.css"
+# Sprachen: auch ein Solo-Spiel wird dreisprachig geboren. Ohne Schale gibt es
+# hier keine schale-texte.js - alles Eigene steht in texte.js.
+cp gemeinsam/sprache.js "$n/sprache.js"
+
+cat > "$n/texte.js" <<EOF
+// Tuerkisch und Englisch fuer $titel.
+//
+// Deutsch steht im HTML und - wo Text erst im Code entsteht - als drittes
+// Argument bei \`t()\`. Hier liegen nur die beiden anderen Fassungen darueber.
+//
+// **TODO steht fuer: noch nicht uebersetzt.** \`werkzeug/pruefe-sprache.mjs\`
+// schlaegt darauf an - ein Spiel gilt erst ohne TODO als fertig.
+
+export const WOERTER = {
+  tr: {
+    "$n.tag": "TODO $tagline",
+    "$n.soLaeuft": "TODO So laeuft das",
+    "$n.allesKlar": "TODO Alles klar",
+    "$n.alleSpiele": "TODO Alle Spiele",
+  },
+
+  en: {
+    "$n.tag": "TODO $tagline",
+    "$n.soLaeuft": "TODO So laeuft das",
+    "$n.allesKlar": "TODO Alles klar",
+    "$n.alleSpiele": "TODO Alle Spiele",
+  },
+};
+EOF
 
 cat > "$n/index.html" <<EOF
 <!DOCTYPE html>
@@ -32,20 +61,22 @@ cat > "$n/index.html" <<EOF
       <button id="helpBtn" class="btn ghost sm" type="button">?</button>
     </div>
   </header>
-  <p class="tag klein">$tagline</p>
+  <p class="tag klein" data-t="$n.tag">$tagline</p>
 
   <div id="einstellung" class="soloeinstellung"></div>
   <main id="buehne" class="solobuehne"></main>
   <div id="aktionen" class="aktionen"></div>
   <p id="hint" class="hintline"></p>
-  <p class="hintline"><a class="zurueck" href="/spiele/">← Alle Spiele</a></p>
+  <p class="hintline"><a class="zurueck" href="/spiele/" data-t="$n.alleSpiele">← Alle Spiele</a></p>
+  <!-- Fuellt sprache.js; ohne JavaScript bleibt er leer und alles deutsch. -->
+  <div data-sprachwahl aria-label="Sprache"></div>
 </div>
 
 <div id="help" hidden>
   <div class="help-inner">
-    <h2>So läuft das</h2>
+    <h2 data-t="$n.soLaeuft">So läuft das</h2>
     <ul id="helpList"></ul>
-    <button id="helpClose" class="btn" type="button">Alles klar</button>
+    <button id="helpClose" class="btn" type="button" data-t="$n.allesKlar">Alles klar</button>
   </div>
 </div>
 
@@ -54,3 +85,10 @@ cat > "$n/index.html" <<EOF
 </html>
 EOF
 echo "Solo-Geruest fuer $n steht: /var/www/html/$n/"
+echo
+echo "Sprachen: index.html traegt schon data-t, texte.js steht bereit."
+echo "In app.js gehoeren diese drei Zeilen ganz nach oben:"
+echo "    import { starteSprache, t } from \"./sprache.js\";"
+echo "    import { WOERTER } from \"./texte.js\";"
+echo "    starteSprache(WOERTER);"
+echo "Danach in spiele.json unter gemeinsam: \"sprache\": \"sprache.js\""

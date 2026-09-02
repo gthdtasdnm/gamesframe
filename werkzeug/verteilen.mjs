@@ -52,6 +52,8 @@ const TEILE = {
   raum: { quelle: "gemeinsam/raum.js", modus: "ganz" },
   statisch: { quelle: "gemeinsam/statisch.js", modus: "ganz" },
   schale: { quelle: "gemeinsam/schale.js", modus: "ganz" },
+  sprache: { quelle: "gemeinsam/sprache.js", modus: "ganz" },
+  schaleTexte: { quelle: "gemeinsam/schale-texte.js", modus: "ganz" },
   lobbyCss: {
     quelle: "gemeinsam/lobby.css",
     modus: "block",
@@ -109,7 +111,12 @@ let geschrieben = 0, abweichend = 0, fehler = 0;
 // `spiele`, haetten sie sofort eine Kachel und einen Eintrag im Bugreport.
 // Stuenden sie nirgends, driftete ihre Kopie von bremse.js und statisch.js
 // still vor sich hin, und `--pruefen` merkte nichts davon.
-const alle = [...registry.spiele, ...(registry.still ?? [])];
+// `seiten` sind Seiten ohne Dienst, die trotzdem einen gemeinsamen Teil
+// tragen - die Spieleuebersicht und die Startseite holen sich von hier ihre
+// `sprache.js`. Sie stehen nicht unter `spiele`, weil sie keine sind: kein
+// Port, kein Dienst, keine Kachel. Ohne diesen Eintrag driftete ihre Kopie
+// still vor sich hin, und `--pruefen` merkte nichts davon.
+const alle = [...registry.spiele, ...(registry.still ?? []), ...(registry.seiten ?? [])];
 const spiele = alle.filter((s) => !nur.length || nur.includes(s.name));
 
 if (nur.length && !spiele.length) {

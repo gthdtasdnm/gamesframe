@@ -102,8 +102,10 @@ anderen nicht brauchen:
   public/index.html  vier Bildschirme: home, lobby, game, final
   public/style.css   gemeinsamer Block + Eigenes
   public/app.js
+  public/texte.js    tuerkisch und englisch fuer die eigenen Saetze
   bremse.js  raum.js  statisch.js      ← nicht schreiben, verteilen lassen
   public/schale.js                     ← ebenso: Verbindung, Lobby, Bildschirme
+  public/sprache.js  public/schale-texte.js   ← ebenso
 ```
 
 ## Reihenfolge, die funktioniert
@@ -136,7 +138,20 @@ chown -R www-data:www-data /var/www/html/<spiel>
 WS_URL=wss://inf-zeus.de/<spiel>/ws deno task probe
 ```
 
+```bash
+# 7. Die eigenen Saetze uebersetzen – das Geruest legt sie mit TODO an
+#    (Warteraum und Endstand kommen schon uebersetzt aus schale-texte.js)
+cd /root/werkzeug-screenshots && node pruefe-sprache.mjs
+```
+
 Danach: Bild und Kachel nach `doku/startseite.md`, Repo nach `doku/betrieb.md`.
+
+**Dreisprachig von Anfang an.** `neuspiel.sh` legt `sprache.js`,
+`schale-texte.js`, `texte.js` und die `data-t` im Markup schon an; in
+`spiele.json` gehoeren dazu `"sprache"` und `"schaleTexte"` unter `gemeinsam`.
+Die eigenen Saetze stehen mit `TODO` in `texte.js` – `pruefe-sprache.mjs`
+schlaegt darauf an, ein Spiel gilt erst ohne TODO als fertig. Alles Weitere:
+`doku/sprachen.md`.
 
 ## server.js aufbauen
 
