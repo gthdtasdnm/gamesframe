@@ -187,6 +187,20 @@ pruefe(
   "G05 nach dem Neuladen steht die angefangene Mines-Runde wieder da (oder sie war schon zu Ende)",
 );
 
+// **Und wieder zumachen.** Eine offene Runde liegt auf dem Konto und laesst
+// jede weitere Wette an `f.rundeLaeuft` scheitern - danach waren G08 (die
+// Gewinnleiste bleibt leer) und G14 (Crash faengt nie an) rot aus einem
+// Grund, mit dem sie nichts zu tun haben. Aufgefallen ist das erst am
+// 03.09.2026: der erste Klick trifft bei 25 Feldern und 3 Minen in fast neun
+// von zehn Laeufen **keine** Mine, und in den restlichen platzte die Runde
+// von selbst. Ein Test, der die Welt hinter sich veraendert, muss aufraeumen.
+for (let i = 0; i < 26 && !(await seite.isVisible("#btnSetzen")); i++) {
+  if (await seite.isVisible("#btnRaus")) await seite.click("#btnRaus");
+  else await seite.click(".minenfeld button:not([disabled]) >> nth=0");
+  await schlaf(900);
+}
+pruefe(await seite.isVisible("#btnSetzen"), "G05 und sie laesst sich danach wieder beenden");
+
 // ── G06 Laden ──────────────────────────────────────────────────────────────
 await seite.click('[data-ziel="sLaden"]');
 await schlaf(400);
@@ -256,15 +270,13 @@ await schlaf(800);
 pruefe(await seite.isVisible("#saatAlt"), "G08 die alte Saat wird aufgedeckt");
 pruefe((await seite.textContent("#wSaatHash")) !== hashVorher, "G08 und danach steht ein neuer Hash da");
 
-// ── G14 Crash: mitspielen und wieder herauskommen ──────────────────────────
+// ── G14 Crash: eine eigene Runde, die sofort losgeht ───────────────────────
 //
-// Der Test, der die Rueckmeldung "ich kann nicht rausziehen" beantwortet.
-// Drei Dinge muessen stimmen, und die ersten beiden waren falsch:
-//
-//   1. Wer den Bildschirm mitten in einer Runde oeffnet, sieht, was los ist.
-//   2. Wer gesetzt hat, bekommt in der Laufphase einen Raus-Knopf - auch wenn
-//      sein Anzeigename gross geschrieben ist.
-//   3. Der Knopf zahlt aus, und zwar zu dem Stand, der auf ihm steht.
+// Crash war bis zum 03.09.2026 das einzige Spiel mit einer gemeinsamen Runde:
+// acht Sekunden Wartezeit, dann eine Kurve fuer alle, dann fuenf Sekunden
+// Pause. Der Einwand dazu war einfach - wer spielen will, will jetzt spielen.
+// Seitdem ist es ein Spiel fuer einen wie die anderen acht, und diese Probe
+// haelt genau das fest: kein Warteraum, kein Verlauf, kein Zusehen.
 await seite.click('[data-ziel="sSpiele"]');
 await schlaf(400);
 pruefe(
@@ -273,76 +285,131 @@ pruefe(
 );
 pruefe(await seite.isVisible(".spielkachel"), "G14 und die Auswahl steht wieder da");
 await seite.click(".spielkachel >> nth=2");   // Crash
-await schlaf(1200);
+await schlaf(700);
+pruefe(await seite.isVisible("#btnSetzen"), "G14 Crash steht sofort spielbereit da - ohne Wartephase");
+pruefe(!(await seite.isVisible("#btnRaus")), "G14 der Raus-Knopf kommt erst, wenn eine Runde laeuft");
 pruefe(
-  (await seite.textContent("#crashLage")).length > 0,
-  `G14 der Bildschirm sagt beim Oeffnen, was gerade los ist (${await seite.textContent("#crashLage")})`,
+  await seite.evaluate(() => !document.querySelector(".crashverlauf") && !document.querySelector(".dabeiliste")),
+  "G14 weder alte Ergebnisse noch eine Mitspielerliste stehen noch im Bildschirm",
+);
+pruefe(
+  !/\d+\s*s/.test(await seite.textContent("#crashLage")),
+  `G14 und keine Uhr, die herunterzaehlt (${await seite.textContent("#crashLage")})`,
 );
 
-// Auf eine frische Wartephase warten und mitspielen.
-// Bis zu zwei Minuten Geduld: eine einzelne Runde darf lange laufen (der
-// Absturzpunkt geht bis zur Millionfachen), und dann kommt erst die naechste
-// Wartephase.
-let gesetzt = false;
-let letzterHinweis = "";
-for (let i = 0; i < 200 && !gesetzt; i++) {
-  const lage = await seite.evaluate(() => {
-    const leiste = document.querySelector(".einsatzleiste");
-    const knopf = document.getElementById("btnSetzen");
-    return {
-      text: document.getElementById("crashLage")?.textContent ?? "",
-      kannSetzen: !!leiste && !leiste.hidden && !!knopf && !knopf.disabled,
-    };
-  });
-  letzterHinweis = lage.text;
-  gesetzt = /dabei|drin|in with|you are in/i.test(lage.text);
-  if (gesetzt) break;
-  // Nur einsteigen, wenn noch mindestens drei Sekunden Vorlauf sind. Wer in
-  // der letzten Sekunde klickt, kommt beim Server nach dem Start an - das ist
-  // richtiges Verhalten des Servers und darf die Probe nicht rot faerben.
-  const rest = Number((lage.text.match(/(\d+)\s*s/) ?? [0, 0])[1]);
-  if (lage.kannSetzen && rest >= 3) {
-    // Kurzer Timeout: faellt der Knopf zwischendurch in den gesperrten
-    // Zustand, wartet Playwright sonst dreissig Sekunden auf ihn - und in
-    // dieser Zeit laufen zwei ganze Runden vorbei.
-    try {
-      await seite.fill("#fEinsatz", "1,00", { timeout: 2000 });
-      await seite.fill("#fAutoRaus", "1000,00", { timeout: 2000 });
-      await seite.click("#btnSetzen", { timeout: 2000 });
-      await schlaf(600);
-    } catch { /* die Runde war schneller - beim naechsten Mal */ }
+// Starten, laufen lassen, aussteigen. Die Runde kann vorher reissen - bei
+// 1,5 Sekunden steht die Kurve bei rund 1,15x, und das ueberlebt nur gut jede
+// sechste Runde nicht. Deshalb bis zu acht Anlaeufe: ein roter Punkt darf
+// nicht am Zufall haengen, den das Spiel gerade ausspielt.
+let ausgestiegen = false;
+let letzteAufschrift = "";
+for (let i = 0; i < 8 && !ausgestiegen; i++) {
+  await seite.fill("#fEinsatz", "1,00");
+  await seite.fill("#fAutoRaus", "");
+  await seite.click("#btnSetzen");
+  try {
+    await seite.waitForSelector("#btnRaus:not([hidden])", { timeout: 6000 });
+  } catch {
+    continue;
   }
-  await schlaf(400);
-}
-if (!gesetzt) console.error(`       (zuletzt stand da: ${letzterHinweis})`);
-pruefe(gesetzt, "G14 in der Wartephase laesst sich mitspielen");
-
-// Jetzt muss in der Laufphase ein Raus-Knopf auftauchen.
-let knopf = false;
-for (let i = 0; i < 120 && !knopf; i++) {
-  await schlaf(250);
-  knopf = await seite.isVisible("#btnRaus");
-}
-pruefe(knopf, "G14 wer mitspielt, bekommt in der Laufphase einen Raus-Knopf");
-
-if (knopf) {
-  // Kurz laufen lassen, sonst wird bei 1,00x ausgezahlt und der Test wuerde
-  // auch dann gruen, wenn die Kurve gar nicht steigt.
-  await schlaf(1800);
-  const aufschrift = await seite.textContent("#btnRaus");
-  pruefe(/×/.test(aufschrift), `G14 der Knopf sagt, was er auszahlt (${aufschrift})`);
-  const stand = Number((aufschrift.match(/([\d,]+)×/)?.[1] ?? "1").replace(",", "."));
-  pruefe(stand > 1, `G14 die Kurve steigt wirklich (${aufschrift})`);
+  await schlaf(1500);
+  if (!(await seite.isVisible("#btnRaus"))) {
+    // Vorher gerissen. Kurz warten, bis der Bildschirm wieder bereitsteht.
+    await schlaf(1600);
+    continue;
+  }
+  letzteAufschrift = await seite.textContent("#btnRaus");
+  const stand = Number((letzteAufschrift.match(/([\d,]+)×/)?.[1] ?? "1").replace(",", "."));
   const vorRaus = cent(await seite.textContent("#wGeld"));
   await seite.click("#btnRaus");
   await schlaf(1200);
   const nachRaus = cent(await seite.textContent("#wGeld"));
-  pruefe(nachRaus > vorRaus, `G14 der Knopf zahlt wirklich aus (+${nachRaus - vorRaus} Cent)`);
-  pruefe(
-    /(bei|out at)/i.test(await seite.textContent("#ergebnis")),
-    `G14 und die Ergebniszeile sagt es (${await seite.textContent("#ergebnis")})`,
-  );
+  if (nachRaus > vorRaus) {
+    ausgestiegen = true;
+    pruefe(/×/.test(letzteAufschrift), `G14 der Knopf sagt, was er auszahlt (${letzteAufschrift})`);
+    pruefe(stand > 1, `G14 die Kurve steigt wirklich (${letzteAufschrift})`);
+    pruefe(nachRaus > vorRaus, `G14 der Knopf zahlt wirklich aus (+${nachRaus - vorRaus} Cent)`);
+    pruefe(
+      /(bei|out at|noktasında)/i.test(await seite.textContent("#ergebnis")),
+      `G14 und die Ergebniszeile sagt es (${await seite.textContent("#ergebnis")})`,
+    );
+  }
+  await schlaf(1600);
 }
+pruefe(ausgestiegen, `G14 in acht Anlaeufen liess sich mindestens einer mit Gewinn beenden (zuletzt: ${letzteAufschrift})`);
+
+// ── G15 Spielen, ohne zu scrollen (Handy) ──────────────────────────────────
+//
+// Die Rueckmeldung war: "man muss immer scrollen, um neu zu spielen". Seit
+// dem Umbau steht die Steuerung fest unten und nur das Spielfeld scrollt in
+// sich. Geprueft wird das, was der Daumen merkt - liegt der Spielknopf im
+// Bild, ohne dass irgendwo gescrollt wurde?
+for (const [nr, spiel] of [[0, "Plinko"], [1, "Mines"], [2, "Crash"], [4, "Limbo"], [6, "Flip"], [8, "Bars"]]) {
+  await seite.click('[data-ziel="sSpiele"]');
+  await schlaf(350);
+  await seite.click(`.spielkachel >> nth=${nr}`);
+  await schlaf(600);
+  // Nicht stur `#btnSetzen`: bei einem Spiel mit angefangener Runde heisst
+  // der Knopf, mit dem es weitergeht, `#btnRaus`. Gesucht ist der **breiteste**
+  // sichtbare Knopf der Steuerung - der eine, der ueber die ganze Breite geht.
+  // Nach dem ersten Knopf zu greifen war falsch: das sind `½`, `2×` und `max`
+  // neben dem Einsatzfeld, und die sind rund zwei Zentimeter breit.
+  const lage = await seite.evaluate(() => {
+    const k = [...document.querySelectorAll(".steuerung button")]
+      .filter((x) => x.getBoundingClientRect().height > 20)
+      .sort((a, b) => b.getBoundingClientRect().width - a.getBoundingClientRect().width)[0];
+    if (!k) return null;
+    const r = k.getBoundingClientRect();
+    return {
+      imBild: r.top >= 0 && r.bottom <= window.innerHeight + 1 && r.width > 40,
+      unten: Math.round(window.innerHeight - r.bottom),
+      dokScrollt: document.documentElement.scrollHeight - window.innerHeight,
+      // Wirklich treffbar, nicht nur rechnerisch im Bild.
+      trifft: (() => {
+        const o = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!o && k.contains(o);
+      })(),
+    };
+  });
+  pruefe(!!lage && lage.imBild, `G15 ${spiel}: der Spielknopf steht ohne Scrollen im Bild (${lage?.unten ?? "?"} px ueber dem Rand)`);
+  pruefe(!!lage && lage.trifft, `G15 ${spiel}: und er ist auch treffbar`);
+  pruefe(!!lage && lage.dokScrollt <= 1, `G15 ${spiel}: das Dokument selbst scrollt gar nicht (${lage?.dokScrollt ?? "?"} px)`);
+}
+
+// ── G16 Am Rechner: Menue links, Spiel und Steuerung nebeneinander ─────────
+await seite.setViewportSize({ width: 1440, height: 900 });
+await schlaf(600);
+const schiene = await seite.evaluate(() => {
+  const n = document.getElementById("reiter");
+  const r = n.getBoundingClientRect();
+  return { links: Math.round(r.left), breite: Math.round(r.width), hoehe: Math.round(r.height) };
+});
+pruefe(
+  schiene.links <= 1 && schiene.breite < 320 && schiene.hoehe > 500,
+  `G16 die Reiter stehen am Rechner links als Schiene (${schiene.breite}x${schiene.hoehe} px bei x=${schiene.links})`,
+);
+await seite.click('[data-ziel="sSpiele"]');
+await schlaf(350);
+await seite.click(".spielkachel >> nth=0");   // Plinko
+await schlaf(700);
+const spalten = await seite.evaluate(() => {
+  const f = document.querySelector(".spielfeld").getBoundingClientRect();
+  const st = document.querySelector(".steuerung").getBoundingClientRect();
+  const k = document.getElementById("btnSetzen").getBoundingClientRect();
+  const brett = document.querySelector(".plinkobrett").getBoundingClientRect();
+  return {
+    nebeneinander: st.left >= f.right - 2,
+    knopfImBild: k.top >= 0 && k.bottom <= window.innerHeight + 1,
+    brettImBild: brett.top >= 0 && brett.bottom <= window.innerHeight + 1,
+    dokScrollt: document.documentElement.scrollHeight - window.innerHeight,
+  };
+});
+pruefe(spalten.nebeneinander, "G16 Spielfeld und Steuerung stehen nebeneinander, nicht uebereinander");
+pruefe(spalten.knopfImBild, "G16 der Spielknopf steht ohne Scrollen im Bild");
+pruefe(spalten.brettImBild, "G16 und das ganze Nagelbrett gleich mit");
+pruefe(spalten.dokScrollt <= 1, `G16 das Dokument scrollt auch am Rechner nicht (${spalten.dokScrollt} px)`);
+await seite.setViewportSize({ width: 390, height: 844 });
+await schlaf(600);
 
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────
 for (const ziel of ["sDruecken", "sSpiele", "sBoerse", "sLaden", "sTafel"]) {

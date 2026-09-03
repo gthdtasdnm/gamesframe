@@ -187,7 +187,7 @@ gesund aus). Und ein Griff, den es dort **nicht** gibt: gegen live legt die
 Probe kein Konto an. Die Konten auf inf-zeus.de gehören den Leuten, die dort
 spielen; eine Probe, die sich bei jedem Lauf eines dazulegt, hinterlässt nach
 einem Jahr hundert Karteileichen mit Vermögen in der Bestenliste. Gegen live
-bleibt deshalb nur der Weg hinein (L1–L4): Anmeldung, Kurse, Crash-Runde –
+bleibt deshalb nur der Weg hinein (L1–L4): Anmeldung, Kurse, ein Lebenszeichen –
 genug, um zu wissen, dass Apache, TLS und der Dienst zusammenspielen.
 
 Drei Funde, die **nur** der Browserlauf gemacht hat und die exemplarisch sind:
@@ -219,7 +219,17 @@ von einer Probe** – und beide gehören in dieselbe Familie:
   der laufenden Runde nie wieder, und der Raus-Knopf erschien nie. Ein
   Proband namens `btest` hätte das nie gezeigt – **deshalb heißt der Proband
   in `pruefe-glueckspilz.mjs` jetzt `B…` und nicht `b…`.** Wo klein und groß
-  auseinandergehen können, muss die Probe beides haben.
+  auseinandergehen können, muss die Probe beides haben. (Die gemeinsame Runde
+  gibt es seit dem 03.09.2026 nicht mehr – die Lehre über groß und klein
+  schon.)
+- **Ob man spielen kann, ohne zu scrollen, sieht nur der Browser.** Kein
+  Serverlauf und kein Blick in die CSS-Datei sagt, ob der Spielknopf im Bild
+  steht; die Rückmeldung dazu kam von einem Menschen mit einem Handy. Seitdem
+  misst `G15` bei sechs Spielen nach, ob `#btnSetzen` ohne Scrollen im
+  Sichtfeld liegt **und** mit `elementFromPoint` wirklich getroffen wird, und
+  `G16` dasselbe bei 1440 × 900 samt der Frage, ob die Reiterschiene links
+  steht. **Die Lehre: eine Aussage über Bedienbarkeit gehört gemessen, nicht
+  geschätzt** – „müsste passen" hat hier zweimal nicht gestimmt.
 
 **Ameisen ist der erste Fall, in dem eine Probe eine eigene Fassung braucht,
 ohne dass es um Räume oder Züge ginge** (18.08.2026): jeder Bau gehört einem
