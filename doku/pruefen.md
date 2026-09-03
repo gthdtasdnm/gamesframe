@@ -36,6 +36,7 @@ node pruefe-revier.mjs         # kommt der unsichtbare Joystick an, bewegt sich 
 node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu Maussteuerung und vier Wege zum Turbo
 node pruefe-schafstall.mjs     # Schafstall: eine ganze Runde ueber den Tipp-Knopf, Neuladen, Herz weg
 node pruefe-ameisen.mjs        # Ameisen: Tippen, Laden, zweiter Ausgang, derselbe Bau nach dem Neuladen
+node pruefe-glueckspilz.mjs    # Glueckspilz: Knopf, Schwung, Plinko-Tafel, Boerse, Konto (eigene Fassung, Port 8188)
 node pruefe-dating.mjs         # ZWEI: Tafel, Countdown, Reservierung – und die Uebungsrunde bis in die private Lobby im iframe
 node pruefe-hochzeit.mjs       # Grossansicht: passt das Bild ins Fenster? (misst, statt zu zeigen)
 GAST=<wort> node pruefe-hochzeit-upload.mjs   # 150 Bilder am Handy auswaehlen: kommt Rueckmeldung?
@@ -61,6 +62,18 @@ cd /var/www/html/imposter
 PORT=8086 HOST=127.0.0.1 deno run --allow-net --allow-read --allow-env --allow-sys server.js &
 cd /root/werkzeug-screenshots && node pruefe-imposter.mjs   # Deckel, Ansage, Rollen
 ss -tlnp | grep ':8086 '   # danach ueber den Port beenden, nie per pkill
+
+# Glueckspilz - Konten und Guthaben, deshalb eigene Fassung auf 8188.
+# START_CENT gibt Startguthaben, die vier anderen Griffe spulen die Nacht vor
+# und schicken das Konto ueber die Platte. Die Probe sagt jeden dieser Teile
+# ausdruecklich ab, wenn sie gegen live laeuft.
+cd /var/www/html/glueckspilz
+KONTEN_DIR=/tmp/gp-probe START_CENT=500000 RUHE_MS=1200 SICHERN_MS=800 \
+  OFFLINE_MAL=20000 WEG_AB_MS=1500 PORT=8188 HOST=127.0.0.1 \
+  deno run --allow-net --allow-read --allow-write=/tmp/gp-probe --allow-env --allow-sys server.js &
+WS_URL=ws://127.0.0.1:8188/ws deno task probe          # P0-P9, M1-M5, S1-S11
+cd /root/werkzeug-screenshots && node pruefe-glueckspilz.mjs   # G01-G13
+ss -tlnp | grep ':8188 '   # danach ueber den Port beenden, nie per pkill
 ```
 
 Ohne Browser, aus `/var/www/html` heraus:
@@ -164,6 +177,33 @@ gemeinsamem Lobby-Protokoll.
 hinaus steckt deshalb in der eigenen `probe.js` (Beitritt, Abschuss, Müll) und
 in `pruefe-revier.mjs` bzw. `pruefe-wurm.mjs` (der Joystick, den man nicht
 sieht, und bei Wurm der Turbo, den kein Serverprotokoll kennt).
+
+**Glueckspilz (03.09.2026) treibt das weiter.** Dort hängt fast alles an
+Griffen: `START_CENT` (ohne Guthaben keine Wette), `KONTEN_DIR` (sonst schreibt
+die Probe in die echten Konten), `OFFLINE_MAL` und `WEG_AB_MS` (eine Nacht in
+zweieinhalb Sekunden), `SICHERN_MS` und `RUHE_MS` (ein Konto, das wirklich über
+die Platte geht – eins, das nur im Speicher liegt, sieht bis zum Neustart
+gesund aus). Und ein Griff, den es dort **nicht** gibt: gegen live legt die
+Probe kein Konto an. Die Konten auf inf-zeus.de gehören den Leuten, die dort
+spielen; eine Probe, die sich bei jedem Lauf eines dazulegt, hinterlässt nach
+einem Jahr hundert Karteileichen mit Vermögen in der Bestenliste. Gegen live
+bleibt deshalb nur der Weg hinein (L1–L4): Anmeldung, Kurse, Crash-Runde –
+genug, um zu wissen, dass Apache, TLS und der Dienst zusammenspielen.
+
+Drei Funde, die **nur** der Browserlauf gemacht hat und die exemplarisch sind:
+
+- **`display: flex` schlägt `hidden`.** Das Anmeldefenster war unsichtbar und
+  fing trotzdem jeden Klick ab – der Knopf darunter reagierte auf nichts. Die
+  Seite sah dabei vollkommen gesund aus. Dieselbe Falle wie `.overlay` ohne
+  `.an` weiter oben; seitdem steht in `glueckspilz/public/style.css` ganz oben
+  ein `[hidden] { display: none !important }`.
+- **Eine Anzeige, die sich füllt und nichts tut.** Die Schwungleiste stieg auf
+  80 %, und der Cent blieb ein Cent: `Math.round(1 * 1.2)` ist wieder 1.
+  Seitdem werden Bruchteile gesammelt, wie beim Kobold in Ameisen.
+- **Eine Tafel, die seitlich hinauslief.** Bei sechzehn Reihen standen die
+  siebzehn Auszahlungen abgeschnitten übereinander. `G04` misst seitdem
+  Feldbreite und Schriftgröße nach, statt zu fragen, ob etwas da ist –
+  dieselbe Lehre wie bei Wortleger.
 
 **Ameisen ist der erste Fall, in dem eine Probe eine eigene Fassung braucht,
 ohne dass es um Räume oder Züge ginge** (18.08.2026): jeder Bau gehört einem

@@ -53,3 +53,36 @@ Voreinstellung.
 
 Poker o. ä.: **nur Spielgeld, keine Verbindung zum Spendenknopf.** Sobald Geld
 hineingeht, ist es Glücksspiel (§ 284 StGB / GlüStV) und erlaubnispflichtig.
+
+## Glückspilz (03.09.2026)
+
+Seit dem 03.09.2026 gibt es genau ein Spiel, das diesen Satz ernst nimmt:
+**`/glueckspilz/`**, ein Spielgeld-Kasino mit neun Glücksspielen und einer
+erfundenen Börse. Es ist der Grenzfall, für den der Satz geschrieben wurde,
+deshalb steht hier, wie die Grenze gezogen ist:
+
+- **Geld entsteht nur am Knopf.** Ein Druck, ein Cent. Es gibt keine
+  Einzahlung, keine Auszahlung, keinen Gutschein, keinen Handel zwischen
+  Konten und **keine Verbindung zum Spendenknopf** der Seite. Wer spendet,
+  bekommt kein Spielgeld; wer spielt, kann nichts herausnehmen.
+- **Die Währung heißt Euro und ist keiner.** Das ist Absicht: eine erfundene
+  Währung („Taler“) würde die Mechanik verschleiern, um die es geht. Dafür
+  steht auf der Anmeldeseite, in der Hilfe und auf der Kachel derselbe Satz –
+  hier läuft kein echtes Geld.
+- **Die Auszahlungsquote steht offen da: 99 %.** Das Haus gewinnt, und das
+  Spiel sagt es. Es sagt auch, was das heißt: auf Dauer verliert man, und
+  genau so ist ein Kasino gebaut.
+- **Jeder Wurf ist nachrechenbar.** Der Hash der Server-Saat steht vorher da;
+  wer sie aufdeckt, kann jede alte Runde nachrechnen. Ein Spielgeldhaus, das
+  schummelt, wäre nicht harmloser, sondern nur schlechter.
+
+**Jugendschutz** wie bei den drei anderen: eine Abfrage – hier vor dem Anlegen
+eines Kontos, nicht vor der ersten Wette, denn wer ein Konto hat, hat schon
+angefangen –, die Bestätigung unter `glueckspilz_ab18` im `localStorage`, und
+auf der Anmeldeseite wie in der Hilfe der Hinweis auf die kostenlose und
+anonyme Beratung der BZgA. Ob das reicht (JMStG), steht wie bei den anderen
+als offene Frage in `RISIKEN-TODO.md`.
+
+**Was hier nicht hineingehört:** ein zweites Spiel dieser Art. Das eine trägt
+die ganze Abwägung; ein zweites brächte nichts Neues und verdoppelte nur die
+Angriffsfläche.

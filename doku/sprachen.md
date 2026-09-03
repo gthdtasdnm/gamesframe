@@ -1,6 +1,6 @@
 # Deutsch, Türkisch, Englisch
 
-Stand: 02.09.2026. **Alle 28 Spiele, der Bugreport, die Spieleübersicht und die
+Stand: 03.09.2026. **Alle 29 Spiele, der Bugreport, die Spieleübersicht und die
 Startseite sind dreisprachig** – die Oberfläche jedenfalls. Was bewusst deutsch
 bleibt, steht unten unter „Was nicht übersetzt wird".
 
@@ -176,6 +176,19 @@ PORT=8087 HOST=127.0.0.1 deno run --allow-net --allow-read --allow-env --allow-s
 cd /root/werkzeug-screenshots && node pruefe-sprache.mjs
 ss -tlnp | grep ':8087 '   # danach über den Port beenden, nie per pkill
 ```
+
+Seit dem 03.09.2026 liest sie **alle eigenen JS-Dateien eines Spiels**, nicht
+mehr nur `app.js` und `server.js`. Vorher stand dort eine Liste von Kandidaten;
+das reichte, solange jedes Spiel seinen Client in einer Datei hatte. Glückspilz
+hat vier davon (`app.js`, `kern.js`, `casino.js`, `markt.js`) und vier auf der
+Serverseite – deren Schlüssel wären als Karteileichen gemeldet worden, obwohl
+sie benutzt werden. Ausgenommen sind die verteilten Teile, `texte.js` selbst
+und `probe.js`.
+
+Dabei ist ein zweiter Fehler aufgefallen: das Muster für Schlüssel war zu grob.
+`"D..t..T..t..D"` aus `wortleger/brett.js` – eine Zeile des Spielbretts – galt
+als Schlüssel und wurde als unübersetzt gemeldet. Jetzt muss **jedes Segment
+mit einem Buchstaben anfangen**.
 
 Sie geht beide Richtungen durch – kein Schlüssel ohne Übersetzung, keine
 Übersetzung ohne Schlüssel – und dazu: gleiche Platzhalter (`{name}`) und

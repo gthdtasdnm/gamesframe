@@ -1564,13 +1564,101 @@ async function schafstall(browser) {
   await knipsen(seite, 'schafstall-spiel.png');
 }
 
+
+// ---------------------------------------------------------------- Glückspilz
+
+/**
+ * Glueckspilz - **eigene Fassung**, aus denselben Gruenden wie Ameisen.
+ *
+ * Ein ehrliches Bild eines frischen Kontos waere ein Knopf und null Euro. Und
+ * gegen live gespielt hiesse: ein Konto mehr in der Bestenliste, bei jedem
+ * Lauf. Also eine eigene Fassung auf einem freien Port, mit Startguthaben und
+ * eigenem Kontenordner - derselbe Griff wie dort.
+ *
+ * Der Moment ist gewaehlt, nicht zufaellig: **die Kugel mitten im Fall.** Ein
+ * Bild der Ergebniszeile allein zeigte eine Zahl; die fallende Kugel ueber der
+ * Auszahlungstafel zeigt, worum es geht. Damit unter dem Brett trotzdem ein
+ * Ergebnis steht, wird vorher so lange geworfen, bis einer sitzt - dieselbe
+ * Sorte Geduld wie bei Maexchen, wo auf einen gemischten Wurf gewartet wird.
+ */
+async function glueckspilz(browser) {
+  const { spawn } = await import('node:child_process');
+  const PORT = 8173;
+  const kind = spawn('/usr/local/bin/deno', [
+    'run', '--allow-net', '--allow-read', '--allow-write=/tmp/glueckspilz-bild',
+    '--allow-env', '--allow-sys', 'server.js',
+  ], {
+    cwd: '/var/www/html/glueckspilz',
+    env: {
+      ...process.env,
+      PORT: String(PORT), HOST: '127.0.0.1',
+      DENO_DIR: '/tmp/deno-check',
+      START_CENT: '184250',
+      KONTEN_DIR: '/tmp/glueckspilz-bild',
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let fehler = '';
+  kind.stderr.on('data', (d) => { fehler += d.toString(); });
+
+  try {
+    await mkdir('/tmp/glueckspilz-bild', { recursive: true });
+    await warte(3000);
+    const seite = await spieler(browser, 'glueckspilz');
+    seite.on('dialog', (d) => d.accept());
+    await seite.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' });
+    await seite.fill('#fName', 'glueckspilz');
+    await seite.fill('#fPass', 'nurfuerdasbild');
+    await seite.click('#btnNeu');
+    await seite.waitForSelector('#kopf:not([hidden])', { timeout: 10000 });
+    await warte(800);
+
+    await seite.click('[data-ziel="sSpiele"]');
+    await warte(400);
+    await seite.click('.spielkachel >> nth=0');       // Plinko
+    await warte(600);
+    await seite.fill('#fEinsatz', '5,00');
+    // Sechzehn Reihen und hohes Risiko: das Brett ist dichter besetzt, und auf
+    // der Tafel stehen die Zahlen, um die es in einem Kasino geht.
+    await seite.click('.wahlreihe button:text-is("16")');
+    await warte(300);
+    await seite.click('.wahlreihe button:text-is("hoch")');
+    await warte(400);
+
+    // So lange werfen, bis einer sitzt - sonst steht unter dem Brett
+    // "nur 0,90 € zurueck", und das Bild widerlegt seine eigene Kachel.
+    // Dieselbe Geduld wie bei Maexchen, wo auf einen gemischten Wurf gewartet
+    // wird.
+    let ergebnis = '';
+    for (let i = 0; i < 90; i++) {
+      await seite.click('#btnSetzen');
+      await warte(2200);
+      ergebnis = await seite.textContent('#ergebnis');
+      const m = Number((ergebnis.match(/([\d,]+)×/)?.[1] ?? '0').replace(',', '.'));
+      if (m >= 2) break;
+    }
+    console.log(`    Ergebnis unter dem Brett: ${ergebnis}`);
+
+    // Und jetzt der eigentliche Moment: ein neuer Wurf, geknipst, waehrend die
+    // Kugel noch faellt. Sechzehn Reihen zu je 105 ms sind 1,7 s Fall - nach
+    // einer Sekunde ist sie etwa auf halber Hoehe.
+    await seite.click('#btnSetzen');
+    await warte(1000);
+    await knipsen(seite, 'glueckspilz-spiel.png');
+    await seite.context().close();
+  } finally {
+    kind.kill('SIGTERM');
+    await warte(500);
+  }
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
   flasche, cubes, wortleger,
   // Die zwoelf vom 09.08.2026
   werwolf, schwimmen, maumau, luegen, becher, kingscup, paare, snake,
   minenfeld, sudoku, wortgitter, patience, wasserfarben,
-  revier, wurm, ameisen, schafstall,
+  revier, wurm, ameisen, schafstall, glueckspilz,
 };
 
 const gewaehlt = process.argv.slice(2);

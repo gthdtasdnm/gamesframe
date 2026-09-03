@@ -30,9 +30,9 @@ export const WOERTER = {
   tr: {
     // --- Kopf der Seite ---
     "seite.titel": "Oyunlar – inf-zeus.de",
-    "seite.beschreibung": "1 ile 20 kişi için yirmi sekiz tarayıcı oyunu. Kurulum yok, hesap yok.",
+    "seite.beschreibung": "1 ile 20 kişi için yirmi dokuz tarayıcı oyunu. Kurulum yok, hesap yok.",
     "seite.h1": "Oyunlar",
-    "seite.sub": "1 ile 20 kişi için yirmi sekiz tarayıcı oyunu. İndirme yok, hesap yok – bağlantıyı paylaş, adını yaz, başla.",
+    "seite.sub": "1 ile 20 kişi için yirmi dokuz tarayıcı oyunu. İndirme yok, hesap yok – bağlantıyı paylaş, adını yaz, başla.",
 
     // --- Suche - die drei Meldungen entstehen erst beim Tippen ---
     "suche.platz": "Oyun ara – ad, anahtar kelime, kişi sayısı",
@@ -51,7 +51,7 @@ export const WOERTER = {
     "gruppe.tempo.titel": "Hız ve beceri",
     "gruppe.tempo.sub": "Kartlar, semboller, refleksler. Kısa turlar, acımasız puanlar – herkes kendi cihazında.",
     "gruppe.allein.titel": "Tek başına",
-    "gruppe.allein.sub": "Oda yok, kod yok, ikna edilecek kimse yok. Dört bulmaca oyunu tamamen tarayıcıda çalışır ve sayfa yüklendikten sonra bağlantıya ihtiyaç duymaz; Ameisen ise sürekli çalışır, çünkü yuvan sunucuda durur.",
+    "gruppe.allein.sub": "Oda yok, kod yok, ikna edilecek kimse yok. Bulmaca oyunları tamamen tarayıcıda çalışır ve sayfa yüklendikten sonra bağlantıya ihtiyaç duymaz; Ameisen ile Glückspilz ise sürekli çalışır, çünkü yuvan ve hesabın sunucuda durur.",
 
     // --- Der Anleitungsdialog ---
     "dialog.zu": "Kapat",
@@ -385,14 +385,24 @@ export const WOERTER = {
     "k.schafstall.s5": "Kurt 🐺 hiç kımıldamaz – ama menzilinde (taralı kareler) duran biri gider ve tur baştan başlar. Yanından geçmek tehlikeli değildir.",
     "k.schafstall.s6": "4. turdan sonra iki koyun birlikte koşar, 6'dan sonra kayalar çıkar, 8'den sonra kurt gelir, 10'dan sonra kenar çitle kapanır, 12'den sonra yolda bir fil durur – iki kere iki hücre büyüklüğünde.",
     "k.schafstall.s7": "Hepsi ağılda: puanlar tura, artan hamlelere ve hıza göre, üstüne üç yıldıza kadar. Sonraki tur daha büyük ve daha kalabalıktır.",
+    // --- Glückspilz ---
+    "k.glueckspilz.kurz": "Para yalnızca bir düğmeden doğan bir oyun parası kumarhanesi: her basışta bir kuruş. Dokuz şans oyunu ve uydurma bir borsa onu geri alıyor.",
+    "k.glueckspilz.lang": "Burada gerçek para dönmez – yatırma yok, çekme yok, alıp götürülecek hiçbir şey yok. Her şey büyük yeşil bir düğmeyle başlar: bir basış, bir kuruş. Hızlı basan hız çubuğunu yukarıda tutar ve daha çok alır; dükkânda her biri bir öncekinin üç katına mal olan basamaklar vardır, ki düğme asla gereksiz olmasın. Gece boyunca küçük bir tutar birikir. Kazanılan, dokuz şans oyununda yakılabilir – Plinko, Mines, Crash, Dice, Limbo, Ejderha Kulesi, Flip, Elmaslar, Bars – ya da fiyatları eğilimler, sakin ve çalkantılı dönemler ve haberler tanıyan sekiz uydurma şirketin borsasında. Orada kaldıraç yüz katına kadar ayarlanır; değer sıfıra düşerse, sen bakmıyorken bile pozisyon gider. Ödeme oranı her yerde %99 ve her atış sonradan doğrulanabilir: sunucu tohumunun özeti önceden orada durur. Ad ve parolayla bir hesap bunun parçasıdır – onsuz kayıt, tarayıcı bir sonraki temizlikte silinirdi.",
+    "k.glueckspilz.s1": "Hesap aç: ad ve parola, başka bir şey değil – e-posta yok, kurtarma yok. <b>18 yaş üstü</b>, ve içindeki her şey oyun parası.",
+    "k.glueckspilz.s2": "Düğme tek kaynaktır: bir basış, bir kuruş. Hızlı basmak hız çubuğunu doldurur ve iki buçuk katına kadar öder.",
+    "k.glueckspilz.s3": "Dükkânda beş basamak bekler: daha iyi bir başparmak, senin yerine basan bir cin, hız çubuğu için ateş hırsı, gece için bir çorap kumbara ve uğurlar için bir yonca tarhı. Her basamak öncekinin aşağı yukarı üç katı tutar.",
+    "k.glueckspilz.s4": "Arada bir ekranda bir uğur uçar. Dokun: 🍀 ve 💰 hemen öder, ⚡ basış değerini üçe katlar, ⭐ her kazancı yarı yarıya artırır, 🎁 üç bedava bahis verir.",
+    "k.glueckspilz.s5": "Dokuz oyun parayı geri alır: Plinko, Mines, Crash, Dice, Limbo, Ejderha Kulesi, Flip, Elmaslar, Bars. Her yerde ortalama 100 avronun 99'u geri döner – yani uzun vadede kaybedilir, ve bir kumarhane tam olarak böyle kurulur.",
+    "k.glueckspilz.s6": "Borsada sekiz uydurma şirket var. Fiyatlar yazı tura değil: eğilimler, sakin ve çalkantılı dönemler, haberler ve hepsini birden kımıldatan bir piyasa var. Kaldıraç 100'e kadar çıkar – ve değer sıfıra düşerse, sen bakmıyorken bile pozisyon gider.",
+    "k.glueckspilz.s7": "Her atış doğrulanabilir: „Tablo“ altında, sen oynamadan önce sunucu tohumunun özeti durur. Aç, hesapla, yeni tohum al.",
   },
 
   en: {
     // --- Kopf der Seite ---
     "seite.titel": "Games – inf-zeus.de",
-    "seite.beschreibung": "Twenty-eight browser games for 1 to 20 people. No install, no account.",
+    "seite.beschreibung": "Twenty-nine browser games for 1 to 20 people. No install, no account.",
     "seite.h1": "Games",
-    "seite.sub": "Twenty-eight browser games for 1 to 20 people. No download, no account – share the link, type a name, go.",
+    "seite.sub": "Twenty-nine browser games for 1 to 20 people. No download, no account – share the link, type a name, go.",
 
     // --- Suche - die drei Meldungen entstehen erst beim Tippen ---
     "suche.platz": "Search games – name, keyword, player count",
@@ -411,7 +421,7 @@ export const WOERTER = {
     "gruppe.tempo.titel": "Speed and skill",
     "gruppe.tempo.sub": "Cards, symbols, reflexes. Short rounds, harsh scores – everyone on their own device.",
     "gruppe.allein.titel": "Playing alone",
-    "gruppe.allein.sub": "No room, no code, nobody to talk into it first. The four puzzle games run entirely in the browser and need no connection once the page has loaded; Ameisen keeps running, because your colony lives on the server.",
+    "gruppe.allein.sub": "No room, no code, nobody to talk into it first. The puzzle games run entirely in the browser and need no connection once the page has loaded; Ameisen and Glückspilz keep running, because your colony and your account live on the server.",
 
     // --- Der Anleitungsdialog ---
     "dialog.zu": "Close",
@@ -745,5 +755,15 @@ export const WOERTER = {
     "k.schafstall.s5": "The wolf 🐺 never moves – but whoever comes to a stop within its reach (the hatched squares) is gone, and the round starts over. Running past is safe.",
     "k.schafstall.s6": "From round 4 two sheep run as a team, from 6 there are rocks about, from 8 the wolf turns up, from 10 the edge is fenced in, from 12 an elephant stands in the way – two by two cells in size.",
     "k.schafstall.s7": "All in the pen: points by round, moves saved and speed, plus up to three stars. The next round is bigger and fuller.",
+    // --- Glückspilz ---
+    "k.glueckspilz.kurz": "A play-money casino where money only comes from one button: one cent per press. Nine games of chance and an invented stock market take it back off you.",
+    "k.glueckspilz.lang": "No real money runs here – there is no deposit, no withdrawal and nothing you could take with you. Everything starts at one big green button: one press, one cent. Press fast and the streak bar stays up and pays more; the shop sells levels whose price triples with each one, so the button never becomes pointless. Overnight a small amount piles up. What you earn can then be gambled away in nine games – Plinko, Mines, Crash, Dice, Limbo, Dragon Tower, Flip, Diamonds, Bars – or on a market of eight invented firms whose prices know trends, calm and wild stretches and news. There the leverage goes up to a hundred; if the value hits zero the position is gone, even while nobody is looking. The payout rate is 99 % everywhere, and every single roll can be verified afterwards: the hash of the server seed is shown beforehand. An account with a name and a password is part of it – without one the save would be gone with the next cleared browser.",
+    "k.glueckspilz.s1": "Create an account: name and password, nothing else – no e-mail, no recovery. <b>18+</b>, and everything inside is play money.",
+    "k.glueckspilz.s2": "The button is the only source: one press, one cent. Pressing fast fills the streak bar and pays up to two and a half times as much.",
+    "k.glueckspilz.s3": "Five levels wait in the shop: a better thumb, a brownie that presses along, burning zeal for the streak bar, a sock drawer for the night and a clover patch for the charms. Each level costs roughly three times the last.",
+    "k.glueckspilz.s4": "Now and then a charm flies across the screen. Tap it: 🍀 and 💰 pay out at once, ⚡ triples the press value, ⭐ raises every win by half, 🎁 gives three free bets.",
+    "k.glueckspilz.s5": "Nine games take the money back: Plinko, Mines, Crash, Dice, Limbo, Dragon Tower, Flip, Diamonds, Bars. Everywhere 99 of every 100 euros come back on average – so in the long run you lose, and that is exactly how a casino is built.",
+    "k.glueckspilz.s6": "The market has eight invented firms. The prices are no coin flip: there are trends, calm and wild stretches, news, and a market that moves everything at once. Leverage goes up to 100 – and if the value hits zero the position is gone, even while you are not looking.",
+    "k.glueckspilz.s7": "Every roll can be verified: under „Board“ the hash of the server seed is shown before you play. Reveal it, recompute, get a new seed.",
   },
 };

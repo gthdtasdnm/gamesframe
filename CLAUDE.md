@@ -3,11 +3,11 @@
 Diese Datei wird in **jeder** Sitzung gelesen. Deshalb steht hier nur, was in
 jeder Sitzung gebraucht wird: wo etwas liegt, und die drei Fallen, die sonst
 jedes Mal zuschlagen. Alles andere steht in `doku/` und wird **nur bei Bedarf**
-geöffnet. Stand: 18.08.2026.
+geöffnet. Stand: 03.09.2026.
 
 ## Was hier liegt
 
-`/var/www/html` ist der DocumentRoot. Darin: achtundzwanzig Browserspiele, die
+`/var/www/html` ist der DocumentRoot. Darin: neunundzwanzig Browserspiele, die
 Spieleübersicht, ein Bugreport-Werkzeug, zwei Rechtstexte – und, damit nicht
 verwechselt, Nextcloud und zwei Tradingbots.
 
@@ -23,6 +23,13 @@ anfassen, wenn ausdrücklich danach gefragt wird.
 
 `hochzeit` ist eine private Bildergalerie hinter einem Zugangswort – kein
 Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
+
+`glueckspilz` ist ein **Spielgeld-Kasino mit Konto und Passwort** – das
+einzige Spiel im Haus, das eines braucht, und das einzige, in dem es um Geld
+geht. Um Spielgeld: es entsteht ausschließlich an einem Knopf (ein Cent je
+Druck), es gibt keine Einzahlung, keine Auszahlung und keine Verbindung zum
+Spendenknopf. Das ist nicht verhandelbar – siehe `doku/inhalte.md`. 18+ nach
+demselben Muster wie die drei anderen 18+-Spiele.
 
 `dating` ist ZWEI, ein Speed-Dating-Abend (taeglich 20 Uhr), der die
 bestehenden Spiele benutzt. Ebenfalls kein Spiel, keine Kachel, `noindex` –

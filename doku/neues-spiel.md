@@ -89,6 +89,22 @@ anderen nicht brauchen:
   Kennungsformat, gegen das geprüft wird (sonst schreibt jemand Pfade), und ein
   Aufräumlauf für Baue, in denen lange niemand war.
 
+**Seit Glückspilz (03.09.2026) gibt es eine dritte Spielart: mit Konto.**
+Ameisen würfelt eine Kennung und legt sie in den `localStorage` – das genügt
+für einen Ameisenbau, den niemand vermisst. Für einen Spielstand, der über
+Wochen wächst, genügt es nicht: ein geleerter Browser, und alles ist weg.
+Glückspilz hat deshalb Name und Passwort (`glueckspilz/konten.js`, PBKDF2 mit
+210 000 Runden). Wer so etwas noch einmal baut, holt sich dreierlei ins Haus:
+
+- **eine Zeitschranke, die nicht verhandelbar ist.** Das Ableiten dauert rund
+  40 ms; das gehört in einen `await`-Pfad (Anmelden), nie in eine Schleife.
+- **eine Freigabeliste für den Namen**, weil der Name der Dateiname ist:
+  `/^[a-z0-9_-]{3,16}$/`. Eine Sperrliste hätte genau eine Lücke gebraucht.
+- **die Frage, was ohne Zuschauer weiterläuft.** Bei Glückspilz sind es die
+  Börsenpositionen: liefen sie nur, solange jemand hinsieht, wäre Abmelden vor
+  dem Verlust die beste Strategie. Konten mit offener Position bleiben deshalb
+  im Speicher, auch ohne Verbindung.
+
 ## Dateien
 
 ```

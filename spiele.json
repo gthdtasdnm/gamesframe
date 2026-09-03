@@ -3,7 +3,6 @@
   "portsFrei": [
     "8086",
     "8087",
-    "8088",
     "8089"
   ],
   "portsFremd": {
@@ -522,6 +521,23 @@
         "lobbyCss": "style.css",
         "rahmenCss": "style.css",
         "sprache": "sprache.js"
+      }
+    },
+    {
+      "name": "glueckspilz",
+      "titel": "Glückspilz",
+      "pfad": "/glueckspilz/",
+      "port": 8088,
+      "dienst": "systemd",
+      "leute": "1",
+      "kategorie": "Allein spielen",
+      "art": "server",
+      "repo": null,
+      "hinweis": "Spielgeld-Kasino mit Konto und Passwort. Geld entsteht ausschliesslich am Knopf (ein Cent je Druck); es gibt keine Einzahlung, keine Auszahlung und keine Verbindung zum Spendenknopf - siehe doku/inhalte.md. Port 8088 statt 8086/8087: die beiden sind in pruefe-imposter.mjs und pruefe-sprache.mjs als Probenports fest verdrahtet.",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "statisch": "statisch.js",
+        "sprache": "public/sprache.js"
       }
     }
   ],

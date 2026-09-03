@@ -22,7 +22,7 @@
 // Versioniert in /var/www/html/werkzeug/.
 
 import { chromium } from "playwright";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 const WURZEL = "/var/www/html";
@@ -74,9 +74,13 @@ function ausCode(quelle) {
     .join("\n");
   const raus = new Set();
   // Ein Schluessel hat immer einen Punkt - ohne den faengt das Muster
-  // Objektschluessel und Ereignisnamen ein ("pointerup", "klassisch").
-  const punkt = /^[a-zA-Z][\w]*\.[\w.]*$/;
-  const nimm = (k) => { if (punkt.test(k)) raus.add(k); };
+  // Objektschluessel und Ereignisnamen ein ("pointerup", "klassisch"). Und
+  // **jedes Segment faengt mit einem Buchstaben an**: sonst gilt die Zeile
+  // `"D..t..T..t..D"` aus `wortleger/brett.js` als Schluessel - das Spielbrett
+  // steht dort als Zeichenkette, und das Muster fuer `["schluessel", "text"]`
+  // greift danach. Ein Praefix (`t("gp.a." + id)`) darf auf einen Punkt enden.
+  const punkt = /^[a-zA-Z]\w*(\.[a-zA-Z]\w*)*\.?$/;
+  const nimm = (k) => { if (k.includes(".") && punkt.test(k)) raus.add(k); };
   for (const m of js.matchAll(/\bt\(\s*["'`]([a-zA-Z][\w.]*)["'`]/g)) nimm(m[1]);
   for (const m of js.matchAll(/\bT\(\s*["'`]([a-zA-Z][\w.]*)["'`]/g)) nimm(m[1]);
   for (const m of js.matchAll(/\buebersetzt\(\s*["'`]([a-zA-Z][\w.]*)["'`]/g)) nimm(m[1]);
@@ -116,25 +120,41 @@ const ORTE = [
     // `public/sprache.js` heisst: Server-Spiel mit public/-Ordner.
     // `sprache.js` heisst: Solo-Spiel, alles liegt flach im Ordner.
     const unter = wohin.includes("/") ? `${spiel.name}/public` : spiel.name;
-    // Der Client liegt meist in app.js daneben - Card Chaos hat ihn in js/.
+    // **Alle eigenen JS-Dateien des Spiels**, nicht nur app.js und server.js.
+    //
+    // Frueher stand hier eine Liste von Kandidaten (app.js, js/app.js,
+    // js/board.js, gemeinsam.js, schale.js, server.js). Das reichte, solange
+    // jedes Spiel seinen Client in einer Datei hatte. Glueckspilz hat vier
+    // (`app.js`, `kern.js`, `casino.js`, `markt.js`) und vier auf der
+    // Serverseite - die Schluessel darin waeren als Karteileichen gemeldet
+    // worden, obwohl sie benutzt werden.
+    //
+    // Ausgenommen sind die verteilten Teile (sie gehoeren `gemeinsam/`),
+    // `texte.js` selbst und `probe.js`: eine Probe darf Schluessel erwaehnen,
+    // ohne dass sie deshalb im Markup stehen muessten.
+    const VERTEILT = new Set([
+      "bremse.js", "raum.js", "statisch.js", "sprache.js", "schale-texte.js",
+      "texte.js", "probe.js",
+    ]);
     const code = [];
-    for (const kandidat of [`${unter}/app.js`, `${unter}/js/app.js`, `${unter}/js/board.js`,
-                            `${unter}/gemeinsam.js`]) {
+    const sammle = (ordner) => {
+      let eintraege;
       try {
-        readFileSync(`${WURZEL}/${kandidat}`);
-        code.push(kandidat);
-      } catch { /* hat dieses Spiel nicht */ }
-    }
-    for (const dazu of ["schale.js"]) {
-      try {
-        readFileSync(`${WURZEL}/${unter}/${dazu}`);
-        code.push(`${unter}/${dazu}`);
-      } catch { /* hat dieses Spiel nicht */ }
-    }
-    try {
-      readFileSync(`${WURZEL}/${spiel.name}/server.js`);
-      code.push(`${spiel.name}/server.js`);
-    } catch { /* rein statisch */ }
+        eintraege = readdirSync(`${WURZEL}/${ordner}`, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      for (const e of eintraege) {
+        if (e.isDirectory()) {
+          if (["node_modules", ".git", "welten", "konten", "bilder"].includes(e.name)) continue;
+          sammle(`${ordner}/${e.name}`);
+          continue;
+        }
+        if (!e.name.endsWith(".js") || VERTEILT.has(e.name)) continue;
+        code.push(`${ordner}/${e.name}`);
+      }
+    };
+    sammle(spiel.name);
     ORTE.push({
       name: spiel.titel ?? spiel.name,
       html: `${unter}/index.html`,
