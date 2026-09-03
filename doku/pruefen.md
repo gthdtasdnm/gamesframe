@@ -205,6 +205,22 @@ Drei Funde, die **nur** der Browserlauf gemacht hat und die exemplarisch sind:
   Feldbreite und Schriftgröße nach, statt zu fragen, ob etwas da ist –
   dieselbe Lehre wie bei Wortleger.
 
+Zwei weitere kamen am 03.09.2026 dazu, **gemeldet vom Nutzer, nicht gefunden
+von einer Probe** – und beide gehören in dieselbe Familie:
+
+- **Der Reiter „Spiele" schloss das offene Spiel nicht.** Wer dort hintippte,
+  während ein Spiel lief, bekam nicht die Auswahl, sondern weiter dasselbe
+  Spiel. Folge: zwei Spielbildschirme im Dokument, zwei Knöpfe mit derselben
+  Kennung – und ein Tipp auf „Mitspielen" landete beim falschen. **Die Lehre:
+  wo Bildschirme aus- und wieder eingehängt werden, gehört ein Test darauf,
+  dass danach genau einer dasteht.** `G14` zählt seitdem `#btnSetzen`.
+- **Crash war unspielbar**, weil der Client den Anzeigenamen mit dem
+  Kontonamen verglich: wer sich als „Max" angemeldet hatte, erkannte sich in
+  der laufenden Runde nie wieder, und der Raus-Knopf erschien nie. Ein
+  Proband namens `btest` hätte das nie gezeigt – **deshalb heißt der Proband
+  in `pruefe-glueckspilz.mjs` jetzt `B…` und nicht `b…`.** Wo klein und groß
+  auseinandergehen können, muss die Probe beides haben.
+
 **Ameisen ist der erste Fall, in dem eine Probe eine eigene Fassung braucht,
 ohne dass es um Räume oder Züge ginge** (18.08.2026): jeder Bau gehört einem
 Menschen und fängt bei drei Ameisen und null Münzen an. Ein Kauf ließe sich
