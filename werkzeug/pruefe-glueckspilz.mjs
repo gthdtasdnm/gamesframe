@@ -288,7 +288,7 @@ pruefe(
 // ── G04 Plinko: die Tafel muss in die Breite passen ────────────────────────
 await seite.click('[data-ziel="sSpiele"]');
 await schlaf(400);
-pruefe((await seite.$$(".spielkachel")).length === 10, "G04 zehn Spiele stehen im Raster");
+pruefe((await seite.$$(".spielkachel")).length === 11, "G04 elf Spiele stehen im Raster");
 await seite.click(".spielkachel >> nth=0");
 await schlaf(500);
 for (const reihen of ["8", "12", "16"]) {
@@ -499,7 +499,9 @@ pruefe(ausgestiegen, `G14 in acht Anlaeufen liess sich mindestens einer mit Gewi
 // dem Umbau steht die Steuerung fest unten und nur das Spielfeld scrollt in
 // sich. Geprueft wird das, was der Daumen merkt - liegt der Spielknopf im
 // Bild, ohne dass irgendwo gescrollt wurde?
-for (const [nr, spiel] of [[0, "Plinko"], [1, "Mines"], [2, "Crash"], [4, "Limbo"], [6, "Flip"], [8, "Bars"], [9, "Keno"]]) {
+for (
+  const [nr, spiel] of [[0, "Plinko"], [1, "Mines"], [2, "Crash"], [4, "Limbo"], [6, "Flip"], [8, "Bars"], [9, "Keno"], [10, "Fallobst"]]
+) {
   await seite.click('[data-ziel="sSpiele"]');
   await schlaf(350);
   await seite.click(`.spielkachel >> nth=${nr}`);
@@ -695,9 +697,15 @@ pruefe(ziehung.knopfBereit, "G19 danach laesst sich sofort wieder ziehen");
 //
 // Geprueft wird deshalb, was der Daumen merkt:
 //   1. die Walzen fallen **nacheinander**, nicht gleichzeitig,
-//   2. bei zwei gleichen Zeichen laeuft die dritte laenger und die
-//      Ergebniszeile sagt vorher an, was an ihr haengt,
+//   2. bei zwei gleichen Zeichen laeuft die dritte laenger und langsamer,
 //   3. ein seltenes Zeichen bleibt anders liegen als eine Kirsche.
+//
+// Punkt 2 hatte bis zum 04.09.2026 einen dritten Teil: eine Zeile, die vorher
+// ansagte, was an der dritten Walze haengt ("💎💎 - trifft die dritte, zahlt
+// es 220x"). Sie ist weg, und der Test prueft jetzt das Gegenteil - **waehrend
+// der Spannung steht dort nichts**. Der Grund steht in `casino.js`: die Tafel
+// steht zwei Zentimeter tiefer auf demselben Bildschirm und sagt dasselbe,
+// nur vollstaendig.
 //
 // Zwei gleiche Zeichen kommen in rund einem Fuenftel der Zuege - deshalb wird
 // gezogen, bis es passiert ist, und nicht ein einzelner Zug bewertet.
@@ -738,7 +746,9 @@ for (; zuege < 30 && !(paarGesehen && seltenGesehen); zuege++) {
   // Kurz nach der zweiten Walze nachsehen: stehen dort zwei gleiche?
   await schlaf(900);
   const lage = await seite.evaluate(() => ({
-    zeichen: [...document.querySelectorAll(".walze span")].map((s) => s.textContent),
+    // `.zeichen` und nicht `span`: seit dem Walzenstreifen stehen in jeder
+    // Walze acht weitere Spans, die nur zum Durchlaufen da sind.
+    zeichen: [...document.querySelectorAll(".walze .zeichen")].map((s) => s.textContent),
     dreht: [...document.querySelectorAll(".walze")].map((w) => w.classList.contains("dreht")),
     spannung: document.getElementById("walzenReihe").classList.contains("spannung"),
     heiss: document.querySelectorAll(".walze.heiss").length,
@@ -755,7 +765,7 @@ for (; zuege < 30 && !(paarGesehen && seltenGesehen); zuege++) {
     const spaeter = await seite.evaluate(() =>
       document.querySelectorAll(".walze")[2].style.getPropertyValue("--tempo")
     );
-    langsamer = parseFloat(spaeter) > parseFloat(lage.tempo || "0.09");
+    langsamer = parseFloat(spaeter) > parseFloat(lage.tempo || "0.055");
   }
   // Warten, bis der Knopf wieder freigegeben ist - sonst zaehlt die naechste
   // Runde gar nicht.
@@ -775,8 +785,9 @@ for (; zuege < 30 && !(paarGesehen && seltenGesehen); zuege++) {
 pruefe(paarGesehen, `G20 in ${zuege} Zuegen standen zweimal dieselben ersten beiden Walzen`);
 pruefe(spannungGesehen, "G20 dann pulst die Reihe, die dritte Walze glueht und dreht noch");
 pruefe(
-  /×/.test(ansageGesehen),
-  `G20 und die Ergebniszeile sagt vorher an, was an der dritten haengt (${ansageGesehen})`,
+  ansageGesehen.trim() === "",
+  `G20 und die Ergebniszeile bleibt dabei leer - was an der dritten haengt, steht auf der Tafel ` +
+    `(gefunden: "${ansageGesehen}")`,
 );
 pruefe(langsamer, "G20 die dritte Walze wird dabei langsamer, statt einfach stehenzubleiben");
 pruefe(
@@ -868,6 +879,179 @@ pruefe(
 pruefe(
   /zahlt|bleiben/.test(wurfErgebnis.zeile),
   `G21 und sagt, was davon uebrig ist (${wurfErgebnis.zeile})`,
+);
+
+// ── G22 Bars: die Walze zeigt Zeichen, und nichts steht doppelt ────────────
+//
+// Zwei Meldungen an einem Tag, beide ueber dasselbe Bild:
+//
+//   "wenn es langsamer wird sieht es schlecht aus" - die Walze wackelte mit
+//   **einem** Zeichen auf und ab. Schnell sah das aus wie eine Drehung, langsam
+//   wie ein zitterndes Emoji. Jetzt laeuft ein Streifen mit allen sieben
+//   Zeichen durch; geprueft wird, dass er da ist und mehr als ein Zeichen
+//   traegt.
+//
+//   "kein text der sagt was man jetzt bekommen wuerde ... das steht sonst
+//   doppelt weil unten ja bereits die tafel ist" - zwischen zweiter und
+//   dritter Walze stand eine Zeile mit demselben Multiplikator, der zwei
+//   Zentimeter tiefer auf der Tafel steht.
+await seite.click('[data-ziel="sSpiele"]');
+await schlaf(350);
+await seite.click(".spielkachel >> nth=8");   // Bars
+await schlaf(500);
+await seite.fill("#fEinsatz", "0,10");
+await seite.click("#btnSetzen");
+await schlaf(200);
+const walze = await seite.evaluate(() => {
+  const w = document.querySelector(".walze");
+  const st = w?.querySelector(".streifen");
+  const sicht = st ? getComputedStyle(st) : null;
+  return {
+    streifenDa: !!st,
+    zeichen: st ? st.children.length : 0,
+    verschieden: st ? new Set([...st.children].map((c) => c.textContent)).size : 0,
+    laeuft: sicht ? sicht.display !== "none" && sicht.animationName !== "none" : false,
+    // Nichts darf ueber den Rand der Walze hinausragen: `overflow: hidden`
+    // schnitte es ab, und genau das war bei 💎 und 7️⃣ zu sehen.
+    haeltDrin: st ? st.getBoundingClientRect().width <= w.getBoundingClientRect().width + 1 : false,
+  };
+});
+pruefe(walze.streifenDa, "G22 Bars: jede Walze traegt einen Streifen, kein einzelnes Zeichen");
+pruefe(walze.zeichen >= 8, `G22 der Streifen traegt alle Zeichen und eine Naht (${walze.zeichen} Felder)`);
+pruefe(walze.verschieden >= 7, `G22 und sie sind wirklich verschieden (${walze.verschieden} Sorten)`);
+pruefe(walze.laeuft, "G22 waehrend der Runde laeuft er");
+pruefe(walze.haeltDrin, "G22 und bleibt in der Walze");
+
+// Warten, bis alle drei liegen. Die dritte kann bis zu 1,9 s Spannung haben.
+await seite.waitForFunction(() => !document.querySelector(".walze.dreht"), null, { timeout: 8000 });
+await schlaf(200);
+const nachWurf = await seite.evaluate(() => {
+  const tafel = [...document.querySelectorAll(".faecher .fach")].map((f) => f.textContent);
+  return {
+    ergebnis: document.getElementById("ergebnis").textContent,
+    tafelDa: tafel.length >= 5,
+    // Die Wucht darf das Zeichen nicht ueber den Rand druecken.
+    passt: [...document.querySelectorAll(".walze")].every((w) => {
+      const z = w.querySelector(".zeichen");
+      const a = w.getBoundingClientRect();
+      const b = z.getBoundingClientRect();
+      return b.left >= a.left - 1 && b.right <= a.right + 1 && b.top >= a.top - 1 && b.bottom <= a.bottom + 1;
+    }),
+  };
+});
+pruefe(nachWurf.tafelDa, "G22 die Auszahlungstafel steht unter den Walzen");
+pruefe(
+  /–|Nichts|Nothing|Hiç/.test(nachWurf.ergebnis),
+  `G22 die Ergebniszeile sagt das Ergebnis und nicht, was haette sein koennen (${nachWurf.ergebnis})`,
+);
+pruefe(nachWurf.passt, "G22 kein Zeichen wird vom Rand der Walze abgeschnitten");
+
+// ── G23 Mines: die Bomben bleiben liegen ───────────────────────────────────
+//
+// "mines die bomben zeigen wenn man verloren hat". Sie wurden gezeigt - und
+// 1,8 Sekunden spaeter raeumte `zeichne()` das Brett wieder leer, weil die
+// Einsatzleiste zurueckkam. Jetzt bleibt das Bild stehen, bis jemand setzt.
+await seite.click('[data-ziel="sSpiele"]');
+await schlaf(350);
+await seite.click(".spielkachel >> nth=1");   // Mines
+await schlaf(500);
+await seite.click('.feldzeile .wahlreihe button:text-is("24")');
+await schlaf(150);
+await seite.fill("#fEinsatz", "0,10");
+await seite.click("#btnSetzen");
+await schlaf(700);
+// Bei 24 Minen ist jedes Feld ausser einem eine Bombe - ein Klick genuegt fast
+// immer. Zur Sicherheit wird geklickt, bis die Runde vorbei ist.
+for (let i = 0; i < 3; i++) {
+  if (await seite.isVisible("#btnSetzen")) break;
+  await seite.click(`.minenfeld button >> nth=${i}`);
+  await schlaf(700);
+}
+const bomben = () =>
+  seite.evaluate(() => ({
+    gezeigt: document.querySelectorAll(".minenfeld button.mine").length,
+    leiste: !!document.querySelector(".einsatzleiste")?.offsetParent,
+  }));
+const gleichNach = await bomben();
+pruefe(gleichNach.gezeigt >= 20, `G23 nach dem Bumm liegen die Bomben offen (${gleichNach.gezeigt} von 24)`);
+await schlaf(2600);
+const spaeter = await bomben();
+pruefe(spaeter.leiste, "G23 die Einsatzleiste kommt zurueck");
+pruefe(
+  spaeter.gezeigt === gleichNach.gezeigt,
+  `G23 und die Bomben bleiben trotzdem liegen (${spaeter.gezeigt} statt ${gleichNach.gezeigt})`,
+);
+await seite.fill("#fEinsatz", "0,10");
+await seite.click("#btnSetzen");
+await schlaf(600);
+pruefe((await bomben()).gezeigt === 0, "G23 erst die naechste Runde raeumt das Brett");
+await schlaf(200);
+if (!(await seite.isVisible("#btnSetzen"))) {
+  for (let i = 0; i < 3 && !(await seite.isVisible("#btnSetzen")); i++) {
+    await seite.click(`.minenfeld button >> nth=${i}`);
+    await schlaf(700);
+  }
+}
+pruefe(await seite.isVisible("#btnSetzen"), "G23 und die Runde ist danach wieder beendet");
+
+// ── G24 Fallobst ───────────────────────────────────────────────────────────
+//
+// Das elfte Spiel, und das erste, in dem eine Wette mehrfach zahlt. Geprueft
+// wird, was keine Serverprobe sieht: dass dreissig Kacheln in sechs Spalten
+// auf 390 px passen, dass die Tafel darunter steht, und dass nach einer Runde
+// wieder gesetzt werden kann - auch wenn die Lawine mehrere Sekunden lief.
+await seite.click('[data-ziel="sSpiele"]');
+await schlaf(350);
+await seite.click(".spielkachel >> nth=10");
+await schlaf(600);
+const brettObst = await seite.evaluate(() => {
+  const b = document.getElementById("obstbrett");
+  const k = [...b.querySelectorAll(".obst")];
+  const r = b.getBoundingClientRect();
+  const erste = k[0].getBoundingClientRect();
+  return {
+    kacheln: k.length,
+    spalten: k.filter((x) => Math.abs(x.getBoundingClientRect().top - erste.top) < 2).length,
+    gefuellt: k.filter((x) => x.textContent.trim().length > 0).length,
+    passt: r.width <= window.innerWidth + 1 && b.scrollWidth <= b.clientWidth + 1,
+    kante: Math.round(erste.width),
+    tafelZeilen: document.querySelectorAll(".obsttafel .obstzeile").length,
+  };
+});
+pruefe(brettObst.kacheln === 30, `G24 dreissig Kacheln stehen auf dem Brett (${brettObst.kacheln})`);
+pruefe(brettObst.spalten === 6, `G24 in sechs Spalten (${brettObst.spalten})`);
+pruefe(brettObst.gefuellt === 30, `G24 und jede traegt ein Zeichen (${brettObst.gefuellt})`);
+pruefe(brettObst.passt, `G24 das Brett passt in die Breite des Handys (${brettObst.kante} px je Kachel)`);
+pruefe(brettObst.tafelZeilen === 9, `G24 die Tafel hat eine Kopfzeile und acht Sorten (${brettObst.tafelZeilen})`);
+
+// Solange gespielt wird, bis einmal etwas zusammenfaellt - rund ein Drittel
+// der Runden zahlt, zehn Versuche reichen praktisch immer.
+let obstGezahlt = false;
+let obstLawine = "";
+for (let i = 0; i < 12 && !obstGezahlt; i++) {
+  await seite.fill("#fEinsatz", "0,10");
+  await seite.click("#btnSetzen");
+  await schlaf(500);
+  const zaehlt = await seite.evaluate(() => ({
+    hervor: document.querySelectorAll(".obst.zaehlt").length,
+    kette: document.getElementById("obstKette")?.textContent ?? "",
+  }));
+  if (zaehlt.hervor >= 8) {
+    obstGezahlt = true;
+    obstLawine = zaehlt.kette;
+  }
+  await seite.waitForFunction(() => !document.getElementById("btnSetzen")?.disabled, null, { timeout: 15_000 });
+  await schlaf(150);
+}
+pruefe(obstGezahlt, `G24 was zaehlt, wird hervorgehoben - mindestens acht Kacheln auf einmal`);
+pruefe(/[\d,]+×/.test(obstLawine), `G24 und daneben steht, was es bisher gebracht hat (${obstLawine})`);
+pruefe(
+  !(await seite.evaluate(() => document.getElementById("btnSetzen")?.disabled)),
+  "G24 nach der Lawine laesst sich sofort wieder setzen",
+);
+pruefe(
+  /[\d,]+×|Nichts|Nothing|Hiç/.test(await seite.textContent("#ergebnis")),
+  `G24 und die Ergebniszeile nennt die ganze Runde (${await seite.textContent("#ergebnis")})`,
 );
 
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────

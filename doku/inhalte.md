@@ -57,7 +57,7 @@ hineingeht, ist es Glücksspiel (§ 284 StGB / GlüStV) und erlaubnispflichtig.
 ## Glückspilz (03.09.2026)
 
 Seit dem 03.09.2026 gibt es genau ein Spiel, das diesen Satz ernst nimmt:
-**`/glueckspilz/`**, ein Spielgeld-Kasino mit neun Glücksspielen und einer
+**`/glueckspilz/`**, ein Spielgeld-Kasino mit elf Glücksspielen und einer
 erfundenen Börse. Es ist der Grenzfall, für den der Satz geschrieben wurde,
 deshalb steht hier, wie die Grenze gezogen ist:
 
@@ -69,9 +69,12 @@ deshalb steht hier, wie die Grenze gezogen ist:
   Währung („Taler“) würde die Mechanik verschleiern, um die es geht. Dafür
   steht auf der Anmeldeseite, in der Hilfe und auf der Kachel derselbe Satz –
   hier läuft kein echtes Geld.
-- **Die Auszahlungsquote steht offen da: 99 %.** Das Haus gewinnt, und das
-  Spiel sagt es. Es sagt auch, was das heißt: auf Dauer verliert man, und
-  genau so ist ein Kasino gebaut.
+- **Die Auszahlungsquote steht offen da: knapp unter 97 %.** Das Haus gewinnt,
+  und das Spiel sagt es. Es sagt auch, was das heißt: auf Dauer verliert man,
+  und genau so ist ein Kasino gebaut. Bis zum 04.09.2026 stand dort 99 %, und
+  gemessen zahlte das Haus wegen zu häufiger Glücksbringer 142 % aus – eine
+  Quote, die auf dem Bildschirm steht und nicht stimmt, ist schlimmer als
+  eine niedrige. Was daran geändert wurde, steht in `glueckspilz/README.md`.
 - **Jeder Wurf ist nachrechenbar.** Der Hash der Server-Saat steht vorher da;
   wer sie aufdeckt, kann jede alte Runde nachrechnen. Ein Spielgeldhaus, das
   schummelt, wäre nicht harmloser, sondern nur schlechter.

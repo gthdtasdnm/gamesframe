@@ -72,7 +72,7 @@ KONTEN_DIR=/tmp/gp-probe START_CENT=500000 RUHE_MS=1200 SICHERN_MS=800 \
   OFFLINE_MAL=20000 WEG_AB_MS=1500 PORT=8188 HOST=127.0.0.1 \
   deno run --allow-net --allow-read --allow-write=/tmp/gp-probe --allow-env --allow-sys server.js &
 WS_URL=ws://127.0.0.1:8188/ws deno task probe          # P0-P9, M1-M5, S1-S11
-cd /root/werkzeug-screenshots && node pruefe-glueckspilz.mjs   # G01-G13
+cd /root/werkzeug-screenshots && node pruefe-glueckspilz.mjs   # G01-G24
 ss -tlnp | grep ':8188 '   # danach ueber den Port beenden, nie per pkill
 ```
 
