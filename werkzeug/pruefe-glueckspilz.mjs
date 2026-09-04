@@ -623,13 +623,13 @@ const brett = await seite.evaluate(() => {
     spalten: new Set([...f].slice(0, 20).map((x) => Math.round(x.getBoundingClientRect().left))).size,
   };
 });
-pruefe(brett.felder === 80, `G19 achtzig Felder stehen auf dem Brett (${brett.felder})`);
+pruefe(brett.felder === 40, `G19 vierzig Felder stehen auf dem Brett (${brett.felder})`);
 pruefe(brett.passtRein, "G19 das Brett passt in die Breite des Handys");
 pruefe(brett.kante >= 40, `G19 ein Feld ist gross genug fuer einen Daumen (${brett.kante} px)`);
 pruefe(brett.spalten === 8, `G19 acht Spalten, nicht zehn (${brett.spalten})`);
 
 // Antippen, zaehlen, wieder leeren.
-for (const nr of [2, 13, 27, 44, 61]) await seite.click(`.kenofeld >> nth=${nr}`);
+for (const nr of [2, 13, 27, 31, 38]) await seite.click(`.kenofeld >> nth=${nr}`);
 await schlaf(300);
 const getippt = await seite.evaluate(() => ({
   gedrueckt: document.querySelectorAll('.kenofeld[aria-pressed="true"]').length,
@@ -652,7 +652,7 @@ await schlaf(250);
 const zufaellig = (await seite.$$('.kenofeld[aria-pressed="true"]')).length;
 pruefe(zufaellig >= 1 && zufaellig <= 10, `G19 Zufall legt einen Tippschein von selbst (${zufaellig} Zahlen)`);
 
-// Und einmal ziehen. Zwanzig Zahlen werden aufgedeckt, eine nach der
+// Und einmal ziehen. Zehn Zahlen werden aufgedeckt, eine nach der
 // anderen - das dauert (120 ms Vorlauf, dann 70 ms je Zahl).
 await seite.fill("#fEinsatz", "1,00");
 await seite.click("#btnSetzen");
@@ -664,8 +664,8 @@ const ziehung = await seite.evaluate(() => ({
   knopfBereit: !document.getElementById("btnSetzen").disabled,
 }));
 pruefe(
-  ziehung.gezogen + ziehung.treffer === 20,
-  `G19 zwanzig Zahlen werden aufgedeckt (${ziehung.gezogen} daneben, ${ziehung.treffer} getroffen)`,
+  ziehung.gezogen + ziehung.treffer === 10,
+  `G19 zehn Zahlen werden aufgedeckt (${ziehung.gezogen} daneben, ${ziehung.treffer} getroffen)`,
 );
 pruefe(/von|of|tanesi/.test(ziehung.ergebnis), `G19 die Ergebniszeile sagt, wie viele es waren (${ziehung.ergebnis})`);
 pruefe(ziehung.knopfBereit, "G19 danach laesst sich sofort wieder ziehen");
