@@ -607,9 +607,12 @@ pruefe(pfeil.svgDa && pfeil.abX <= 1, `G18 waagerecht auch (${pfeil.abX?.toFixed
 
 // ── G19 Keno ───────────────────────────────────────────────────────────────
 //
-// Vierzig Felder auf 390 Pixeln. Acht Spalten statt der zehn eines
-// Papier-Tippscheins: zehn waeren 35 px breit, und 35 px sind kein Ziel fuer
-// einen Daumen.
+// Sechsunddreissig Felder in sechs Spalten - ein Quadrat, und zwar in jeder
+// Breite. Ein Papier-Tippschein hat achtzig Zahlen in Reihen zu zehn; auf 390
+// Pixeln waeren zehn Spalten 35 px breit, und 35 px sind kein Ziel fuer einen
+// Daumen. Vierzig in acht Spalten waren immer noch anderthalbmal so breit wie
+// hoch, und am Rechner standen wieder zehn in einer Reihe. Geprueft wird
+// deshalb beides: die Feldgroesse **und** dass das Brett quadratisch ist.
 await seite.click(".spielkopf .btn.rund");
 await schlaf(300);
 await seite.click(".spielkachel >> nth=9");
@@ -623,15 +626,20 @@ const brett = await seite.evaluate(() => {
     kante: Math.round(Math.min(e.width, e.height)),
     passtRein: r.right <= window.innerWidth + 1 && r.left >= -1,
     spalten: new Set([...f].slice(0, 20).map((x) => Math.round(x.getBoundingClientRect().left))).size,
+    seitenverhaeltnis: r.width / r.height,
   };
 });
-pruefe(brett.felder === 40, `G19 vierzig Felder stehen auf dem Brett (${brett.felder})`);
+pruefe(brett.felder === 36, `G19 sechsunddreissig Felder stehen auf dem Brett (${brett.felder})`);
 pruefe(brett.passtRein, "G19 das Brett passt in die Breite des Handys");
-pruefe(brett.kante >= 40, `G19 ein Feld ist gross genug fuer einen Daumen (${brett.kante} px)`);
-pruefe(brett.spalten === 8, `G19 acht Spalten, nicht zehn (${brett.spalten})`);
+pruefe(brett.kante >= 44, `G19 ein Feld ist gross genug fuer einen Daumen (${brett.kante} px)`);
+pruefe(brett.spalten === 6, `G19 sechs Spalten (${brett.spalten})`);
+pruefe(
+  Math.abs(brett.seitenverhaeltnis - 1) < 0.06,
+  `G19 und das Brett ist quadratisch (Breite durch Hoehe ${brett.seitenverhaeltnis.toFixed(2)})`,
+);
 
 // Antippen, zaehlen, wieder leeren.
-for (const nr of [2, 13, 27, 31, 38]) await seite.click(`.kenofeld >> nth=${nr}`);
+for (const nr of [2, 13, 27, 31, 34]) await seite.click(`.kenofeld >> nth=${nr}`);
 await schlaf(300);
 const getippt = await seite.evaluate(() => ({
   gedrueckt: document.querySelectorAll('.kenofeld[aria-pressed="true"]').length,
@@ -997,9 +1005,16 @@ pruefe(await seite.isVisible("#btnSetzen"), "G23 und die Runde ist danach wieder
 // ── G24 Fallobst ───────────────────────────────────────────────────────────
 //
 // Das elfte Spiel, und das erste, in dem eine Wette mehrfach zahlt. Geprueft
-// wird, was keine Serverprobe sieht: dass dreissig Kacheln in sechs Spalten
-// auf 390 px passen, dass die Tafel darunter steht, und dass nach einer Runde
-// wieder gesetzt werden kann - auch wenn die Lawine mehrere Sekunden lief.
+// wird, was keine Serverprobe sieht:
+//
+//   1. **Das Brett ist vor dem ersten Wurf leer.** Es stand einmal voll da,
+//      mit einem Muster aus allen acht Sorten - das sah aus wie ein Ergebnis,
+//      und der erste Sturz ging als Bewegung unter, weil sich nur Zeichen
+//      austauschten.
+//   2. Dreissig Kacheln in sechs Spalten passen auf 390 px.
+//   3. Beide Tafeln stehen darunter - Reihen und Zaehlen.
+//   4. Was zaehlt, blinkt: mindestens drei Kacheln auf einmal.
+//   5. Nach der Kette laesst sich sofort wieder setzen.
 await seite.click('[data-ziel="sSpiele"]');
 await schlaf(350);
 await seite.click(".spielkachel >> nth=10");
@@ -1013,46 +1028,73 @@ const brettObst = await seite.evaluate(() => {
     kacheln: k.length,
     spalten: k.filter((x) => Math.abs(x.getBoundingClientRect().top - erste.top) < 2).length,
     gefuellt: k.filter((x) => x.textContent.trim().length > 0).length,
+    leer: k.filter((x) => x.classList.contains("leer")).length,
     passt: r.width <= window.innerWidth + 1 && b.scrollWidth <= b.clientWidth + 1,
     kante: Math.round(erste.width),
+    tafeln: document.querySelectorAll(".obsttafel").length,
     tafelZeilen: document.querySelectorAll(".obsttafel .obstzeile").length,
   };
 });
 pruefe(brettObst.kacheln === 30, `G24 dreissig Kacheln stehen auf dem Brett (${brettObst.kacheln})`);
 pruefe(brettObst.spalten === 6, `G24 in sechs Spalten (${brettObst.spalten})`);
-pruefe(brettObst.gefuellt === 30, `G24 und jede traegt ein Zeichen (${brettObst.gefuellt})`);
+pruefe(
+  brettObst.gefuellt === 0 && brettObst.leer === 30,
+  `G24 vor dem ersten Wurf ist das Brett leer (${brettObst.gefuellt} Zeichen, ${brettObst.leer} leere Kacheln)`,
+);
 pruefe(brettObst.passt, `G24 das Brett passt in die Breite des Handys (${brettObst.kante} px je Kachel)`);
-pruefe(brettObst.tafelZeilen === 9, `G24 die Tafel hat eine Kopfzeile und acht Sorten (${brettObst.tafelZeilen})`);
+pruefe(brettObst.tafeln === 2, `G24 zwei Tafeln stehen darunter - Reihen und Zaehlen (${brettObst.tafeln})`);
+pruefe(
+  brettObst.tafelZeilen === 18,
+  `G24 mit je einer Kopfzeile und acht Sorten (${brettObst.tafelZeilen} Zeilen)`,
+);
 
-// Solange gespielt wird, bis einmal etwas zusammenfaellt - rund ein Drittel
-// der Runden zahlt, zehn Versuche reichen praktisch immer.
+// Werfen. Nach dem Fallen muss das Brett voll sein - und irgendwann muss
+// etwas zusammenpassen; eine Dreierreihe faellt in ueber der Haelfte der
+// Runden, zwoelf Versuche reichen praktisch immer.
 let obstGezahlt = false;
-let obstLawine = "";
+let obstKette = "";
+let obstHervor = 0;
+let obstVoll = 0;
 for (let i = 0; i < 12 && !obstGezahlt; i++) {
   await seite.fill("#fEinsatz", "0,10");
   await seite.click("#btnSetzen");
-  await schlaf(500);
+  await schlaf(120);
+  obstVoll = Math.max(
+    obstVoll,
+    await seite.evaluate(() => [...document.querySelectorAll(".obst")].filter((x) => x.textContent.trim()).length),
+  );
+  await schlaf(520);
   const zaehlt = await seite.evaluate(() => ({
     hervor: document.querySelectorAll(".obst.zaehlt").length,
     kette: document.getElementById("obstKette")?.textContent ?? "",
   }));
-  if (zaehlt.hervor >= 8) {
+  if (zaehlt.hervor >= 3) {
     obstGezahlt = true;
-    obstLawine = zaehlt.kette;
+    obstHervor = zaehlt.hervor;
+    obstKette = zaehlt.kette;
   }
-  await seite.waitForFunction(() => !document.getElementById("btnSetzen")?.disabled, null, { timeout: 15_000 });
+  await seite.waitForFunction(() => !document.getElementById("btnSetzen")?.disabled, null, { timeout: 25_000 });
   await schlaf(150);
 }
-pruefe(obstGezahlt, `G24 was zaehlt, wird hervorgehoben - mindestens acht Kacheln auf einmal`);
-pruefe(/[\d,]+×/.test(obstLawine), `G24 und daneben steht, was es bisher gebracht hat (${obstLawine})`);
+pruefe(obstVoll === 30, `G24 nach dem Fallen ist das Brett voll (${obstVoll} von 30)`);
+pruefe(obstGezahlt, `G24 was zusammenpasst, wird hervorgehoben (${obstHervor} Kacheln auf einmal)`);
+pruefe(/[\d,]+×/.test(obstKette), `G24 und daneben steht, was es bisher gebracht hat (${obstKette})`);
 pruefe(
   !(await seite.evaluate(() => document.getElementById("btnSetzen")?.disabled)),
-  "G24 nach der Lawine laesst sich sofort wieder setzen",
+  "G24 nach der Kette laesst sich sofort wieder setzen",
 );
 pruefe(
   /[\d,]+×|Nichts|Nothing|Hiç/.test(await seite.textContent("#ergebnis")),
   `G24 und die Ergebniszeile nennt die ganze Runde (${await seite.textContent("#ergebnis")})`,
 );
+// Und der naechste Wurf faengt wieder leer an.
+await seite.fill("#fEinsatz", "0,10");
+await seite.click("#btnSetzen");
+const gleichLeer = await seite.evaluate(() =>
+  [...document.querySelectorAll(".obst")].filter((x) => x.classList.contains("leer")).length
+);
+pruefe(gleichLeer === 30, `G24 jeder neue Wurf faengt wieder mit einem leeren Brett an (${gleichLeer} von 30)`);
+await seite.waitForFunction(() => !document.getElementById("btnSetzen")?.disabled, null, { timeout: 25_000 });
 
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────
 for (const ziel of ["sDruecken", "sSpiele", "sBoerse", "sLaden", "sTafel"]) {
