@@ -130,10 +130,165 @@ pruefe(
 const zahl = await seite.evaluate(() => document.querySelector(".fx-zahl")?.textContent ?? "");
 pruefe(/ct|€/.test(zahl), `G03 an jedem Druck fliegt der Betrag hoch (${zahl || "nichts"})`);
 
+// ── G17 Der Knopf, wie der Daumen ihn findet ───────────────────────────────
+//
+// Vier Rueckmeldungen an einem Tag, alle ueber denselben Knopf, und keine
+// davon haette eine Serverprobe je gesehen:
+//
+//   "knopf ist nicht mittig ausgerichtet"   -> er stand links. `.klickfeld`
+//       hatte `text-align: center`, der Knopf ist aber `display: grid` und
+//       damit auf Blockebene - `text-align` erreicht ihn gar nicht.
+//   "knopf unten damit es am handy leichter erreichbar ist"  -> er stand
+//       oben, ueber den Zahlen. Der Daumen erreicht die untere Haelfte.
+//   "balken ist zu duenn"  -> 12 px hoch, und darin eine Zeile von 11 px:
+//       die Zahl war abgeschnitten statt lesbar.
+//   "zeigt den bonus nicht richtig an"  -> die Leiste fiel im Browser mit
+//       0,5 je Sekunde, auf dem Server mit 0,35. Sie stand auf x1,0,
+//       waehrend der naechste Druck noch das Anderthalbfache zahlte. Diese
+//       Haelfte prueft `probe.js` P11 im Quelltext; hier steht die andere:
+//       sagt die Leiste x1,0, obwohl sie noch halb voll ist?
+//
+// Gemessen wird in Pixeln, denn genau das war die Beschwerde.
+await seite.click('[data-ziel="sDruecken"]');
+await schlaf(400);
+const daumen = await seite.evaluate(() => {
+  const k = document.getElementById("knopf").getBoundingClientRect();
+  const zahlen = document.querySelector("#sDruecken .zahlen").getBoundingClientRect();
+  const b = document.getElementById("schwungbalken");
+  const bk = b.getBoundingClientRect();
+  const span = document.getElementById("schwungMal");
+  return {
+    mitteAb: Math.abs((k.left + k.right) / 2 - window.innerWidth / 2),
+    obenAnteil: k.top / window.innerHeight,
+    unterDenZahlen: zahlen.bottom <= k.top + 1,
+    balkenHoch: Math.round(bk.height),
+    // Passt die Zahl hinein, oder ist sie beschnitten? `scrollHeight` ist
+    // die Hoehe, die sie braeuchte - `clientHeight` die, die sie bekommt.
+    zahlPasst: span.scrollHeight <= b.clientHeight + 1,
+    schrift: parseFloat(getComputedStyle(span).fontSize),
+    // Und liest man sie ueberhaupt: steht sie im Balken oder daneben?
+    zahlImBalken: (() => {
+      const r = span.getBoundingClientRect();
+      return r.top >= bk.top - 1 && r.bottom <= bk.bottom + 1;
+    })(),
+  };
+});
+pruefe(daumen.mitteAb <= 2, `G17 der Geldknopf steht waagerecht mittig (${daumen.mitteAb.toFixed(1)} px daneben)`);
+pruefe(
+  daumen.obenAnteil > 0.5,
+  `G17 und in der unteren Haelfte, wo der Daumen hinkommt (Oberkante bei ${(daumen.obenAnteil * 100).toFixed(0)} % der Hoehe)`,
+);
+pruefe(daumen.unterDenZahlen, "G17 die Zahlenreihe steht ueber dem Knopf, nicht darunter");
+pruefe(daumen.balkenHoch >= 22, `G17 die Schwungleiste ist hoch genug fuer ihre Zahl (${daumen.balkenHoch} px)`);
+pruefe(daumen.zahlPasst, "G17 und die Zahl darin wird nicht abgeschnitten");
+pruefe(daumen.zahlImBalken, "G17 sie steht auch wirklich in der Leiste");
+pruefe(daumen.schrift >= 11, `G17 lesbar gross ist sie auch (${daumen.schrift.toFixed(1)} px)`);
+
+// Der gemeldete Widerspruch: voller Balken, aber x1,0 daneben. Schnell
+// druecken, dann sofort beides ablesen - ohne Pause dazwischen, sonst ist der
+// Schwung schon wieder gefallen und der Test sagt nichts.
+for (let i = 0; i < 18; i++) {
+  await seite.click("#knopf");
+  await schlaf(55);
+}
+const leiste = await seite.evaluate(() => ({
+  breite: parseFloat(document.querySelector("#schwungbalken i").style.width) || 0,
+  text: document.getElementById("schwungMal").textContent,
+}));
+const gezeigt = Number(String(leiste.text).replace(/[^\d,]/g, "").replace(",", "."));
+pruefe(
+  leiste.breite < 40 || gezeigt > 1.05,
+  `G17 ein halb voller Balken zeigt auch einen Bonus an (${leiste.breite.toFixed(0)} % voll, ${leiste.text})`,
+);
+
+// ── G20 Ein Druck darf keinen Rollbalken machen ────────────────────────────
+//
+// Gemeldet: "im browser, weil er ganz unten ist, entsteht bei jedem druecken
+// ein scrollbalken, weil der knopf leicht runter geht".
+//
+// Er ging wirklich runter - `.knopf:active` sinkt um acht Pixel ein - und der
+// Ring um den Knopf lag zehn Pixel ausserhalb und wuchs per `scale(1.25)`
+// noch weiter hinaus. Beides zaehlt zur Scroll-Flaeche von `#buehne`: sie
+// wuchs bei jedem Druck um bis zu 30 Pixel, ein Rollbalken erschien und
+// verschwand wieder. Fuenf Druecke je Sekunde, fuenfmal je Sekunde ein
+// zuckender Balken.
+//
+// Gemessen wird deshalb nicht das Aussehen, sondern die Scroll-Flaeche selbst
+// - waehrend der Knopf gedrueckt ist und waehrend der Ring laeuft. Sie darf
+// sich gegenueber der Ruhe **nicht** vergroessern.
+const ueberlauf = () =>
+  seite.evaluate(() => {
+    const b = document.getElementById("buehne");
+    return {
+      buehne: b.scrollHeight - b.clientHeight,
+      dokument: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+    };
+  });
+await schlaf(900);
+const ruheVor = await ueberlauf();
+const kasten = await seite.locator("#knopf").boundingBox();
+await seite.mouse.move(kasten.x + kasten.width / 2, kasten.y + kasten.height / 2);
+await seite.mouse.down();
+let maxBuehne = ruheVor.buehne;
+let maxDoc = ruheVor.dokument;
+// Sechzehn Messungen ueber 640 ms: der Knopf bleibt gedrueckt, der Ring
+// (0,5 s) laeuft mittendrin ab.
+for (let i = 0; i < 16; i++) {
+  await schlaf(40);
+  const jetzt = await ueberlauf();
+  maxBuehne = Math.max(maxBuehne, jetzt.buehne);
+  maxDoc = Math.max(maxDoc, jetzt.dokument);
+}
+await seite.mouse.up();
+// Und dasselbe im echten Takt: zwanzig schnelle Druecke hintereinander.
+for (let i = 0; i < 20; i++) {
+  await seite.click("#knopf");
+  const jetzt = await ueberlauf();
+  maxBuehne = Math.max(maxBuehne, jetzt.buehne);
+  maxDoc = Math.max(maxDoc, jetzt.dokument);
+  await schlaf(45);
+}
+await schlaf(700);
+pruefe(
+  maxBuehne <= ruheVor.buehne,
+  `G20 der gedrueckte Knopf vergroessert die Scroll-Flaeche nicht (Ruhe ${ruheVor.buehne} px, gedrueckt ${maxBuehne} px)`,
+);
+pruefe(maxDoc <= ruheVor.dokument, `G20 und das Dokument bekommt auch keinen (${maxDoc} px)`);
+pruefe(
+  (await ueberlauf()).buehne === ruheVor.buehne,
+  "G20 nach dem Loslassen ist die Flaeche wieder wie vorher",
+);
+// Der Ring soll trotzdem noch da sein - der Fehler waere sonst dadurch
+// behoben, dass die Rueckmeldung am Knopf verschwindet. Zwei Haelften: sein
+// **Kasten** liegt buendig auf dem Knopf (deshalb waechst nichts), seine
+// **Farbe** laeuft trotzdem nach aussen.
+await seite.click("#knopf");
+const ring = await seite.evaluate(() => {
+  const k = document.getElementById("knopf").getBoundingClientRect();
+  const r = document.querySelector(".knopfring");
+  const rr = r.getBoundingClientRect();
+  const cs = getComputedStyle(r);
+  return {
+    ueberKnopf: Math.max(Math.abs(rr.top - k.top), Math.abs(rr.bottom - k.bottom), Math.abs(rr.left - k.left)),
+    deckkraft: parseFloat(cs.opacity),
+    versatz: parseFloat(cs.outlineOffset) || 0,
+    breite: parseFloat(cs.outlineWidth) || 0,
+    farbe: cs.outlineColor,
+  };
+});
+pruefe(
+  ring.ueberKnopf <= 1,
+  `G20 der Ring baut keinen eigenen Kasten mehr, er liegt auf dem Knopf (${ring.ueberKnopf.toFixed(1)} px daneben)`,
+);
+pruefe(
+  ring.deckkraft > 0 && ring.versatz > 0 && ring.breite >= 1 && /53, 224, 122/.test(ring.farbe),
+  `G20 und waechst trotzdem sichtbar nach aussen (${ring.breite} px ${ring.farbe}, ${ring.versatz} px weit, Deckkraft ${ring.deckkraft})`,
+);
+
 // ── G04 Plinko: die Tafel muss in die Breite passen ────────────────────────
 await seite.click('[data-ziel="sSpiele"]');
 await schlaf(400);
-pruefe((await seite.$$(".spielkachel")).length === 9, "G04 neun Spiele stehen im Raster");
+pruefe((await seite.$$(".spielkachel")).length === 10, "G04 zehn Spiele stehen im Raster");
 await seite.click(".spielkachel >> nth=0");
 await schlaf(500);
 for (const reihen of ["8", "12", "16"]) {
@@ -344,7 +499,7 @@ pruefe(ausgestiegen, `G14 in acht Anlaeufen liess sich mindestens einer mit Gewi
 // dem Umbau steht die Steuerung fest unten und nur das Spielfeld scrollt in
 // sich. Geprueft wird das, was der Daumen merkt - liegt der Spielknopf im
 // Bild, ohne dass irgendwo gescrollt wurde?
-for (const [nr, spiel] of [[0, "Plinko"], [1, "Mines"], [2, "Crash"], [4, "Limbo"], [6, "Flip"], [8, "Bars"]]) {
+for (const [nr, spiel] of [[0, "Plinko"], [1, "Mines"], [2, "Crash"], [4, "Limbo"], [6, "Flip"], [8, "Bars"], [9, "Keno"]]) {
   await seite.click('[data-ziel="sSpiele"]');
   await schlaf(350);
   await seite.click(`.spielkachel >> nth=${nr}`);
@@ -410,6 +565,110 @@ pruefe(spalten.brettImBild, "G16 und das ganze Nagelbrett gleich mit");
 pruefe(spalten.dokScrollt <= 1, `G16 das Dokument scrollt auch am Rechner nicht (${spalten.dokScrollt} px)`);
 await seite.setViewportSize({ width: 390, height: 844 });
 await schlaf(600);
+
+// ── G18 Der Zurueck-Pfeil, dreimal gemeldet ────────────────────────────────
+//
+// "beim zurueck knopf ist der pfeil darin immernoch nicht mittig in der
+// hoehe" - beim dritten Mal. Zweimal war mit CSS nachzentriert worden, und
+// zweimal blieb er zu hoch, weil das Zeichen "<-" (U+2190) an der Grundlinie
+// haengt wie ein Buchstabe: zentriert wird die **Zeile**, nicht die Tinte,
+// und in der Zeile ist unten Platz fuer Unterlaengen freigehalten.
+//
+// Jetzt steht dort ein SVG. Ein SVG hat keine Grundlinie - seine Mitte ist
+// seine Mitte. Gemessen wird deshalb die Tinte selbst (`getBBox`) gegen die
+// Mitte des Knopfes, und zusaetzlich, dass ueberhaupt ein SVG dasteht: wer
+// das Zeichen zurueckschreibt, faellt hier durch, nicht erst dem Nutzer auf.
+const pfeil = await seite.evaluate(() => {
+  const k = document.querySelector(".spielkopf .btn.rund");
+  const svg = k.querySelector("svg");
+  if (!svg) return { svgDa: false, nurText: k.textContent.trim() };
+  const kr = k.getBoundingClientRect();
+  const sr = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  const bb = svg.getBBox();
+  // Die Mitte der Tinte, umgerechnet in Bildpunkte auf dem Schirm.
+  const tinteY = sr.top + ((bb.y + bb.height / 2 - vb.y) / vb.height) * sr.height;
+  const tinteX = sr.left + ((bb.x + bb.width / 2 - vb.x) / vb.width) * sr.width;
+  return {
+    svgDa: true,
+    abY: Math.abs(tinteY - (kr.top + kr.height / 2)),
+    abX: Math.abs(tinteX - (kr.left + kr.width / 2)),
+    hoehe: Math.round(kr.height),
+  };
+});
+pruefe(pfeil.svgDa, `G18 der Zurueck-Pfeil ist gezeichnet, nicht getippt${pfeil.svgDa ? "" : ` (gefunden: "${pfeil.nurText}")`}`);
+pruefe(
+  pfeil.svgDa && pfeil.abY <= 1,
+  `G18 und er sitzt senkrecht in der Mitte des Knopfes (${pfeil.abY?.toFixed(2) ?? "?"} px daneben, Knopf ${pfeil.hoehe} px hoch)`,
+);
+pruefe(pfeil.svgDa && pfeil.abX <= 1, `G18 waagerecht auch (${pfeil.abX?.toFixed(2) ?? "?"} px daneben)`);
+
+// ── G19 Keno ───────────────────────────────────────────────────────────────
+//
+// Achtzig Felder auf 390 Pixeln. Acht Spalten statt der zehn eines
+// Papier-Tippscheins: zehn waeren 35 px breit, und 35 px sind kein Ziel fuer
+// einen Daumen.
+await seite.click(".spielkopf .btn.rund");
+await schlaf(300);
+await seite.click(".spielkachel >> nth=9");
+await schlaf(600);
+const brett = await seite.evaluate(() => {
+  const f = document.querySelectorAll(".kenofeld");
+  const r = document.querySelector(".kenobrett").getBoundingClientRect();
+  const e = f[0].getBoundingClientRect();
+  return {
+    felder: f.length,
+    kante: Math.round(Math.min(e.width, e.height)),
+    passtRein: r.right <= window.innerWidth + 1 && r.left >= -1,
+    spalten: new Set([...f].slice(0, 20).map((x) => Math.round(x.getBoundingClientRect().left))).size,
+  };
+});
+pruefe(brett.felder === 80, `G19 achtzig Felder stehen auf dem Brett (${brett.felder})`);
+pruefe(brett.passtRein, "G19 das Brett passt in die Breite des Handys");
+pruefe(brett.kante >= 40, `G19 ein Feld ist gross genug fuer einen Daumen (${brett.kante} px)`);
+pruefe(brett.spalten === 8, `G19 acht Spalten, nicht zehn (${brett.spalten})`);
+
+// Antippen, zaehlen, wieder leeren.
+for (const nr of [2, 13, 27, 44, 61]) await seite.click(`.kenofeld >> nth=${nr}`);
+await schlaf(300);
+const getippt = await seite.evaluate(() => ({
+  gedrueckt: document.querySelectorAll('.kenofeld[aria-pressed="true"]').length,
+  zaehler: document.querySelector(".kenozaehler").textContent,
+  faecher: document.querySelectorAll(".faecher .fach").length,
+}));
+pruefe(getippt.gedrueckt === 5, `G19 fuenf angetippte Zahlen bleiben angetippt (${getippt.gedrueckt})`);
+pruefe(/5/.test(getippt.zaehler), `G19 der Zaehler sagt es (${getippt.zaehler})`);
+// Die Tafel haengt an der Zahl der Tipps - bei fuenf muss eine dastehen.
+pruefe(getippt.faecher > 0, `G19 und die Auszahlungstafel steht daneben (${getippt.faecher} Faecher)`);
+
+await seite.click('.kenozeile .btn:text-is("Leeren")');
+await schlaf(250);
+pruefe(
+  (await seite.$$('.kenofeld[aria-pressed="true"]')).length === 0,
+  "G19 Leeren nimmt alle Zahlen wieder weg",
+);
+await seite.click('.kenozeile .btn:text-is("Zufall")');
+await schlaf(250);
+const zufaellig = (await seite.$$('.kenofeld[aria-pressed="true"]')).length;
+pruefe(zufaellig >= 1 && zufaellig <= 10, `G19 Zufall legt einen Tippschein von selbst (${zufaellig} Zahlen)`);
+
+// Und einmal ziehen. Zwanzig Zahlen werden aufgedeckt, eine nach der
+// anderen - das dauert (120 ms Vorlauf, dann 70 ms je Zahl).
+await seite.fill("#fEinsatz", "1,00");
+await seite.click("#btnSetzen");
+await schlaf(2600);
+const ziehung = await seite.evaluate(() => ({
+  gezogen: document.querySelectorAll(".kenofeld.gezogen").length,
+  treffer: document.querySelectorAll(".kenofeld.treffer").length,
+  ergebnis: document.getElementById("ergebnis").textContent,
+  knopfBereit: !document.getElementById("btnSetzen").disabled,
+}));
+pruefe(
+  ziehung.gezogen + ziehung.treffer === 20,
+  `G19 zwanzig Zahlen werden aufgedeckt (${ziehung.gezogen} daneben, ${ziehung.treffer} getroffen)`,
+);
+pruefe(/von|of|tanesi/.test(ziehung.ergebnis), `G19 die Ergebniszeile sagt, wie viele es waren (${ziehung.ergebnis})`);
+pruefe(ziehung.knopfBereit, "G19 danach laesst sich sofort wieder ziehen");
 
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────
 for (const ziel of ["sDruecken", "sSpiele", "sBoerse", "sLaden", "sTafel"]) {
