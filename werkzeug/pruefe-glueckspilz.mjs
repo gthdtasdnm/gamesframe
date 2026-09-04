@@ -785,18 +785,19 @@ pruefe(
 );
 pruefe(seltenGesehen, `G20 seltene Zeichen bleiben sichtbar anders liegen als haeufige (${zuege} Zuege)`);
 
-// ── G21 Limbo: zwei Auszahlungsarten, und beide sagen vorher, was sie zahlen
+// ── G21 Limbo: zwei Auszahlungsarten, zwei Steuerungen ─────────────────────
 //
-// "Wurf zahlt" nimmt nicht mehr das Ziel, sondern die Zahl, die faellt. Das
-// aendert die Spanne, um die es geht - und die muss **vor** dem Wurf dastehen,
-// sonst waere der Modus genau das Kleingedruckte, das hier nirgends stehen
-// soll. Der Server rechnet mit derselben Formel (probe.js P12); hier wird nur
-// geprueft, dass sie angesagt wird und mit dem Ziel mitwaechst.
+// "Wurf zahlt" hat **kein Ziel**: es faellt eine Zahl, und die ist der
+// Multiplikator - meistens unter 1×. Ein Modus, in dem man ueblicherweise
+// weniger zurueckbekommt, als man gesetzt hat, muss das vorher sagen und
+// nicht hinterher; und ein Zielfeld, das nichts mehr tut, darf nicht
+// stehenbleiben. Beides sieht keine Serverprobe.
 await seite.click(".spielkopf .btn.rund");
 await schlaf(300);
 await seite.click(".spielkachel >> nth=4");   // Limbo
 await schlaf(600);
 const lesen = () => seite.textContent("#limboInfo");
+const chancen = () => seite.textContent("#limboChancen");
 const knopfDruecken = async (text) => {
   await seite.click(`.steuerung .wahlreihe button:text-is("${text}")`);
   await schlaf(250);
@@ -804,42 +805,69 @@ const knopfDruecken = async (text) => {
 
 await knopfDruecken("Ziel zahlt");
 const zielZeile = await lesen();
+const zielLage = await seite.evaluate(() => ({
+  zielDa: !!document.getElementById("fZiel")?.offsetParent,
+  risikoDa: [...document.querySelectorAll(".steuerung .feldzeile")]
+    .some((z) => z.offsetParent && /Risiko/.test(z.textContent)),
+}));
+pruefe(zielLage.zielDa && !zielLage.risikoDa, "G21 im Grundmodus steht das Zielfeld da und kein Risikoregler");
+
 await knopfDruecken("Wurf zahlt");
-const wurfZeile2 = await lesen();
-pruefe(zielZeile !== wurfZeile2, "G21 der Wechsel der Auszahlungsart aendert die Ansage");
-pruefe(/bis/.test(wurfZeile2), `G21 im Wurfmodus steht eine Spanne da, keine einzelne Zahl (${wurfZeile2})`);
+const wurfZeile = await lesen();
+const wurfLage = await seite.evaluate(() => ({
+  zielDa: !!document.getElementById("fZiel")?.offsetParent,
+  risikoDa: [...document.querySelectorAll(".steuerung .feldzeile")]
+    .some((z) => z.offsetParent && /Risiko/.test(z.textContent)),
+}));
+pruefe(!wurfLage.zielDa && wurfLage.risikoDa, "G21 im Wurfmodus ist das Zielfeld weg und der Risikoregler da");
+pruefe(zielZeile !== wurfZeile, "G21 der Wechsel aendert die Ansage");
+pruefe(/bis/.test(wurfZeile), `G21 im Wurfmodus steht eine Spanne da, keine einzelne Zahl (${wurfZeile})`);
+pruefe(/1×/.test(await chancen()), `G21 und wie oft es ueber 1× geht (${await chancen()})`);
 
-// Ziel hochdrehen: die groesste Auszahlung muss deutlich staerker steigen als
-// das Ziel selbst - das ist der ganze Sinn des Modus.
-const obenAus = (s) => {
+// Der Boden muss **unter** 1× liegen - das ist die Ansage des Modus, und wer
+// sie nicht liest, soll sie wenigstens sehen.
+const spanne = (s) => {
   const zahlen = [...s.matchAll(/([\d.]+),(\d+)×/g)].map((m) => Number(m[1].replaceAll(".", "") + "." + m[2]));
-  return zahlen.length ? Math.max(...zahlen) : 0;
+  return { unten: Math.min(...zahlen), oben: Math.max(...zahlen) };
 };
-// Die Schnellziele sind **kurz** beschriftet ("2×", nicht "2,00×") - sechs
-// Knoepfe mit vier Nachkommastellen brechen auf 390 px um.
-await seite.click('.wahlreihe button:text-is("2×")');
-await schlaf(250);
-const beiZwei = obenAus(await lesen());
-await seite.click('.wahlreihe button:text-is("10×")');
-await schlaf(250);
-const beiZehn = obenAus(await lesen());
+const beiMittel = spanne(await lesen());
 pruefe(
-  beiZwei > 2 && beiZwei < 3,
-  `G21 bei Ziel 2× reicht die Spanne knapp ueber 2× hinaus (${beiZwei}×)`,
-);
-pruefe(
-  beiZehn > 25 && beiZehn / beiZwei > 8,
-  `G21 bei Ziel 10× ist deutlich mehr zu holen (${beiZehn}× gegen ${beiZwei}×)`,
+  beiMittel.unten > 0 && beiMittel.unten < 1,
+  `G21 der Boden liegt unter 1× – man verliert oft ein bisschen (${beiMittel.unten}×)`,
 );
 
-// Und einmal werfen - was der Server zahlt, muss in der Spanne liegen.
+// Mehr Risiko heisst tieferer Boden. Genau daran ist bei Plinko schon einmal
+// ein Regler gescheitert, der nur die Spitze verschob.
+await knopfDruecken("niedrig");
+const beiNiedrig = spanne(await lesen());
+await knopfDruecken("hoch");
+const beiHoch = spanne(await lesen());
+pruefe(
+  beiNiedrig.unten > beiMittel.unten && beiMittel.unten > beiHoch.unten,
+  `G21 mehr Risiko senkt den Boden (${beiNiedrig.unten}× > ${beiMittel.unten}× > ${beiHoch.unten}×)`,
+);
+const hundert = (s) => Number((s.match(/100×[^\d]*([\d,]+)/) ?? [])[1]?.replace(",", ".") ?? 0);
+pruefe(
+  hundert(await chancen()) > 0,
+  `G21 und hebt die Chance auf einen Hunderter (${await chancen()})`,
+);
+
+// Und einmal werfen. Der Wurf **ist** der Multiplikator: was in der grossen
+// Zahl steht, muss auch in der Ergebniszeile stehen.
 await seite.fill("#fEinsatz", "1,00");
 await seite.click("#btnSetzen");
 await schlaf(1200);
-const wurfErgebnis = await seite.textContent("#ergebnis");
+const wurfErgebnis = await seite.evaluate(() => ({
+  zahl: document.getElementById("limboZahl").textContent,
+  zeile: document.getElementById("ergebnis").textContent,
+}));
 pruefe(
-  /zahlt|reicht/.test(wurfErgebnis),
-  `G21 nach dem Wurf steht ein Ergebnis da (${wurfErgebnis})`,
+  wurfErgebnis.zeile.startsWith(wurfErgebnis.zahl),
+  `G21 die Ergebniszeile fuehrt mit derselben Zahl, die gross dasteht (${wurfErgebnis.zahl} · ${wurfErgebnis.zeile})`,
+);
+pruefe(
+  /zahlt|bleiben/.test(wurfErgebnis.zeile),
+  `G21 und sagt, was davon uebrig ist (${wurfErgebnis.zeile})`,
 );
 
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────
