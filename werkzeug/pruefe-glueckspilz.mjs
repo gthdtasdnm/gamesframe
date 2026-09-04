@@ -686,6 +686,162 @@ pruefe(
 pruefe(/von|of|tanesi/.test(ziehung.ergebnis), `G19 die Ergebniszeile sagt, wie viele es waren (${ziehung.ergebnis})`);
 pruefe(ziehung.knopfBereit, "G19 danach laesst sich sofort wieder ziehen");
 
+// ── G20 Bars: die dritte Walze muss sich Zeit lassen ───────────────────────
+//
+// Die Rueckmeldung war: "man soll spueren, dass eine 7 maechtiger ist als eine
+// Kirsche" - und: nach zwei guten Walzen soll die dritte etwas bedeuten.
+// Beides ist reine Anzeige, der Server schickt alle drei Zeichen auf einmal;
+// keine Serverprobe kann es sehen.
+//
+// Geprueft wird deshalb, was der Daumen merkt:
+//   1. die Walzen fallen **nacheinander**, nicht gleichzeitig,
+//   2. bei zwei gleichen Zeichen laeuft die dritte laenger und die
+//      Ergebniszeile sagt vorher an, was an ihr haengt,
+//   3. ein seltenes Zeichen bleibt anders liegen als eine Kirsche.
+//
+// Zwei gleiche Zeichen kommen in rund einem Fuenftel der Zuege - deshalb wird
+// gezogen, bis es passiert ist, und nicht ein einzelner Zug bewertet.
+await seite.click(".spielkopf .btn.rund");
+await schlaf(300);
+await seite.click(".spielkachel >> nth=8");   // Bars
+await schlaf(600);
+await seite.fill("#fEinsatz", "0,10");
+
+// (1) Nacheinander. Direkt nach dem Zug drehen noch alle drei; nach der
+// ersten Haltezeit steht genau eine, und die dritte dreht noch.
+await seite.click("#btnSetzen");
+await schlaf(200);
+const gleichNachKlick = await seite.$$eval(".walze", (w) => w.filter((x) => x.classList.contains("dreht")).length);
+await schlaf(400);
+const nachErster = await seite.$$eval(".walze", (w) => w.filter((x) => x.classList.contains("dreht")).length);
+pruefe(gleichNachKlick === 3, `G20 nach dem Hebel drehen alle drei Walzen (${gleichNachKlick})`);
+pruefe(nachErster < 3, `G20 die erste steht, bevor die letzte faellt (${nachErster} drehen noch)`);
+await schlaf(3200);
+
+// (2) und (3): ziehen, bis ein Paar in den ersten beiden Walzen steht, und
+// dabei mitschreiben, was zu sehen war.
+let paarGesehen = false;
+let spannungGesehen = false;
+let ansageGesehen = "";
+let langsamer = false;
+let seltenGesehen = false;
+let dauerPaar = 0;
+let dauerOhne = 0;
+// Gezogen wird, bis **beides** einmal dagewesen ist - ein Paar in den ersten
+// beiden Walzen (rund jeder fuenfte Zug) und irgendwo ein seltenes Zeichen
+// (⭐ und aufwaerts, rund jeder dritte Zug). Auf einen einzelnen Zug zu
+// schauen hiesse, den Lauf dem Zufall zu ueberlassen.
+let zuege = 0;
+for (; zuege < 30 && !(paarGesehen && seltenGesehen); zuege++) {
+  const start = Date.now();
+  await seite.click("#btnSetzen");
+  // Kurz nach der zweiten Walze nachsehen: stehen dort zwei gleiche?
+  await schlaf(900);
+  const lage = await seite.evaluate(() => ({
+    zeichen: [...document.querySelectorAll(".walze span")].map((s) => s.textContent),
+    dreht: [...document.querySelectorAll(".walze")].map((w) => w.classList.contains("dreht")),
+    spannung: document.getElementById("walzenReihe").classList.contains("spannung"),
+    heiss: document.querySelectorAll(".walze.heiss").length,
+    ergebnis: document.getElementById("ergebnis").textContent,
+    tempo: document.querySelectorAll(".walze")[2].style.getPropertyValue("--tempo"),
+  }));
+  const paar = lage.zeichen[0] === lage.zeichen[1] && !lage.dreht[0] && !lage.dreht[1];
+  if (paar && !paarGesehen) {
+    paarGesehen = true;
+    spannungGesehen = lage.spannung && lage.heiss === 1 && lage.dreht[2];
+    ansageGesehen = lage.ergebnis;
+    // Etwas spaeter noch einmal: die Walze muss inzwischen langsamer laufen.
+    await schlaf(500);
+    const spaeter = await seite.evaluate(() =>
+      document.querySelectorAll(".walze")[2].style.getPropertyValue("--tempo")
+    );
+    langsamer = parseFloat(spaeter) > parseFloat(lage.tempo || "0.09");
+  }
+  // Warten, bis der Knopf wieder freigegeben ist - sonst zaehlt die naechste
+  // Runde gar nicht.
+  await seite.waitForSelector("#btnSetzen:not([disabled])", { timeout: 8000 });
+  const dauer = Date.now() - start;
+  if (paar) dauerPaar = Math.max(dauerPaar, dauer);
+  else dauerOhne = Math.max(dauerOhne, dauer);
+  // Erst jetzt, mit allen drei Walzen liegend, nach dem Glimmen sehen.
+  const liegt = await seite.evaluate(() => ({
+    selten: document.querySelectorAll(".walze.selten, .walze.sehrselten").length,
+    schlicht: [...document.querySelectorAll(".walze")]
+      .filter((w) => !w.classList.contains("selten") && !w.classList.contains("sehrselten")).length,
+  }));
+  if (liegt.selten > 0 && liegt.schlicht > 0) seltenGesehen = true;
+  await schlaf(150);
+}
+pruefe(paarGesehen, `G20 in ${zuege} Zuegen standen zweimal dieselben ersten beiden Walzen`);
+pruefe(spannungGesehen, "G20 dann pulst die Reihe, die dritte Walze glueht und dreht noch");
+pruefe(
+  /×/.test(ansageGesehen),
+  `G20 und die Ergebniszeile sagt vorher an, was an der dritten haengt (${ansageGesehen})`,
+);
+pruefe(langsamer, "G20 die dritte Walze wird dabei langsamer, statt einfach stehenzubleiben");
+pruefe(
+  dauerPaar > dauerOhne,
+  `G20 ein Paar laesst sich mehr Zeit als ein Zug ohne (${dauerPaar} ms gegen hoechstens ${dauerOhne} ms)`,
+);
+pruefe(seltenGesehen, `G20 seltene Zeichen bleiben sichtbar anders liegen als haeufige (${zuege} Zuege)`);
+
+// ── G21 Limbo: zwei Auszahlungsarten, und beide sagen vorher, was sie zahlen
+//
+// "Wurf zahlt" nimmt nicht mehr das Ziel, sondern die Zahl, die faellt. Das
+// aendert die Spanne, um die es geht - und die muss **vor** dem Wurf dastehen,
+// sonst waere der Modus genau das Kleingedruckte, das hier nirgends stehen
+// soll. Der Server rechnet mit derselben Formel (probe.js P12); hier wird nur
+// geprueft, dass sie angesagt wird und mit dem Ziel mitwaechst.
+await seite.click(".spielkopf .btn.rund");
+await schlaf(300);
+await seite.click(".spielkachel >> nth=4");   // Limbo
+await schlaf(600);
+const lesen = () => seite.textContent("#limboInfo");
+const knopfDruecken = async (text) => {
+  await seite.click(`.steuerung .wahlreihe button:text-is("${text}")`);
+  await schlaf(250);
+};
+
+await knopfDruecken("Ziel zahlt");
+const zielZeile = await lesen();
+await knopfDruecken("Wurf zahlt");
+const wurfZeile2 = await lesen();
+pruefe(zielZeile !== wurfZeile2, "G21 der Wechsel der Auszahlungsart aendert die Ansage");
+pruefe(/bis/.test(wurfZeile2), `G21 im Wurfmodus steht eine Spanne da, keine einzelne Zahl (${wurfZeile2})`);
+
+// Ziel hochdrehen: die groesste Auszahlung muss deutlich staerker steigen als
+// das Ziel selbst - das ist der ganze Sinn des Modus.
+const obenAus = (s) => {
+  const zahlen = [...s.matchAll(/([\d.]+),(\d+)×/g)].map((m) => Number(m[1].replaceAll(".", "") + "." + m[2]));
+  return zahlen.length ? Math.max(...zahlen) : 0;
+};
+// Die Schnellziele sind **kurz** beschriftet ("2×", nicht "2,00×") - sechs
+// Knoepfe mit vier Nachkommastellen brechen auf 390 px um.
+await seite.click('.wahlreihe button:text-is("2×")');
+await schlaf(250);
+const beiZwei = obenAus(await lesen());
+await seite.click('.wahlreihe button:text-is("10×")');
+await schlaf(250);
+const beiZehn = obenAus(await lesen());
+pruefe(
+  beiZwei > 2 && beiZwei < 3,
+  `G21 bei Ziel 2× reicht die Spanne knapp ueber 2× hinaus (${beiZwei}×)`,
+);
+pruefe(
+  beiZehn > 25 && beiZehn / beiZwei > 8,
+  `G21 bei Ziel 10× ist deutlich mehr zu holen (${beiZehn}× gegen ${beiZwei}×)`,
+);
+
+// Und einmal werfen - was der Server zahlt, muss in der Spanne liegen.
+await seite.fill("#fEinsatz", "1,00");
+await seite.click("#btnSetzen");
+await schlaf(1200);
+const wurfErgebnis = await seite.textContent("#ergebnis");
+pruefe(
+  /zahlt|reicht/.test(wurfErgebnis),
+  `G21 nach dem Wurf steht ein Ergebnis da (${wurfErgebnis})`,
+);
+
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────
 for (const ziel of ["sDruecken", "sSpiele", "sBoerse", "sLaden", "sTafel"]) {
   await seite.click(`[data-ziel="${ziel}"]`);
