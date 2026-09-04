@@ -605,7 +605,7 @@ pruefe(pfeil.svgDa && pfeil.abX <= 1, `G18 waagerecht auch (${pfeil.abX?.toFixed
 
 // ── G19 Keno ───────────────────────────────────────────────────────────────
 //
-// Achtzig Felder auf 390 Pixeln. Acht Spalten statt der zehn eines
+// Vierzig Felder auf 390 Pixeln. Acht Spalten statt der zehn eines
 // Papier-Tippscheins: zehn waeren 35 px breit, und 35 px sind kein Ziel fuer
 // einen Daumen.
 await seite.click(".spielkopf .btn.rund");
@@ -640,6 +640,22 @@ pruefe(getippt.gedrueckt === 5, `G19 fuenf angetippte Zahlen bleiben angetippt (
 pruefe(/5/.test(getippt.zaehler), `G19 der Zaehler sagt es (${getippt.zaehler})`);
 // Die Tafel haengt an der Zahl der Tipps - bei fuenf muss eine dastehen.
 pruefe(getippt.faecher > 0, `G19 und die Auszahlungstafel steht daneben (${getippt.faecher} Faecher)`);
+
+// Die Trostreihe. Bei zehn Tipps auf "mittel" faengt die Tafel bei fuenf
+// Richtigen an - zwei bis vier Treffer sind vier von fuenf Runden, und die
+// standen bis zum 04.09.2026 gar nicht erst auf der Tafel.
+for (const nr of [1, 5, 9, 17, 21]) await seite.click(`.kenofeld >> nth=${nr}`);
+await schlaf(300);
+const zehn = await seite.evaluate(() => ({
+  gedrueckt: document.querySelectorAll('.kenofeld[aria-pressed="true"]').length,
+  faecher: [...document.querySelectorAll(".faecher .fach")].map((f) => f.textContent),
+}));
+pruefe(zehn.gedrueckt === 10, `G19 zehn Zahlen lassen sich antippen (${zehn.gedrueckt})`);
+pruefe(
+  ["2/10", "3/10", "4/10"].every((k) => zehn.faecher.some((x) => x.startsWith(k))),
+  `G19 zwei, drei und vier Treffer stehen mit einem Betrag auf der Tafel ` +
+    `(${zehn.faecher.slice(0, 3).join(" | ")})`,
+);
 
 await seite.click('.kenozeile .btn:text-is("Leeren")');
 await schlaf(250);
