@@ -116,7 +116,7 @@ Beim Beitreten per Code oder aus der Raumliste geht das Token **mit**, wenn es
 zu genau diesem Raum eines gibt. Vorher ging es nur über den Link mit `#CODE` –
 wer über die Kachel zurückkam, wurde ein neuer Spieler.
 
-In `schale.js` steht das für die sieben Schalenspiele; die neun übrigen tragen
+In `schale.js` steht das für die acht Schalenspiele; die neun übrigen tragen
 denselben Block von Hand in ihrer `app.js`.
 
 ## raum.js benutzen

@@ -1652,13 +1652,67 @@ async function glueckspilz(browser) {
   }
 }
 
+// ------------------------------------------------------------------ Königsjagd
+
+async function koenigsjagd(browser) {
+  // Ab 860 Pixeln Breite steht das Brett links und die Hand rechts – genau der
+  // Aufbau, der auf einem Kachelbild etwas hergibt. Auf dem Handy liegt beides
+  // untereinander und ein Bild davon waere ein Brett und ein abgeschnittener
+  // Kartenrand.
+  const seiten = await raumAuf(browser, 'koenigsjagd', ['Ata', 'Mira']);
+
+  // Erst der Draft: fuenfmal drei Karten, beide waehlen gleichzeitig. Geknipst
+  // wird davon nichts – das Brett ist das Bild.
+  for (let i = 0; i < 12; i++) {
+    const offen = [];
+    for (const s of seiten) if (await s.locator('.draftreihe .karte').count()) offen.push(s);
+    if (!offen.length) break;
+    for (const s of offen) {
+      await s.locator('.draftreihe .karte').nth(i % 3).click().catch(() => {});
+    }
+    await warte(400);
+  }
+  for (const s of seiten) await s.waitForSelector('.brett', { timeout: 15000 });
+
+  // Ein paar Zuege, damit das Brett nicht in der Grundstellung dasteht: immer
+  // die erste anwaehlbare Figur auf ihr erstes Ziel, dann Zug beenden.
+  for (let zug = 0; zug < 10; zug++) {
+    const s = seiten.find(async () => true);
+    let dran = null;
+    for (const x of seiten) if (await x.locator('.fd.kannziehen').count()) { dran = x; break; }
+    if (!dran) break;
+    for (let n = 0; n < 2; n++) {
+      if (!(await dran.locator('.fd.kannziehen').count())) break;
+      await dran.locator('.fd.kannziehen').nth(n).click().catch(() => {});
+      await warte(150);
+      if (await dran.locator('.fd.ziel').count()) {
+        await dran.locator('.fd.ziel').first().click().catch(() => {});
+        await warte(250);
+      }
+    }
+    if (zug === 9) break;                 // den letzten Zug offen stehen lassen
+    await klickWenn(dran, '#aktionen .btn.primary');
+    await warte(350);
+    void s;
+  }
+
+  // Geknipst wird bei dem, der am Zug ist: nur dort leuchten die moeglichen
+  // Ziele, und nur dort sind die Karten anfassbar statt ausgegraut.
+  let dran = seiten[0];
+  for (const x of seiten) if (await x.locator('.fd.kannziehen').count()) { dran = x; break; }
+  await dran.locator('.fd.kannziehen').first().click().catch(() => {});
+  await warte(400);
+  await knipsen(dran, 'koenigsjagd-spiel.png');
+  await zu(seiten);
+}
+
 const SPIELE = {
   keep, cardchaos, seconds, luckyreflex, nochnie, maexchen, amehesten, imposter,
   flasche, cubes, wortleger,
   // Die zwoelf vom 09.08.2026
   werwolf, schwimmen, maumau, luegen, becher, kingscup, paare, snake,
   minenfeld, sudoku, wortgitter, patience, wasserfarben,
-  revier, wurm, ameisen, schafstall, glueckspilz,
+  revier, wurm, ameisen, schafstall, glueckspilz, koenigsjagd,
 };
 
 const gewaehlt = process.argv.slice(2);

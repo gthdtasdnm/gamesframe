@@ -15,7 +15,7 @@
 //   B08  Verbindung kappen und wiederherstellen.
 //   B09  Führt von jedem Bildschirm ein Weg zurück? (Bugreport 10)
 //
-// Möglich ist das generisch, weil die sieben Spiele mit `schale.js` denselben
+// Möglich ist das generisch, weil die acht Spiele mit `schale.js` denselben
 // Aufbau haben: `#screen-home` → `#screen-lobby` → `#screen-game` →
 // `#screen-final`. Bis zum Endstand wird **nicht** ausgespielt – dafür bräuchte
 // jedes Spiel seine eigenen Züge, und die prüft schon `probe.js`. Stattdessen
@@ -36,8 +36,9 @@ const arg = (n, v) => { const i = process.argv.indexOf(n); return i > -1 ? proce
 const NUR = arg("--nur", null);
 const TEST = arg("--test", null);
 
-/** Die sieben Spiele mit gemeinsamer Schale. Ein Fehler gilt hier siebenfach. */
-const SCHALE = ["paare", "maumau", "becher", "kingscup", "schwimmen", "werwolf", "snake"];
+/** Die acht Spiele mit gemeinsamer Schale. Ein Fehler gilt hier achtfach. */
+const SCHALE = ["paare", "maumau", "becher", "kingscup", "schwimmen", "werwolf", "snake",
+  "koenigsjagd"];
 const SPIELE = NUR ? [NUR] : SCHALE;
 
 let gruen = 0, rot = 0;

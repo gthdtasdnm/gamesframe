@@ -37,6 +37,7 @@ node pruefe-wurm.mjs           # dasselbe fuer Wurm, dazu Maussteuerung und vier
 node pruefe-schafstall.mjs     # Schafstall: eine ganze Runde ueber den Tipp-Knopf, Neuladen, Herz weg
 node pruefe-ameisen.mjs        # Ameisen: Tippen, Laden, zweiter Ausgang, derselbe Bau nach dem Neuladen
 node pruefe-glueckspilz.mjs    # Glueckspilz: Knopf, Schwung, Plinko-Tafel, Boerse, Konto (eigene Fassung, Port 8188)
+node pruefe-koenigsjagd.mjs    # Koenigsjagd: Draft, Brett mit dem Finger, „Zug beenden" ohne Scrollen (eigene Fassung, Port 8092)
 node pruefe-dating.mjs         # ZWEI: Tafel, Countdown, Reservierung – und die Uebungsrunde bis in die private Lobby im iframe
 node pruefe-hochzeit.mjs       # Grossansicht: passt das Bild ins Fenster? (misst, statt zu zeigen)
 GAST=<wort> node pruefe-hochzeit-upload.mjs   # 150 Bilder am Handy auswaehlen: kommt Rueckmeldung?
@@ -67,6 +68,12 @@ ss -tlnp | grep ':8086 '   # danach ueber den Port beenden, nie per pkill
 # START_CENT gibt Startguthaben, die vier anderen Griffe spulen die Nacht vor
 # und schicken das Konto ueber die Platte. Die Probe sagt jeden dieser Teile
 # ausdruecklich ab, wenn sie gegen live laeuft.
+# Koenigsjagd - zwei Geraete an einem Brett, deshalb eigene Fassung auf 8092.
+cd /var/www/html/koenigsjagd
+PORT=8092 HOST=127.0.0.1 deno run --allow-net --allow-read --allow-env --allow-sys server.js &
+cd /root/werkzeug-screenshots && node pruefe-koenigsjagd.mjs   # K01-K28
+ss -tlnp | grep ':8092 '   # danach ueber den Port beenden, nie per pkill
+
 cd /var/www/html/glueckspilz
 KONTEN_DIR=/tmp/gp-probe START_CENT=500000 RUHE_MS=1200 SICHERN_MS=800 \
   OFFLINE_MAL=20000 WEG_AB_MS=1500 PORT=8188 HOST=127.0.0.1 \
@@ -75,6 +82,21 @@ WS_URL=ws://127.0.0.1:8188/ws deno task probe          # P0-P9, M1-M5, S1-S11
 cd /root/werkzeug-screenshots && node pruefe-glueckspilz.mjs   # G01-G24
 ss -tlnp | grep ':8188 '   # danach ueber den Port beenden, nie per pkill
 ```
+
+Ohne Browser und ohne Dienst, im Spielordner:
+
+```bash
+cd /var/www/html/koenigsjagd && deno task pruefe   # jede Karte, jedes Sonderfeld, die Zugregeln
+```
+
+Das gibt es wegen der **vierten Falle**: `deno check` findet in reinem
+JavaScript keinen vergessenen Namen, und bei Königsjagd würfelt der Draft, was
+überhaupt auf eine Hand kommt – `probe.js` kann eine bestimmte Karte also nicht
+erzwingen. Der Lauf spielt jede der neunzehn ohne Dienst durch und fällt durch,
+sobald eine Karte ohne Probe dazukommt. Beim ersten Lauf hat er sofort einen
+fehlenden Import gefunden, über den `deno check` grün hinweggegangen war. Wer
+ein Spiel baut, dessen Inhalte per Zufall auf die Hand kommen, baut so etwas
+mit.
 
 Ohne Browser, aus `/var/www/html` heraus:
 
@@ -151,7 +173,7 @@ Aus den Bugreports 4, 7, 8, 9, 10 und 13:
   Verbindung sauber schließen. Braucht `GEIST_MS=3000` und läuft deshalb nur
   gegen eine eigene Fassung; die Probe setzt das selbst (`t.env`).
 - **`pruefe-durchlauf.mjs` B09** – der Weg hinaus von jedem Bildschirm, für die
-  sieben Schalenspiele durchgeklickt.
+  acht Schalenspiele durchgeklickt.
 - **`pruefe-ausgang.mjs`** – dasselbe für alle sechzehn Lobbyspiele, aber nur
   die Verdrahtung: Endstand einblenden, Knopf drücken, steht die Startseite da?
   Ohne Partie, deshalb in einer Minute durch.
@@ -169,7 +191,7 @@ Aus den Bugreports 4, 7, 8, 9, 10 und 13:
 `werkzeug/lobbyprobe.mjs` (10.08.2026) prüft nicht das Spiel, sondern den Weg
 **hinein und wieder hinaus** – das, was kein `probe.js` tut: neu laden, das
 Netz verlieren, einen zweiten Tab aufmachen, einer laufenden Runde beitreten,
-Müll schicken. Siebzehn Tests (L01–L17) gegen die sechzehn Spiele mit
+Müll schicken. Siebzehn Tests (L01–L17) gegen die siebzehn Spiele mit
 gemeinsamem Lobby-Protokoll.
 
 **Revier, Wurm und Ameisen fallen heraus** – sie haben keine Lobby, kein

@@ -1,9 +1,11 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
   "portsFrei": [
-    "8086",
-    "8087",
-    "8089"
+    "8091",
+    "8092",
+    "8093",
+    "8094",
+    "8095"
   ],
   "portsFremd": {
     "3002": "Whiteboard (Nextcloud)",
@@ -13,7 +15,9 @@
     "8011": "Tradingbot Momentum",
     "8080": "Talk-Signaling (Nextcloud)",
     "8081": "Hochzeitsseite (privat, kein Spiel)",
-    "8085": "ZWEI / Speed-Dating (privat, kein Spiel, nicht verlinkt)"
+    "8085": "ZWEI / Speed-Dating (privat, kein Spiel, nicht verlinkt)",
+    "8086": "nur zeitweise: eigene Fassung fuer pruefe-imposter.mjs",
+    "8087": "nur zeitweise: eigene Fassung fuer pruefe-sprache.mjs"
   },
   "spiele": [
     {
@@ -538,6 +542,28 @@
         "bremse": "bremse.js",
         "statisch": "statisch.js",
         "sprache": "public/sprache.js"
+      }
+    },
+    {
+      "name": "koenigsjagd",
+      "titel": "Königsjagd",
+      "pfad": "/koenigsjagd/",
+      "port": 8089,
+      "dienst": "systemd",
+      "leute": "2",
+      "kategorie": "Zug um Zug, in Ruhe",
+      "art": "server",
+      "repo": null,
+      "hinweis": "Schach als Deckbuilder: Karten, Mana, Sonderfelder – der König wird geschlagen, nicht mattgesetzt",
+      "gemeinsam": {
+        "bremse": "bremse.js",
+        "raum": "raum.js",
+        "statisch": "statisch.js",
+        "schale": "public/schale.js",
+        "lobbyCss": "public/style.css",
+        "rahmenCss": "public/style.css",
+        "sprache": "public/sprache.js",
+        "schaleTexte": "public/schale-texte.js"
       }
     }
   ],

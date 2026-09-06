@@ -1,6 +1,6 @@
 # Deutsch, Türkisch, Englisch
 
-Stand: 03.09.2026. **Alle 29 Spiele, der Bugreport, die Spieleübersicht und die
+Stand: 06.09.2026. **Alle 30 Spiele, der Bugreport, die Spieleübersicht und die
 Startseite sind dreisprachig** – die Oberfläche jedenfalls. Was bewusst deutsch
 bleibt, steht unten unter „Was nicht übersetzt wird".
 
@@ -119,7 +119,7 @@ Schlüssel (`mm.sagtMau`, `sw.feuer`) stehen daneben; beides ist in Ordnung.
 
 Zwei Familien sind gemeinsam und stehen in `schale-texte.js`:
 
-* `schale.*` – der Warteraum der sieben Schalenspiele, Wort für Wort wie in
+* `schale.*` – der Warteraum der acht Schalenspiele, Wort für Wort wie in
   `schale.js`.
 * `c.*` – dieselben Sachen für die Spiele mit **eigener** Klempnerei
   („Gruppe C"): anderer Wortlaut, untereinander aber gleich.

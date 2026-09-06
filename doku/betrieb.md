@@ -79,8 +79,9 @@ im Netz – sie nennt Serverpfade.
    ist beabsichtigt und soll so bleiben. `gemeinsam/`, `doku/`, `werkzeug/`
    und `spiele.json` sind freigegeben: sie beschreiben den Rahmen.
 2. **Die vier alten Spiele** und der Bugreport: eigene GitHub-Repos.
-3. **Die sieben neueren Spiele**: eigenes Repo je Spiel. Welches, steht in
-   `spiele.json` unter `repo`; `null` heißt: noch keins angelegt.
+3. **Alle übrigen Spiele**: eigenes Repo je Spiel. Welches, steht in
+   `spiele.json` unter `repo`; `null` heißt: noch keins angelegt – der Ordner
+   ist dann schon ein Git-Repo mit Commits, es fehlt nur die Gegenstelle.
 4. **`RISIKEN-TODO.md` und `SPIELE-IDEEN.md`**: in **keinem** Repo.
 
 Der Schlüssel `/root/.ssh/id_ed25519_github` authentifiziert sich als

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title data-t="seite.titel">Spiele – inf-zeus.de</title>
-<meta name="description" data-t-attr="content:seite.beschreibung" content="Neunundzwanzig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
+<meta name="description" data-t-attr="content:seite.beschreibung" content="Dreißig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -691,7 +691,7 @@ footer a { color: inherit; }
     <div data-sprachwahl aria-label="Sprache"></div>
   </div>
   <h1 data-t="seite.h1">Spiele</h1>
-  <p class="sub" data-t-html="seite.sub">Neunundzwanzig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
+  <p class="sub" data-t-html="seite.sub">Dreißig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -1231,6 +1231,36 @@ footer a { color: inherit; }
         <li data-t-html="k.paare.s4">Passen sie zusammen, gehören sie dir – und du bist noch mal dran.</li>
         <li data-t-html="k.paare.s5">Passen sie nicht, bleiben sie kurz offen liegen, damit sich alle die Stelle merken können.</li>
         <li data-t-html="k.paare.s6">Wer am Ende die meisten Paare hat, gewinnt.</li>
+    </template>
+  </article>
+
+  <article class="game" style="--accent:#e9c46a; --accent2:#a06bff;"
+           data-spiel="koenigsjagd" data-heimat="gruppe-ruhe" data-platz="5" data-bild="bilder/koenigsjagd-spiel.webp">
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Königsjagd gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
+    <a class="game-link" href="/koenigsjagd/">
+      <img class="schnappschuss" src="bilder/klein/koenigsjagd-spiel.webp" alt="Bildschirmfoto aus einer Partie Königsjagd"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">♟️</span>
+        <h3>Königsjagd</h3>
+      </div>
+      <p class="kurz" data-t-html="k.koenigsjagd.kurz">Schach, aber der König wird geschlagen – und vorher suchst du dir fünf Karten aus.</p>
+      <p class="lang" data-t-html="k.koenigsjagd.lang">Ganz normales Schach mit drei Zutaten: Es gibt kein Matt, der König wird geschlagen. Jeder Zug kostet Mana – ein Bauer 1, die Dame 5 –, und wer genug davon hat, bewegt mehrere Figuren in einem Zug. Dazu Karten, die du vor der Partie aus je drei zur Wahl gestellten aussuchst: Bauern, die wie Damen ziehen, Läufer, die durch Figuren hindurchschlagen, ein Schild für den König, eine Übernahme gegnerischer Figuren. Auf dem Brett liegen Sonderfelder, die Karten, Mana oder einen zweiten Zug verschenken.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag" data-t-html="tag.p2">2 Spieler</span>
+        <span class="tag" data-t-html="tag.karten">Karten</span>
+        <span class="tag" data-t-html="tag.gegeneinander">Gegeneinander</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li data-t-html="k.koenigsjagd.s1">Raum aufmachen, Link an den Gegner. Zwei Leute, zwei Geräte – die Farben werden gewürfelt.</li>
+        <li data-t-html="k.koenigsjagd.s2">Fünfmal drei Karten, jedes Mal eine behalten. Beide wählen gleichzeitig und sehen die Wahl des anderen nicht.</li>
+        <li data-t-html="k.koenigsjagd.s3">Jeder Zug bringt drei Mana, höchstens zwölf liegen auf der Bank. Bauer 1, Springer und Läufer 2, Turm 3, Dame 5, König 1.</li>
+        <li data-t-html="k.koenigsjagd.s4">Reicht das Mana, ziehen mehrere Figuren in einem Zug – aber jede nur einmal. Karten kosten ebenfalls Mana.</li>
+        <li data-t-html="k.koenigsjagd.s5">Sonderfelder liegen gespiegelt: 🃏 eine Karte, 💎 drei Mana, ⚡ noch ein Zug, 🌀 wirft die Figur woandershin, 🛡️ macht sie unschlagbar.</li>
+        <li data-t-html="k.koenigsjagd.s6">Kein Schach, kein Matt, kein Patt: Es gewinnt, wer den gegnerischen König schlägt.</li>
     </template>
   </article>
 </main>

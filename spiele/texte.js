@@ -30,9 +30,9 @@ export const WOERTER = {
   tr: {
     // --- Kopf der Seite ---
     "seite.titel": "Oyunlar – inf-zeus.de",
-    "seite.beschreibung": "1 ile 20 kişi için yirmi dokuz tarayıcı oyunu. Kurulum yok, hesap yok.",
+    "seite.beschreibung": "1 ile 20 kişi için otuz tarayıcı oyunu. Kurulum yok, hesap yok.",
     "seite.h1": "Oyunlar",
-    "seite.sub": "1 ile 20 kişi için yirmi dokuz tarayıcı oyunu. İndirme yok, hesap yok – bağlantıyı paylaş, adını yaz, başla.",
+    "seite.sub": "1 ile 20 kişi için otuz tarayıcı oyunu. İndirme yok, hesap yok – bağlantıyı paylaş, adını yaz, başla.",
 
     // --- Suche - die drei Meldungen entstehen erst beim Tippen ---
     "suche.platz": "Oyun ara – ad, anahtar kelime, kişi sayısı",
@@ -88,6 +88,15 @@ export const WOERTER = {
     "tag.p1_4": "1–4 oyuncu",
     "tag.p1_6": "1–6 oyuncu",
     "tag.p1_20": "1–20 oyuncu",
+    "tag.p2": "2 oyuncu",
+    "k.koenigsjagd.kurz": "Satranç – ama şah alınır, ve öncesinde kendine beş kart seçersin.",
+    "k.koenigsjagd.lang": "Üç eklemeyle normal satranç: Mat yok, şah doğrudan alınır. Her hamle mana ister – piyon 1, vezir 5 –, yeterince manası olan bir turda birden çok taş oynatır. Bir de kartlar: partiden önce her seferinde üç kart arasından birini seçersin. Vezir gibi giden piyonlar, taşların içinden vuran filler, şah için bir kalkan, rakip taşa el koyma. Tahtada ise kart, mana ya da ikinci bir hamle veren özel kareler durur.",
+    "k.koenigsjagd.s1": "Oda aç, bağlantıyı rakibine gönder. İki kişi, iki cihaz – renkler kurayla belirlenir.",
+    "k.koenigsjagd.s2": "Beş kez üç kart, her seferinde birini al. İkiniz aynı anda seçersiniz ve birbirinizin seçimini görmezsiniz.",
+    "k.koenigsjagd.s3": "Her tur üç mana getirir, bankada en fazla on iki durur. Piyon 1, at ve fil 2, kale 3, vezir 5, şah 1.",
+    "k.koenigsjagd.s4": "Mana yeterse bir turda birden çok taş oynar – ama her taş yalnızca bir kez. Kartlar da mana ister.",
+    "k.koenigsjagd.s5": "Özel kareler simetrik yerleşir: 🃏 bir kart, 💎 üç mana, ⚡ bir hamle daha, 🌀 taşı başka yere fırlatır, 🛡️ onu dokunulmaz yapar.",
+    "k.koenigsjagd.s6": "Şah çekme yok, mat yok, pat yok: Rakibin şahını alan kazanır.",
     "tag.p2_4": "2–4 oyuncu",
     "tag.p2_6": "2–6 oyuncu",
     "tag.p2_8": "2–8 oyuncu",
@@ -400,9 +409,9 @@ export const WOERTER = {
   en: {
     // --- Kopf der Seite ---
     "seite.titel": "Games – inf-zeus.de",
-    "seite.beschreibung": "Twenty-nine browser games for 1 to 20 people. No install, no account.",
+    "seite.beschreibung": "Thirty browser games for 1 to 20 people. No install, no account.",
     "seite.h1": "Games",
-    "seite.sub": "Twenty-nine browser games for 1 to 20 people. No download, no account – share the link, type a name, go.",
+    "seite.sub": "Thirty browser games for 1 to 20 people. No download, no account – share the link, type a name, go.",
 
     // --- Suche - die drei Meldungen entstehen erst beim Tippen ---
     "suche.platz": "Search games – name, keyword, player count",
@@ -458,6 +467,15 @@ export const WOERTER = {
     "tag.p1_4": "1–4 players",
     "tag.p1_6": "1–6 players",
     "tag.p1_20": "1–20 players",
+    "tag.p2": "2 players",
+    "k.koenigsjagd.kurz": "Chess, but the king gets captured – and first you pick yourself five cards.",
+    "k.koenigsjagd.lang": "Plain chess with three additions: there is no mate, the king is simply captured. Every move costs mana – a pawn 1, the queen 5 – and whoever has enough moves several pieces in one turn. On top of that, cards you pick before the game, one out of three at a time: pawns that move like queens, bishops that strike straight through pieces, a shield for the king, a takeover of enemy pieces. And the board carries special squares that hand out cards, mana or a second move.",
+    "k.koenigsjagd.s1": "Open a room, send the link to your opponent. Two people, two devices – the colours are drawn at random.",
+    "k.koenigsjagd.s2": "Five times three cards, keep one each time. You both choose at the same time and never see the other's pick.",
+    "k.koenigsjagd.s3": "Every turn brings three mana, twelve at most sit on the bank. Pawn 1, knight and bishop 2, rook 3, queen 5, king 1.",
+    "k.koenigsjagd.s4": "If the mana lasts, several pieces move in one turn – but each piece only once. Cards cost mana too.",
+    "k.koenigsjagd.s5": "Special squares are mirrored: 🃏 a card, 💎 three mana, ⚡ another move, 🌀 throws the piece elsewhere, 🛡️ makes it uncapturable.",
+    "k.koenigsjagd.s6": "No check, no mate, no stalemate: whoever captures the enemy king wins.",
     "tag.p2_4": "2–4 players",
     "tag.p2_6": "2–6 players",
     "tag.p2_8": "2–8 players",

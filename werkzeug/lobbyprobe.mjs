@@ -6,7 +6,7 @@
 // zweiten Tab aufmachen, einer laufenden Runde beitreten, Muell schicken.
 // Genau das macht ein echter Mensch aber staendig.
 //
-// Deckt die sechzehn Spiele mit gemeinsamem Lobby-Protokoll ab
+// Deckt die siebzehn Spiele mit gemeinsamem Lobby-Protokoll ab
 // (browse/create/join/name/ready/settings/start/ende/again/leave/ping).
 // seconds, keep und cardchaos sprechen ein anderes und fehlen hier.
 //
@@ -49,6 +49,7 @@ const BASIS = arg("--url", "wss://inf-zeus.de");
 const SPIELE = [
   // Gruppe A - raum.js und schale.js
   "snake", "werwolf", "maumau", "becher", "kingscup", "schwimmen", "paare",
+  "koenigsjagd",
   // Gruppe B - raum.js, eigener Client
   "amehesten", "cubes", "wortleger", "luegen",
   // Gruppe C - eigene Klempnerei, gleiches Protokoll
@@ -56,7 +57,7 @@ const SPIELE = [
 ];
 
 const GRUPPE = (spiel) =>
-  SPIELE.indexOf(spiel) < 7 ? "A" : SPIELE.indexOf(spiel) < 11 ? "B" : "C";
+  SPIELE.indexOf(spiel) < 8 ? "A" : SPIELE.indexOf(spiel) < 12 ? "B" : "C";
 
 /**
  * Spielgrenzen und Koennen aus dem Quelltext lesen.
@@ -788,9 +789,18 @@ test("L15", "Muell und Unfug: nichts davon darf den Dienst umbringen", async (ct
   await schlaf(1200);
   // Lebt der Dienst noch, und steht der Raum noch richtig da?
   const pruef = await ctx.neu("Pruefer");
-  pruef.schicke({ t: "join", code: host.code, name: "Pruefer" });
-  await pruef.typ("joined", { ms: 6000 });
-  const r = await sitze(host, 3, 6000);
+  const max = host.letzte("room").maxPlayers ?? (await koennen(ctx.spiel)).max;
+  // Zu zweit (Koenigsjagd) gibt es keinen dritten Platz. Dann beweist die
+  // Raumliste, dass der Dienst noch lebt - der Beitritt waere hier ein
+  // anderer Test, und der steht als L11 schon da.
+  if (max < 3) {
+    pruef.schicke({ t: "browse" });
+    await pruef.typ("rooms", { ms: 6000 });
+  } else {
+    pruef.schicke({ t: "join", code: host.code, name: "Pruefer" });
+    await pruef.typ("joined", { ms: 6000 });
+  }
+  const r = await sitze(host, Math.min(3, max), 6000);
   muss(r.phase === "lobby", `der Muell hat die Phase auf »${r.phase}« gestellt`);
   const lang = r.players.find((p) => p.name.length > 12);
   muss(!lang, `ein Name mit ${lang?.name.length} Zeichen steht im Raum`);

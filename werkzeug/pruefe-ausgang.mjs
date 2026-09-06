@@ -1,5 +1,5 @@
 // Bugreport 10, die andere Hälfte: `pruefe-durchlauf.mjs` spielt B09 nur für
-// die sieben Spiele mit `schale.js` durch. Die neun übrigen tragen ihren
+// die acht Spiele mit `schale.js` durch. Die neun übrigen tragen ihren
 // Client selbst – dort ist die Frage nicht, ob der Knopf hinausführt (der Weg
 // ist derselbe wie beim „Raum verlassen" der Lobby), sondern ob er überhaupt
 // **verdrahtet** ist. Genau das prüft dieses Skript, ohne eine Partie zu
