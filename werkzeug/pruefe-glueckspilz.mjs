@@ -288,7 +288,7 @@ pruefe(
 // ── G04 Plinko: die Tafel muss in die Breite passen ────────────────────────
 await seite.click('[data-ziel="sSpiele"]');
 await schlaf(400);
-pruefe((await seite.$$(".spielkachel")).length === 11, "G04 elf Spiele stehen im Raster");
+pruefe((await seite.$$(".spielkachel")).length === 12, "G04 zwoelf Spiele stehen im Raster");
 await seite.click(".spielkachel >> nth=0");
 await schlaf(500);
 for (const reihen of ["8", "12", "16"]) {
@@ -312,11 +312,25 @@ for (const reihen of ["8", "12", "16"]) {
   pruefe(masse.schrift >= 7.5, `G04 ${reihen} Reihen: die Zahlen sind noch lesbar (${masse.schrift.toFixed(1)} px)`);
 }
 await seite.fill("#fEinsatz", "1,00");
+const wurfStart = Date.now();
 await seite.click("#btnSetzen");
-await schlaf(3000);
+// Gewartet, nicht geschlafen: seit dem 05.09.2026 faellt die Kugel mit fester
+// Schwerkraft statt auf eine Zieldauer, klappert unterwegs auf den Naegeln und
+// springt zum Nachbarn - bei sechzehn Reihen sind das bis zu 4,3 Sekunden. Ein
+// festes `schlaf(3000)` prueft dann nicht mehr das Ergebnis, sondern die Uhr.
+await seite.waitForFunction(
+  () => (document.getElementById("ergebnis")?.textContent ?? "").includes("×"),
+  null,
+  { timeout: 9000 },
+);
+const wurfDauer = Date.now() - wurfStart;
 pruefe(
   (await seite.textContent("#ergebnis")).includes("×"),
   `G04 nach dem Wurf steht ein Ergebnis da (${await seite.textContent("#ergebnis")})`,
+);
+pruefe(
+  wurfDauer > 1500 && wurfDauer < 6000,
+  `G04 und die Kugel hat sich dafuer Zeit gelassen, aber nicht zu viel (${wurfDauer} ms)`,
 );
 
 // ── G05 Mines ueberlebt ein Neuladen ───────────────────────────────────────
@@ -500,7 +514,7 @@ pruefe(ausgestiegen, `G14 in acht Anlaeufen liess sich mindestens einer mit Gewi
 // sich. Geprueft wird das, was der Daumen merkt - liegt der Spielknopf im
 // Bild, ohne dass irgendwo gescrollt wurde?
 for (
-  const [nr, spiel] of [[0, "Plinko"], [1, "Mines"], [2, "Crash"], [4, "Limbo"], [6, "Flip"], [8, "Bars"], [9, "Keno"], [10, "Fallobst"]]
+  const [nr, spiel] of [[0, "Plinko"], [1, "Mines"], [2, "Crash"], [4, "Limbo"], [6, "Flip"], [8, "Bars"], [9, "Keno"], [10, "Fallobst"], [11, "Pharao"]]
 ) {
   await seite.click('[data-ziel="sSpiele"]');
   await schlaf(350);
@@ -723,16 +737,29 @@ await seite.click(".spielkachel >> nth=8");   // Bars
 await schlaf(600);
 await seite.fill("#fEinsatz", "0,10");
 
-// (1) Nacheinander. Direkt nach dem Zug drehen noch alle drei; nach der
-// ersten Haltezeit steht genau eine, und die dritte dreht noch.
+// (1) Nacheinander. Direkt nach dem Zug drehen noch alle drei; sobald die
+// erste steht, dreht die dritte noch.
+//
+// **Gewartet, nicht geschlafen.** Bis zum 05.09.2026 stand hier `schlaf(600)`,
+// weil die Walzen zu festen Zeiten hielten (420 / 760 ms). Seit der Streifen
+// auf seine Zelle einlaeuft, ist die Haltezeit die freie Groesse - sie
+// schwankt um rund eine Sechstelsekunde, damit das Tempo gleich bleiben kann
+// (siehe `walzeHalten()` in `casino.js`). Eine feste Wartezeit prueft dann
+// nicht mehr die Reihenfolge, sondern den Zufall.
 await seite.click("#btnSetzen");
-await schlaf(200);
+await schlaf(120);
 const gleichNachKlick = await seite.$$eval(".walze", (w) => w.filter((x) => x.classList.contains("dreht")).length);
-await schlaf(400);
+await seite.waitForFunction(
+  () => !document.querySelectorAll(".walze")[0].classList.contains("dreht"),
+  null,
+  { timeout: 5000 },
+);
 const nachErster = await seite.$$eval(".walze", (w) => w.filter((x) => x.classList.contains("dreht")).length);
+const dritteLaeuft = await seite.$$eval(".walze", (w) => w[2].classList.contains("dreht"));
 pruefe(gleichNachKlick === 3, `G20 nach dem Hebel drehen alle drei Walzen (${gleichNachKlick})`);
 pruefe(nachErster < 3, `G20 die erste steht, bevor die letzte faellt (${nachErster} drehen noch)`);
-await schlaf(3200);
+pruefe(dritteLaeuft, "G20 und zwar so, dass die dritte in diesem Moment noch laeuft");
+await seite.waitForSelector("#btnSetzen:not([disabled])", { timeout: 9000 });
 
 // (2) und (3): ziehen, bis ein Paar in den ersten beiden Walzen steht, und
 // dabei mitschreiben, was zu sehen war.
@@ -751,8 +778,17 @@ let zuege = 0;
 for (; zuege < 30 && !(paarGesehen && seltenGesehen); zuege++) {
   const start = Date.now();
   await seite.click("#btnSetzen");
-  // Kurz nach der zweiten Walze nachsehen: stehen dort zwei gleiche?
-  await schlaf(900);
+  // Sobald die zweite Walze liegt, nachsehen: stehen dort zwei gleiche?
+  // Auch hier gewartet statt geschlafen - siehe oben.
+  await seite.waitForFunction(() => {
+    const w = document.querySelectorAll(".walze");
+    return !w[0].classList.contains("dreht") && !w[1].classList.contains("dreht");
+  }, null, { timeout: 6000 });
+  // Die Spannung setzt bewusst erst kurz nach der zweiten Walze ein (60 ms in
+  // `casino.js`) - direkt beim Halt nachzusehen hiesse, gegen diese Pause zu
+  // pruefen. Die dritte laeuft danach noch mindestens ein Drittel einer
+  // Sekunde, es geht also nichts verloren.
+  await schlaf(150);
   const lage = await seite.evaluate(() => ({
     // `.zeichen` und nicht `span`: seit dem Walzenstreifen stehen in jeder
     // Walze acht weitere Spans, die nur zum Durchlaufen da sind.
@@ -761,7 +797,6 @@ for (; zuege < 30 && !(paarGesehen && seltenGesehen); zuege++) {
     spannung: document.getElementById("walzenReihe").classList.contains("spannung"),
     heiss: document.querySelectorAll(".walze.heiss").length,
     ergebnis: document.getElementById("ergebnis").textContent,
-    tempo: document.querySelectorAll(".walze")[2].style.getPropertyValue("--tempo"),
   }));
   const paar = lage.zeichen[0] === lage.zeichen[1] && !lage.dreht[0] && !lage.dreht[1];
   if (paar && !paarGesehen) {
@@ -769,11 +804,37 @@ for (; zuege < 30 && !(paarGesehen && seltenGesehen); zuege++) {
     spannungGesehen = lage.spannung && lage.heiss === 1 && lage.dreht[2];
     ansageGesehen = lage.ergebnis;
     // Etwas spaeter noch einmal: die Walze muss inzwischen langsamer laufen.
-    await schlaf(500);
-    const spaeter = await seite.evaluate(() =>
-      document.querySelectorAll(".walze")[2].style.getPropertyValue("--tempo")
-    );
-    langsamer = parseFloat(spaeter) > parseFloat(lage.tempo || "0.055");
+    //
+    // Gemessen wird am Streifen selbst und nicht mehr an `--tempo` - den
+    // Regler gibt es nicht mehr, seit `casino.js` den Streifen faehrt. Der
+    // Streifen springt beim Umlauf zurueck auf null; solche Spruenge sind
+    // groesser als eine halbe Walze und fallen deshalb heraus, und genommen
+    // wird der **Mittelwert** der uebrigen Schritte.
+    const tempoMessen = () =>
+      seite.evaluate(() =>
+        new Promise((ok) => {
+          const w = document.querySelectorAll(".walze")[2];
+          const st = w.querySelector(".streifen");
+          const h = w.getBoundingClientRect().height;
+          const lies = () => new DOMMatrixReadOnly(getComputedStyle(st).transform).m42;
+          const schritte = [];
+          let vor = lies();
+          const uhr = setInterval(() => {
+            const jetzt = lies();
+            const d = Math.abs(jetzt - vor);
+            if (d < h / 2) schritte.push(d);
+            vor = jetzt;
+          }, 25);
+          setTimeout(() => {
+            clearInterval(uhr);
+            ok(schritte.length ? schritte.reduce((a, b) => a + b, 0) / schritte.length : 0);
+          }, 320);
+        })
+      );
+    const frueh = await tempoMessen();
+    await schlaf(420);
+    const spaet = await tempoMessen();
+    langsamer = frueh > 0 && spaet < frueh * 0.75;
   }
   // Warten, bis der Knopf wieder freigegeben ist - sonst zaehlt die naechste
   // Runde gar nicht.
@@ -909,21 +970,31 @@ await seite.click(".spielkachel >> nth=8");   // Bars
 await schlaf(500);
 await seite.fill("#fEinsatz", "0,10");
 await seite.click("#btnSetzen");
-await schlaf(200);
-const walze = await seite.evaluate(() => {
-  const w = document.querySelector(".walze");
-  const st = w?.querySelector(".streifen");
-  const sicht = st ? getComputedStyle(st) : null;
-  return {
-    streifenDa: !!st,
-    zeichen: st ? st.children.length : 0,
-    verschieden: st ? new Set([...st.children].map((c) => c.textContent)).size : 0,
-    laeuft: sicht ? sicht.display !== "none" && sicht.animationName !== "none" : false,
-    // Nichts darf ueber den Rand der Walze hinausragen: `overflow: hidden`
-    // schnitte es ab, und genau das war bei 💎 und 7️⃣ zu sehen.
-    haeltDrin: st ? st.getBoundingClientRect().width <= w.getBoundingClientRect().width + 1 : false,
-  };
-});
+await schlaf(120);
+const walze = await seite.evaluate(() =>
+  new Promise((ok) => {
+    const w = document.querySelector(".walze");
+    const st = w?.querySelector(".streifen");
+    const sicht = st ? getComputedStyle(st) : null;
+    const lies = () => (st ? getComputedStyle(st).transform : "");
+    const vorher = lies();
+    // **Bewegt er sich?** und nicht mehr **hat er eine Animation?**. Seit dem
+    // 05.09.2026 faehrt `casino.js` den Streifen selbst; `animationName` steht
+    // deshalb auf `none`, obwohl sich alles dreht. Ob etwas laeuft, sieht man
+    // daran, dass es an zwei Zeitpunkten woanders steht.
+    setTimeout(() => {
+      ok({
+        streifenDa: !!st,
+        zeichen: st ? st.children.length : 0,
+        verschieden: st ? new Set([...st.children].map((c) => c.textContent)).size : 0,
+        laeuft: !!sicht && sicht.display !== "none" && lies() !== vorher,
+        // Nichts darf ueber den Rand der Walze hinausragen: `overflow: hidden`
+        // schnitte es ab, und genau das war bei 💎 und 7️⃣ zu sehen.
+        haeltDrin: st ? st.getBoundingClientRect().width <= w.getBoundingClientRect().width + 1 : false,
+      });
+    }, 140);
+  })
+);
 pruefe(walze.streifenDa, "G22 Bars: jede Walze traegt einen Streifen, kein einzelnes Zeichen");
 pruefe(walze.zeichen >= 8, `G22 der Streifen traegt alle Zeichen und eine Naht (${walze.zeichen} Felder)`);
 pruefe(walze.verschieden >= 7, `G22 und sie sind wirklich verschieden (${walze.verschieden} Sorten)`);
@@ -953,6 +1024,71 @@ pruefe(
   `G22 die Ergebniszeile sagt das Ergebnis und nicht, was haette sein koennen (${nachWurf.ergebnis})`,
 );
 pruefe(nachWurf.passt, "G22 kein Zeichen wird vom Rand der Walze abgeschnitten");
+
+// ── G22 Und das Wichtigste: das Zeichen wird nicht getauscht ───────────────
+//
+// Die Meldung war: "es dreht sich und dann glitcht es und eine zitrone
+// wechselt zu was anderem kurz vor dem gewinn". Der Grund war der Aufbau: der
+// Streifen lief in einer CSS-Schleife, die mit dem Ergebnis nichts zu tun
+// hatte, blieb beim Halt stehen, wo sie gerade war, und darueber wurde das
+// richtige Zeichen eingeblendet. Wer hinsah, sah das eine zum anderen werden.
+//
+// Nachweisbar ist das an einer einzigen Zahl: der Streifen wird um
+// `pos · Fensterhoehe` nach oben geschoben, also sagt sein `transform`, welche
+// Zelle im Fenster steht. Steht dort dasselbe Zeichen, das die Walze anzeigt,
+// dann ist es hereingedreht worden und nicht entstanden. Zusaetzlich muss die
+// Verschiebung ein **ganzes** Vielfaches der Fensterhoehe sein - sonst steht
+// die Walze zwischen zwei Zeichen.
+for (let zug = 0; zug < 6; zug++) {
+  await seite.click("#btnSetzen");
+  await seite.waitForFunction(() => !document.querySelector(".walze.dreht"), null, { timeout: 9000 });
+  // Den Einschlag abwarten, **bevor** gemessen wird. `walzeStoss` staucht die
+  // ganze Walze fuer 0,28 s (`scaleY`), und die Zellenhoehe wird an einer Zelle
+  // **in** dieser Walze gemessen - waehrend der Stauchung kommt sie um ein
+  // Prozent daneben heraus, und nach fuenf Zellen sind daraus fuenf Hundertstel
+  // Versatz geworden. Gemessen wurde dann die Animation und nicht der Halt.
+  await schlaf(320);
+  const sitz = await seite.evaluate(() =>
+    [...document.querySelectorAll(".walze")].map((w) => {
+      const st = w.querySelector(".streifen");
+      // Die Hoehe **einer Zelle**, an der Zelle gemessen. Nach dem Halt liegt
+      // der Streifen auf `display: none`, dann misst sich nichts - fuer den
+      // Moment der Messung wird er deshalb wieder eingeblendet. Die Walze
+      // stattdessen zu messen ginge daneben: sie traegt einen Rahmen und haengt
+      // an der Flex-Reihe um sie herum, und schon zwei Pixel Unterschied
+      // verschieben nach sieben Zellen das ganze Bild.
+      const warWeg = !w.classList.contains("dreht");
+      if (warWeg) w.classList.add("dreht");
+      const h = st.children[0].getBoundingClientRect().height;
+      if (warWeg) w.classList.remove("dreht");
+      // **Der gesetzte Wert, nicht der berechnete.** Nach dem Halt liegt der
+      // Streifen auf `display: none`, und `getComputedStyle(...).transform`
+      // ist dann `none` - `DOMMatrixReadOnly` macht daraus die Einheit, also
+      // stuende hier immer Zelle 0. Der Test war damit wertlos und meldete
+      // einen Fehler, den es nicht gab (und haette den echten verdeckt).
+      const y = parseFloat((st.style.transform.match(/-?[\d.]+/) ?? [0])[0]) || 0;
+      const p = -y / h;
+      const zelle = Math.round(p);
+      return {
+        hoehe: h,
+        versatz: Math.abs(p - zelle),
+        gleich: (st.children[zelle]?.textContent ?? "") === (w.querySelector(".zeichen")?.textContent ?? "?"),
+      };
+    })
+  );
+  pruefe(
+    sitz.every((x) => x.versatz < 0.02),
+    `G22 nach dem Halt steht der Streifen genau auf einer Zelle (groesster Versatz ${
+      Math.max(...sitz.map((x) => x.versatz)).toFixed(3)
+    } Zellen, Zelle ${sitz[0].hoehe} px)`,
+  );
+  pruefe(
+    sitz.every((x) => x.gleich),
+    "G22 und in dieser Zelle steht dasselbe Zeichen, das die Walze zeigt - es wurde hereingedreht, nicht getauscht",
+  );
+  await seite.waitForSelector("#btnSetzen:not([disabled])", { timeout: 9000 });
+  await schlaf(120);
+}
 
 // ── G23 Mines: die Bomben bleiben liegen ───────────────────────────────────
 //
@@ -1095,6 +1231,159 @@ const gleichLeer = await seite.evaluate(() =>
 );
 pruefe(gleichLeer === 30, `G24 jeder neue Wurf faengt wieder mit einem leeren Brett an (${gleichLeer} von 30)`);
 await seite.waitForFunction(() => !document.getElementById("btnSetzen")?.disabled, null, { timeout: 25_000 });
+
+// ── G25 Pharao ─────────────────────────────────────────────────────────────
+//
+// Das zwoelfte Spiel: fuenf Walzen, drei Reihen, neun Muster. Geprueft wird,
+// was keine Serverprobe sieht:
+//
+//   1. Fuenfzehn Felder in fuenf Spalten passen auf 390 px - und die Walzen
+//      stehen **ohne Luecke** nebeneinander, sonst laege jede Gewinnlinie
+//      neben ihrer Spalte (die Linien werden in Anteilen des Bretts gemalt).
+//   2. Die Zahl der Linien steht als Vorschau im Brett: wer auf neun stellt,
+//      sieht neun Striche.
+//   3. Die Zeile darunter nennt den Gesamteinsatz - Einsatz mal Linien. Das
+//      ist die einzige Stelle im Haus, an der der Knopf mehr abbucht, als im
+//      Einsatzfeld steht, und wer das nicht sieht, wundert sich.
+//   4. „max" darf bei neun Linien nicht das ganze Guthaben in das Feld
+//      schreiben - der Server naehme die Wette dann nicht an.
+//   5. Die Walzen halten von links nach rechts.
+//   6. **Das Zeichen wird nicht im letzten Moment getauscht.** Derselbe
+//      Anspruch wie bei Bars (G22): waehrend der Fahrt stehen die drei
+//      Ergebniszellen schon oben im Streifen, und dort muss dasselbe stehen
+//      wie hinterher im Fenster.
+//   7. Was zaehlt, leuchtet, und die Linie dazu wird gezeichnet.
+await seite.click('[data-ziel="sSpiele"]');
+await schlaf(350);
+await seite.click(".spielkachel >> nth=11");
+await schlaf(700);
+
+const brettPh = await seite.evaluate(() => {
+  const b = document.getElementById("pbrett");
+  const w = [...b.querySelectorAll(".pwalze")];
+  const f = [...b.querySelectorAll(".pfenster .pfeld")];
+  const r = b.getBoundingClientRect();
+  const kasten = w.map((x) => x.getBoundingClientRect());
+  let luecke = 0;
+  for (let i = 1; i < kasten.length; i++) luecke = Math.max(luecke, kasten[i].left - kasten[i - 1].right);
+  return {
+    walzen: w.length,
+    felder: f.length,
+    reihen: f.filter((x) => Math.abs(x.getBoundingClientRect().left - f[0].getBoundingClientRect().left) < 2).length,
+    passt: r.width <= window.innerWidth + 1 && b.scrollWidth <= b.clientWidth + 1,
+    luecke: Math.round(luecke * 10) / 10,
+    hoch: Math.round(r.height),
+    zeilen: document.querySelectorAll(".ptafel .pzeile").length,
+    spalten: getComputedStyle(document.querySelector(".ptafel .pzeile")).gridTemplateColumns.split(" ").length,
+  };
+});
+pruefe(brettPh.walzen === 5 && brettPh.felder === 15, `G25 fuenf Walzen mit je drei Feldern (${brettPh.walzen}x${brettPh.felder / brettPh.walzen})`);
+pruefe(brettPh.reihen === 3, `G25 drei Felder untereinander je Walze (${brettPh.reihen})`);
+pruefe(brettPh.passt, `G25 das Brett passt in die Breite des Handys (${brettPh.hoch} px hoch)`);
+pruefe(
+  brettPh.luecke <= 1.5,
+  `G25 zwischen den Walzen steht keine Luecke - sonst laege jede Linie daneben (${brettPh.luecke} px)`,
+);
+pruefe(
+  brettPh.zeilen === 9 && brettPh.spalten === 5,
+  `G25 die Tafel hat eine Kopfzeile, sieben Sorten und den Streuer, in fuenf Spalten (${brettPh.zeilen} Zeilen, ${brettPh.spalten} Spalten)`,
+);
+
+// (2) und (3): die Linienwahl.
+const linienZeigen = async (n) => {
+  await seite.click(`.wahlreihe button:text-is("${n}")`);
+  await schlaf(250);
+  return await seite.evaluate(() => ({
+    striche: document.querySelectorAll(".plinien polyline").length,
+    gesamt: [...document.querySelectorAll(".steuerung .klein.muted.mitte, .spielfeld .klein.muted.mitte")]
+      .map((x) => x.textContent).join(" | "),
+  }));
+};
+await seite.fill("#fEinsatz", "0,10");
+const bei9 = await linienZeigen(9);
+const bei3 = await linienZeigen(3);
+pruefe(bei9.striche === 9 && bei3.striche === 3, `G25 die Vorschau zeigt genau so viele Muster, wie bezahlt werden (${bei9.striche} / ${bei3.striche})`);
+pruefe(/0,30/.test(bei3.gesamt), `G25 und darunter steht der Gesamteinsatz (${bei3.gesamt.trim()})`);
+
+// (4) „max" muss durch die Linien teilen.
+await seite.click(`.wahlreihe button:text-is("9")`);
+await schlaf(200);
+const geldPh = cent(await seite.textContent("#wGeld"));
+await seite.click('.schnell button:text-is("max")');
+await schlaf(200);
+const maxPh = cent(await seite.inputValue("#fEinsatz"));
+pruefe(
+  maxPh * 9 <= geldPh && maxPh * 9 > geldPh - 900,
+  `G25 „max" schreibt den Einsatz je Linie, nicht das ganze Guthaben (${maxPh} x 9 = ${maxPh * 9} von ${geldPh} Cent)`,
+);
+await seite.fill("#fEinsatz", "0,05");
+await seite.click(`.wahlreihe button:text-is("9")`);
+await schlaf(200);
+
+// (5) und (6): drehen und dabei hinsehen.
+await seite.click("#btnSetzen");
+await schlaf(140);
+const gleichNachDreh = await seite.$$eval(".pwalze", (w) => w.filter((x) => x.classList.contains("dreht")).length);
+// Sobald die erste Walze steht, muss die letzte noch laufen.
+await seite.waitForFunction(
+  () => !document.querySelectorAll(".pwalze")[0].classList.contains("dreht"),
+  null,
+  { timeout: 8000 },
+);
+const nachErsterPh = await seite.$$eval(".pwalze", (w) => w.filter((x) => x.classList.contains("dreht")).length);
+// Und waehrend die letzte noch faehrt: steht oben im Streifen schon das, was
+// gleich im Fenster steht?
+const streifenPruefung = await seite.evaluate(() => {
+  const w = [...document.querySelectorAll(".pwalze")].filter((x) => x.classList.contains("dreht"));
+  if (!w.length) return null;
+  const x = w[w.length - 1];
+  const oben = [...x.querySelectorAll(".pstreifen .pfeld")].slice(0, 3).map((f) => f.textContent);
+  const fenster = [...x.querySelectorAll(".pfenster .pfeld")].map((f) => f.textContent);
+  return { oben, fenster, gleich: oben.join() === fenster.join() };
+});
+pruefe(gleichNachDreh === 5, `G25 nach dem Druck drehen alle fuenf Walzen (${gleichNachDreh})`);
+pruefe(nachErsterPh < 5 && nachErsterPh > 0, `G25 sie halten von links nach rechts (${nachErsterPh} drehen noch)`);
+pruefe(
+  !!streifenPruefung && streifenPruefung.gleich,
+  `G25 der Streifen faehrt auf sein Zeichen ein - kein Tausch im letzten Bild ` +
+    `(${streifenPruefung ? streifenPruefung.oben.join("") + " / " + streifenPruefung.fenster.join("") : "keine laufende Walze gefunden"})`,
+);
+await seite.waitForSelector("#btnSetzen:not([disabled])", { timeout: 60_000 });
+
+// (7) Bis etwas zahlt. Bei neun Linien zahlt gut jede dritte Runde etwas -
+// fuenfundzwanzig Anlaeufe reichen praktisch immer.
+let phGezahlt = false;
+let phLeuchtet = 0;
+let phStriche = 0;
+let phZeile = "";
+for (let i = 0; i < 25 && !phGezahlt; i++) {
+  await seite.fill("#fEinsatz", "0,05");
+  await seite.click("#btnSetzen");
+  // Auf das **Ende der Runde** warten, nicht auf stehende Walzen: direkt nach
+  // dem Klick dreht noch keine, und `dreht === 0` waere sofort wahr. Was
+  // gezaehlt hat, bleibt bis zum naechsten Druck stehen - es laesst sich also
+  // in Ruhe ablesen, wenn der Knopf wieder freigegeben ist.
+  await seite.waitForSelector("#btnSetzen:not([disabled])", { timeout: 60_000 });
+  const stand = await seite.evaluate(() => ({
+    leuchtet: document.querySelectorAll(".pfeld.zaehlt").length,
+    striche: document.querySelectorAll(".plinien polyline").length,
+    zeile: document.getElementById("pharaoZeile")?.textContent ?? "",
+  }));
+  if (stand.leuchtet >= 3) {
+    phGezahlt = true;
+    phLeuchtet = stand.leuchtet;
+    phStriche = stand.striche;
+    phZeile = stand.zeile;
+  }
+  await schlaf(120);
+}
+pruefe(phGezahlt, `G25 was zaehlt, leuchtet (${phLeuchtet} Felder auf einmal)`);
+pruefe(phStriche >= 1, `G25 und die Linie dazu wird gezeichnet (${phStriche} Striche)`);
+pruefe(/[\d,]+×/.test(phZeile), `G25 daneben steht, was das Bild gebracht hat (${phZeile.trim()})`);
+pruefe(
+  /[\d,]+×|Nichts|Nothing|Hiç/.test(await seite.textContent("#ergebnis")),
+  `G25 und die Ergebniszeile nennt die ganze Runde (${await seite.textContent("#ergebnis")})`,
+);
 
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────
 for (const ziel of ["sDruecken", "sSpiele", "sBoerse", "sLaden", "sTafel"]) {
