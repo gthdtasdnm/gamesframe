@@ -1385,6 +1385,76 @@ pruefe(
   `G25 und die Ergebniszeile nennt die ganze Runde (${await seite.textContent("#ergebnis")})`,
 );
 
+// (8) **Ein Gewinn, ein Jubel.** Gemeldet als „manchmal wird der Gewinn-Sound
+// und die Animation zweimal hintereinander gespielt, das wirkt dann, als hätte
+// man zweimal gewonnen". Und so war es auch: `bildZeigen()` liess jedes
+// zahlende Bild jubeln, und `jubeln()` am Schluss noch einmal die ganze Runde -
+// im Grundspiel ohne Freispiele sind das dieselben zwei Cent, zweimal gefeiert.
+//
+// Gezaehlt wird die fliegende Zahl (`.fx-zahl`), weil sie und der Ton aus
+// derselben Stelle kommen; ein Ton laesst sich im Browser nicht mitschreiben,
+// ein eingehaengter Knoten schon. Gemessen wird nur im **Grundspiel** - eine
+// Freispielrunde zahlt wirklich mehrfach und darf deshalb mehrfach jubeln.
+let phZahlen = -1;
+let phErgebnis = "";
+for (let i = 0; i < 30 && phZahlen < 0; i++) {
+  await seite.evaluate(() => {
+    window.__fxZahlen = 0;
+    if (!window.__fxBeob) {
+      window.__fxBeob = new MutationObserver((listen) => {
+        for (const l of listen) {
+          for (const n of l.addedNodes) {
+            if (n.nodeType === 1 && n.classList.contains("fx-zahl")) window.__fxZahlen++;
+          }
+        }
+      });
+      window.__fxBeob.observe(document.body, { childList: true, subtree: true });
+    }
+  });
+  await seite.fill("#fEinsatz", "0,10");
+  await seite.click("#btnSetzen");
+  await seite.waitForSelector("#btnSetzen:not([disabled])", { timeout: 60_000 });
+  await schlaf(220);
+  const lauf = await seite.evaluate(() => ({
+    n: window.__fxZahlen,
+    frei: !document.querySelector(".pfahne")?.hidden,
+    erg: document.getElementById("ergebnis")?.textContent ?? "",
+  }));
+  if (!lauf.frei && /×/.test(lauf.erg)) {
+    phZahlen = lauf.n;
+    phErgebnis = lauf.erg;
+  }
+}
+pruefe(
+  phZahlen === 1,
+  `G25 ein Gewinn im Grundspiel jubelt genau einmal (${phZahlen} fliegende Zahlen bei „${phErgebnis.trim()}")`,
+);
+
+// (9) Das Brett muss den Bildschirm auch fuellen. Vor dem 07.09.2026 war es
+// ein Streifen von 170 px, unter dem sofort die Auszahlungstafel begann -
+// gemeldet als „ganz klein oben und dann kommt direkt Was zahlt". Gemessen
+// wird der Anteil am Spielfeld und die Groesse des Zeichens: ein Emoji, das
+// kleiner ist als die Haelfte seines Fachs, sieht aus wie eine Tabellenzelle.
+const phGross = await seite.evaluate(() => {
+  const br = document.getElementById("pbrett").getBoundingClientRect();
+  const feld = document.querySelector(".spielfeld").getBoundingClientRect();
+  const zelle = document.querySelector(".pfenster .pfeld");
+  return {
+    anteil: br.height / feld.height,
+    hoehe: Math.round(br.height),
+    schrift: parseFloat(getComputedStyle(zelle).fontSize),
+    zellHoehe: Math.round(zelle.getBoundingClientRect().height),
+  };
+});
+pruefe(
+  phGross.anteil > 0.5,
+  `G25 das Brett nimmt den halben Bildschirm ein (${(phGross.anteil * 100).toFixed(0)} % des Spielfelds, ${phGross.hoehe} px)`,
+);
+pruefe(
+  phGross.schrift > phGross.zellHoehe * 0.5,
+  `G25 und das Zeichen fuellt sein Fach (${phGross.schrift.toFixed(0)} px Schrift in ${phGross.zellHoehe} px Fach)`,
+);
+
 // ── G09 Kein Ueberlauf, nirgends ───────────────────────────────────────────
 for (const ziel of ["sDruecken", "sSpiele", "sBoerse", "sLaden", "sTafel"]) {
   await seite.click(`[data-ziel="${ziel}"]`);
