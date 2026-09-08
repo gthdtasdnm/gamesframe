@@ -12,6 +12,9 @@
 //   G05  Eine gewertete Kachel behaelt ihre Zahl, auch wenn die Stufe wechselt.
 //   G06  Der Jubel haengt oben und liegt nie auf Walzen oder Kombi-Tafel -
 //        und keine Effekt-Ebene nimmt einen Klick weg.
+//   G08  Bezahlt wird, was in den Walzen liegt: der Preis steht einmal ueber
+//        der Tafel, die freien Kacheln tragen keine Zahl mehr - und gewertet
+//        wird genau der angesagte Wert.
 //   G07  Die Tafel steht sofort. Die Walzen zeigen ihr Symbol in dem Moment,
 //        in dem es gezogen wird - es gibt nichts abzuwarten.
 //
@@ -126,6 +129,10 @@ try {
     // Welche Kachel es ist, VOR dem Klick lesen: der Zug baut die Tafel neu
     // auf, danach zeigt derselbe Locator auf eine andere.
     const welche = await kachel.getAttribute("data-cat");
+    // G08: was die Tafel ansagt, BEVOR getippt wird - und was auf der Kachel
+    // selbst steht, die getippt wird.
+    const zugwert = zahl(await seite.locator("#zugwertZahl").textContent());
+    const kachelText = (await kachel.locator(".cat-pts").textContent()).trim();
     const vorMult = await mult(seite);
     await kachel.click();
     hoechsterMult = Math.max(hoechsterMult, vorMult);
@@ -139,6 +146,15 @@ try {
     const wert = zahl(await seite.locator(`.cat[data-cat="${welche}"] .cat-pts`).textContent());
     summe += wert;
     if (!ersteKachel) { ersteKachel = welche; ersteZahl = wert; }
+    pruefe("G08", zugwert > 0,
+      `Zug ${zug + 1}: angesagt ${zugwert.toLocaleString("de-DE")} ueber der Tafel`);
+    pruefe("G08", !/[0-9]/.test(kachelText),
+      `die freie Kachel traegt keine Zahl mehr, sondern "${kachelText}"`);
+    // Zwischen Ablesen und Antippen kann die Glut eine Stufe fallen, nie
+    // steigen: gewertet wird also der angesagte Wert oder ein Stufenschritt
+    // darunter - und die ganze Leiter umfasst nur den Faktor zwei.
+    pruefe("G08", wert <= zugwert && wert * 2 >= zugwert,
+      `gewertet ${wert.toLocaleString("de-DE")} - der angesagte Wert, hoechstens eine Glutstufe tiefer`);
     const stand = zahl(await seite.locator("#roundScorePill").textContent());
     pruefe("G02", stand === summe, `Zug ${zug + 1}: ${wert.toLocaleString("de-DE")} gewertet, Stand ${stand.toLocaleString("de-DE")}`);
     hoechsterMult = Math.max(hoechsterMult, await mult(seite));

@@ -10,9 +10,11 @@
 //   K04  Ungueltiges gibt 0 (sonst waere es ein Fehlwurf, der Punkte gibt).
 //   K05  Joker ist ein Notausgang, kein Jackpot.
 //   K06  Glut: jede Kategorie laedt, Stufen bis x2, Abbau in Sekunden.
+//   K07  Bezahlt wird, was in den Walzen liegt (seit 08.09.2026): das Feld
+//        sagt nur noch, ob der Zug geht - nicht, was er wert ist.
 
 import {
-  SYMBOLS, CATEGORIES, PAY, GLUT, scoreCategory, glutGewinn, glutFaktor,
+  SYMBOLS, CATEGORIES, PAY, GLUT, scoreCategory, besteKombi, glutGewinn, glutFaktor,
 } from '../keep/public/game-core.js';
 
 let gruen = 0, rot = 0;
@@ -139,6 +141,50 @@ pruefe('K06', GLUT.max / GLUT.abbau > 15 && GLUT.max / GLUT.abbau < 20,
 // Ein Drilling (30) haelt einen 5-Sekunden-Zug gerade aus, ein Paar (15) nicht.
 pruefe('K06', GLUT.laden.three - GLUT.abbau * 5 === 0, 'Drilling gleicht einen 5-Sekunden-Zug genau aus');
 pruefe('K06', GLUT.laden.pair - GLUT.abbau * 5 < 0, 'ein Paar allein kuehlt den Balken aus');
+
+// ---------------------------------------------------------------- K07
+console.log('\nK07  Bezahlt wird, was in den Walzen liegt');
+
+// Der Fall, an dem die alte Regel weh tat: das Vierling-Feld ist verbraucht,
+// es kommt ein zweiter Vierling. Er passt nur noch ins 3er-Feld - und muss
+// dort trotzdem den Vierling zahlen.
+const zweiterVierling = fuell('herz', 4, ['kleeblatt']);
+const bkVier = besteKombi(zweiterVierling);
+pruefe('K07', scoreCategory('three_herz', zweiterVierling) === ERWARTET.three.herz,
+  `das 3er-Feld selbst steht weiter auf ${w(ERWARTET.three.herz)} - nur zahlt es das nicht mehr`);
+pruefe('K07', bkVier.wert === ERWARTET.four.herz,
+  `vier Herzen sind ${w(bkVier.wert)} wert, egal in welchem Feld sie landen`);
+pruefe('K07', bkVier.id === 'four', 'und zwar als Vierling, nicht als Drilling');
+pruefe('K07', bkVier.glut === GLUT.laden.four,
+  `geheizt wird nach der Kombination (${bkVier.glut}), nicht nach dem Feld (${GLUT.laden.three})`);
+
+// Dasselbe eine Stufe hoeher: ein Fuenfling im 3er-Feld bleibt ein Fuenfling.
+const fuenfHerz = besteKombi(fuell('herz', 5));
+pruefe('K07', fuenfHerz.wert === ERWARTET.five.herz && fuenfHerz.glut === GLUT.max,
+  `fuenf Herzen: ${w(fuenfHerz.wert)} und voller Balken, auch im 3er-Feld`);
+
+pruefe('K07', besteKombi(['kleeblatt', 'hufeisen', 'halbmond', 'stern', 'herz']).id === 'fivedifferent',
+  '5 Verschiedene werden als solche erkannt');
+pruefe('K07', besteKombi(['herz', 'herz', 'herz']) === null, 'weniger als fuenf Walzen: nichts');
+
+// Die Zusage in zwei Saetzen, an 20.000 Wuerfen: der Zug ist nie weniger wert
+// als das beste Feld - und nie mehr als das beste ueberhaupt.
+let schlechter = 0, daneben = 0, jokerZug = 0, ohne = 0;
+for (let i = 0; i < 20000; i++) {
+  const r = Array.from({ length: 5 }, () => SYMBOLS[Math.floor(Math.random() * 6)].id);
+  const werte = CATEGORIES.map((c) => scoreCategory(c.id, r));
+  const hoechst = Math.max(...werte);
+  const bk = besteKombi(r);
+  if (hoechst <= 0) { if (bk !== null) ohne++; continue; }
+  if (bk.wert !== hoechst) daneben++;
+  // Jedes Feld, das man antippen KANN, zahlt jetzt denselben Preis.
+  for (const [k, c] of CATEGORIES.entries()) if (werte[k] > 0 && bk.wert < werte[k]) schlechter++;
+  if (bk.id === 'joker') jokerZug++;
+}
+pruefe('K07', daneben === 0, 'in 20.000 Wuerfen immer die hoechstwertige Kombination');
+pruefe('K07', schlechter === 0, 'kein antippbares Feld zahlt je mehr als der Zug');
+pruefe('K07', ohne === 0, 'ohne jede Kombination kommt null zurueck (Fehlwurf)');
+pruefe('K07', jokerZug === 0, 'der Joker traegt nie den Zug - ein Paar liegt dann immer mit da');
 
 // ---------------------------------------------------------------- Ende
 console.log(`\n  ${gruen} gruen, ${rot} rot`);
