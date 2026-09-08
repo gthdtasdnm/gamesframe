@@ -98,10 +98,11 @@ export function starte({ port, host, publicDir, titel, handle, dropPlayer }) {
           return;
         }
         if (msg && typeof msg.t === "string") {
-          // Lebenszeichen. Der Client schickt alle 25 s einen `ping`, auch wenn
-          // niemand spielt; die Geisterwache in `raum.js` raeumt anhand dieses
-          // Stempels Sockets ab, die offen aussehen und keine mehr sind. Hier
-          // und nicht im Spiel, damit kein Spiel es vergessen kann.
+          // Lebenszeichen. Der Client schickt alle 20 s einen `ping`, auch wenn
+          // niemand spielt; die Geisterwache in `raum.js` gibt ihm dafuer 180 s
+          // Zeit - neun ausgefallene Pings - und raeumt anhand dieses Stempels
+          // Sockets ab, die offen aussehen und keine mehr sind. Hier und nicht
+          // im Spiel, damit kein Spiel es vergessen kann.
           if (socket._player) socket._player.lastSeen = Date.now();
           try {
             handle(socket, msg);

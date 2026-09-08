@@ -67,31 +67,117 @@ Spiels und ist von keiner Seite her zu fassen. Vorher wurde die Datei von
 derselben Stelle ihr eigenes, gewachsenes CSS; sie nachträglich auf den Rahmen
 zu ziehen hieße, ihr Aussehen anzufassen, und dafür gibt es keinen Grund.
 
-## Die Geisterwache (17.08.2026)
+## Die Geisterwache (17.08.2026, neu gefasst am 08.09.2026)
 
-`raum.js` räumt seit dem 17.08.2026 Verbindungen ab, die **offen aussehen und
-keine mehr sind**. Auf dem Handy ist das der Normalfall: wer wegwischt, den
-Bildschirm sperrt oder den Tab schließt, schickt kein FIN – der Server sieht bis
-zum TCP-Timeout einen anwesenden Spieler. Steht dieser Geist auf dem Hostplatz,
-wartet die ganze Lobby auf einen Startknopf, den niemand mehr drücken kann. Das
-war Bugreport 4 (Snake), und dieselbe Meldung gab es für Card Chaos (8).
+`raum.js` räumt Verbindungen ab, die **offen aussehen und keine mehr sind**. Auf
+dem Handy ist das der Normalfall: wer wegwischt, den Bildschirm sperrt oder den
+Tab schließt, schickt kein FIN – der Server sieht bis zum TCP-Timeout einen
+anwesenden Spieler. Steht dieser Geist auf dem Hostplatz, wartet die ganze Lobby
+auf einen Startknopf, den niemand mehr drücken kann. Das war Bugreport 4
+(Snake), und dieselbe Meldung gab es für Card Chaos (8).
 
-`connected` allein ist deshalb kein Nachweis. Der Client meldet sich alle 25 s
+`connected` allein ist deshalb kein Nachweis. Der Client meldet sich alle 20 s
 mit `ping`, auch wenn niemand spielt; **`statisch.js` stempelt jede eingehende
-Nachricht auf `player.lastSeen`**. Wer `geistMs` (65 s, zwei ausgefallene Pings
-plus Puffer) nichts mehr gesagt hat, wird behandelt wie einer, dessen Verbindung
-ordentlich zuging: Socket zu mit Code 4002, Platz frei, Host rückt weiter.
+Nachricht auf `player.lastSeen`**.
 
-`geistMs` liegt bewusst **über** `seatGraceMs`: erst gilt einer als weg, dann
-läuft seine Karenzzeit.
+### Was sie tut – und was ausdrücklich nicht
+
+Am 08.09.2026 wurde die Wache neu gefasst, weil das Ein- und Aussteigen sich
+wackelig anfühlte: man wusste nie, ob man noch drin ist. Sie stellt jetzt **nur
+fest, dass eine Verbindung tot ist** – sie wirft niemanden aus dem Raum. Der
+Platz geht in dieselbe Karenzzeit wie bei einem sauber geschlossenen Socket.
+
+Die Regel darüber heißt:
+
+> **Endgültig geht nur, wer selbst auf „Verlassen" tippt.**
+
+Alles andere – gesperrter Bildschirm, weggewischter Tab, Funkloch, leerer Akku –
+ist eine Pause, und eine Pause kostet den Platz nicht. Deshalb gibt es den
+Verlassenknopf auf *jedem* Bildschirm (siehe unten).
+
+### Die fünf Fristen
+
+Sie stehen in `gemeinsam/raum.js` unter `FRISTEN` und gelten für **alle** Spiele
+gleich. Kein Spiel tippt sie mehr selbst – wer sie doch an `raumverwaltung()`
+übergibt, sollte einen Grund haben, der im Spiel steht.
+
+| Frist | Umgebung | vorher | jetzt | wofür |
+|---|---|---|---|---|
+| Schweigen bis „weg" | `GEIST_MS` | 65 s | **180 s** | neun ausgefallene Pings statt zwei |
+| Platz in der Runde | `SITZ_MS` | 60 s | **20 min** | eine Zigarette, ein Anruf, ein leerer Akku |
+| Platz im Warteraum | `LOBBY_MS` | 0 (sofort frei) | **5 min** | den Link verschicken, ohne den Platz zu verlieren |
+| Hostzeichen | `HOST_MS` | 0 (wandert sofort) | **45 s** | muss wandern, aber nicht bei jedem gesperrten Bildschirm |
+| Leerer Raum | `RAUM_MS` | 5 min | **30 min** | |
+
+Die Reihenfolge ist wichtig: `geistMs` liegt **unter** den beiden Karenzzeiten –
+erst gilt einer als weg, *dann* läuft seine Karenzzeit. Andersherum verlöre ein
+kurz gestörter Client seinen Platz, bevor er überhaupt als abwesend gilt.
+
+Der Warteraum bekommt weniger als die Runde, und das mit Absicht: dort sperrt
+ein gehaltener Platz jemand anderen aus, in der laufenden Runde nicht.
+
+Über `raumverwaltung()` kommen die geltenden Werte auch wieder heraus
+(`fristen.seatGraceMs` usw.) – wer im `server.js` selbst eine Karenzuhr stellt,
+nimmt sie von dort statt eine eigene Zahl zu tippen. `amehesten` tut das beim
+Rundenstart, um von der kurzen auf die lange Frist umzuhängen.
+
+Die Umgebungsvariablen sind **nicht für den Betrieb** da, sondern damit
+`lobbyprobe.mjs` einen Fall in Sekunden statt in Minuten prüfen kann.
+
+### Wer die Wache selbst trägt
 
 Die fünf Spiele der Gruppe C (`nochnie`, `maexchen`, `imposter`, `flasche`,
 `luckyreflex`) tragen ihre Klempnerei selbst – dort steht dieselbe Wache von
-Hand im `server.js`, gleicher Wortlaut, gleiche Werte.
+Hand im `server.js`, gleicher Wortlaut, gleiche Werte, dieselben
+Umgebungsvariablen. Dazu seit dem 08.09.2026:
 
-Nachgewiesen wird das von **`lobbyprobe.mjs`, Test L17**. Der Dienst läuft dafür
-mit `GEIST_MS=3000` statt 65 s (`raum.js` liest die Umgebungsvariable, die
-Gruppe C ebenso) – deshalb nur gegen eine eigene Fassung, nicht gegen live.
+* **Seconds** – eigene Wache, eigene Fristen, `lastSeen` an der Verbindung.
+* **Card Chaos** – `geisterPruefen()` in `server/rooms.js`, die Uhr in
+  `server/main.js`; `lastSeen` steht am `client`, nicht am Spieler.
+* **Keep** – braucht keine eigene: Socket.io bringt einen Herzschlag mit. Der
+  steht jetzt auf `pingInterval: 20 s` / `pingTimeout: 180 s` statt auf der
+  Vorgabe 25/20, damit ein halbminütiges Funkloch niemanden mehr hinauswirft.
+* **Revier und Wurm** haben keine Plätze und keine Räume – dort gibt es nur die
+  Untätigkeitsgrenze, und die steht statt auf 3 min jetzt auf **15 min**.
+
+### Nachgewiesen von
+
+* **`lobbyprobe.mjs` L17** – der stumme Host verliert sein Zeichen, wer pingt
+  bleibt sitzen. Dienst mit `GEIST_MS=3000`.
+* **`lobbyprobe.mjs` L08** – der Platz wird *nicht* sofort frei und *wird*
+  irgendwann frei. Mit `SITZ_MS`/`LOBBY_MS` auf 8 s.
+* **`lobbyprobe.mjs` L18** – die Gegenprobe: Platz und Bereit-Zeichen überstehen
+  den Abbruch, und nur `leave` räumt sofort.
+* **`seconds/probe.js`** – dasselbe für Seconds (neu am 08.09.2026; vorher hatte
+  das Spiel gar keine Probe).
+* **`werkzeug/pruefe-keep.mjs` P08** und **`werkzeug/pruefe-cardchaos.mjs` P08**
+  – dasselbe für die beiden PM2-Spiele.
+
+## Der Verlassenknopf (08.09.2026)
+
+Die andere Hälfte derselben Sache. Wenn ein Abbruch den Platz nicht mehr kostet,
+muss es einen Weg geben, ihn *absichtlich* aufzugeben – und zwar von überall,
+nicht nur aus dem Warteraum.
+
+* In `schale.js` hängt er an `#leaveBtn` **und an jedem Knopf mit `data-raus`**.
+  Die neun eigenen Clients tragen denselben Block von Hand.
+* Er steht auf jedem Bildschirm, auf dem man sitzt: Warteraum, Spiel, Endstand.
+  Bei Keep und Card Chaos fehlte er auf dreien davon und wurde nachgetragen;
+  Revier und Wurm haben jetzt ein `✕` neben dem Fragezeichen im HUD.
+* **Mitten in der Runde fragt er einmal nach**: der Knopf schreibt sich für vier
+  Sekunden auf „Wirklich raus?" um (`.btn.fragt` in `lobby.css`). Kein
+  `confirm()` – das blockiert auf dem Handy die ganze Seite, und die Verbindung
+  läuft derweil weiter. Im Warteraum kostet ein Fehlgriff nichts, dort wirkt der
+  erste Tipp.
+* Der Text steht als `schale.wirklichRaus` in `schale-texte.js`.
+
+Dazu zwei Kleinigkeiten, die aus derselben Unsicherheit kamen:
+
+* **`ready` überlebt den Abbruch.** Wer im Warteraum kurz das Netz verliert, hat
+  sich nicht anders entschieden – musste aber vorher nach der Rückkehr noch
+  einmal tippen, und bis dahin war der Startknopf des Hosts gesperrt.
+* **Ein abwesender Sitz sagt „weg", nicht „bereit".** Die Reihenfolge in
+  `zeichneLobby` prüft jetzt `connected` zuerst.
 
 ## Die Kennung im Browser (17.08.2026)
 
@@ -118,6 +204,26 @@ wer über die Kachel zurückkam, wurde ein neuer Spieler.
 
 In `schale.js` steht das für die acht Schalenspiele; die neun übrigen tragen
 denselben Block von Hand in ihrer `app.js`.
+
+**Seit dem 08.09.2026 geht `schale.js` von selbst zurück auf einen gehaltenen
+Platz – auch ohne `#CODE` in der Adresse.** Das war die zweite Hälfte der
+Unsicherheit: der Server hielt den Platz brav, aber wer über die Kachel statt
+über den geteilten Link zurückkam, landete auf der Startseite und hielt sich für
+draußen, während er in Wahrheit noch am Tisch saß. Zeigt der Hash auf einen
+*anderen* Raum, gewinnt der Hash – wer gerade einen Link geschickt bekommt, will
+dorthin.
+
+Dazu hat `schale.js` drei Dinge übernommen, die die neun eigenen Clients längst
+hatten und die dort nachweislich den Unterschied machen:
+
+* **Sofort neu verbinden bei jedem Zeichen von Rückkehr** (`visibilitychange`,
+  `pageshow`, `focus`, `online`) statt bis zu acht Sekunden auf den Rückzug zu
+  warten. Safari friert den Tab ein und lässt auch die Wartezeit nicht laufen.
+* **Ein `error` vor dem ersten `room`** heißt: der Wiedereinstieg ist
+  gescheitert (Raum weg, Runde läuft ohne uns). Dann wird die gemerkte Kennung
+  gelöscht – sonst kommt dieselbe Meldung bei jedem Neuverbinden wieder. Steht
+  schon ein Raum, ist es nur eine Meldung und niemand fliegt heraus.
+* **Kein zweiter Socket**, solange einer im Aufbau ist.
 
 ## raum.js benutzen
 

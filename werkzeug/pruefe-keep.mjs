@@ -11,6 +11,8 @@
 //        `Infinity`, negativ, Text – nichts davon darf in die Summe.
 //   P07  Die Bestenliste kommt als zwei Ansichten (Woche/Ewig), eine Zeile
 //        je Person, mit Platz und Besetzung.
+//   P08  Der Platz überlebt einen Abbruch in der Lobby, der Rückkehrer landet
+//        wieder darauf – und nur der Verlassenknopf räumt ihn sofort.
 //
 // **Ohne neues Paket.** `socket.io-client` liegt nicht in `keep/node_modules`,
 // und in ein laufendes Spiel wandert dafür keine Abhängigkeit. Engine.IO
@@ -149,14 +151,19 @@ class EngineIO {
   vergiss() { this.ereignisse.length = 0; }
 }
 
+const ANNA_PID = "probe-anna-0001";
+const BERT_PID = "probe-bert-0001";
+
 // ---------------------------------------------------------------- Lauf
 await dienstAn();
 const anna = await new EngineIO("Anna").auf();
 const bert = await new EngineIO("Bert").auf();
 
 try {
-  anna.schicke("hello", {});
-  bert.schicke("hello", {});
+  // Feste Kennungen: der Server nimmt jede, die wie eine aussieht – und P08
+  // braucht Berts, um ihn spaeter auf denselben Platz zurueckzusetzen.
+  anna.schicke("hello", { pid: ANNA_PID });
+  bert.schicke("hello", { pid: BERT_PID });
   await schlaf(500);
 
   anna.schicke("createRoom", { name: "Anna", isPublic: false });
@@ -258,6 +265,44 @@ try {
     `jeder Name genau einmal in der Wochenliste (${namen.join(", ") || "leer"})`);
   pruefe("P07", (tafeln.woche ?? []).every((e) => e.rank >= 1 && e.players === 2),
     "jede Zeile kennt ihren Platz und die Besetzung der Partie");
+
+  // ── P08: der Platz überlebt den Abbruch, der Knopf nicht ────────────────
+  //
+  // Das ist die Umstellung vom 08.09.2026. Vorher gab die Lobby einen Platz
+  // sofort frei, sobald die Verbindung wegbrach – und auf dem Handy bricht sie
+  // bei jedem gesperrten Bildschirm weg. Wer zurückkam, saß als zweite Person
+  // neben sich selbst, und das Hostzeichen stand womöglich woanders.
+  {
+    anna.schicke("backToLobby");
+    await schlaf(600);
+    anna.vergiss();
+    bert.zu();
+    await schlaf(800);
+    const gehalten = anna.letzte("roomState");
+    pruefe("P08", (gehalten?.players?.length ?? 0) === 2,
+      `ein Abbruch in der Lobby räumt den Platz nicht mehr (${gehalten?.players?.length} Sitze)`);
+    pruefe("P08", gehalten?.players?.some((p) => p.id === BERT_PID && p.online === false),
+      "der abwesende Platz steht als abwesend da, nicht als weg");
+
+    // Bert kommt zurück – dieselbe pid, also derselbe Platz.
+    const bert2 = await new EngineIO("Bert").auf();
+    bert2.schicke("hello", { pid: BERT_PID });
+    await schlaf(300);
+    bert2.schicke("resume", { roomId: raumId });
+    await schlaf(700);
+    const zurueck = anna.letzte("roomState");
+    pruefe("P08", (zurueck?.players?.length ?? 0) === 2,
+      `nach der Rückkehr sind es ${zurueck?.players?.length} Sitze, nicht drei`);
+    pruefe("P08", zurueck?.players?.every((p) => p.online),
+      "nach der Rückkehr steht keine Leiche mehr im Raum");
+
+    anna.vergiss();
+    bert2.schicke("leaveRoom");
+    await schlaf(700);
+    pruefe("P08", (anna.letzte("roomState")?.players?.length ?? 0) === 1,
+      "der Verlassenknopf räumt den Platz sofort");
+    bert2.zu();
+  }
 
   // ── P03 ─────────────────────────────────────────────────────────────────
   anna.schicke("backToLobby");

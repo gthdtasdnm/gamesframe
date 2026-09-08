@@ -12,6 +12,8 @@
 //   P06  Der Server rechnet selbst. Ein erfundener Zug wird nicht geglaubt,
 //        sondern mit dem eigenen Stand beantwortet (`resync`).
 //   P07  Kein fremdes Brett über die Leitung – nur die Zusammenfassung.
+//   P08  Der Platz überlebt einen Abbruch in der Lobby, der Rückkehrer landet
+//        wieder darauf – und nur der Verlassenknopf räumt ihn sofort.
 //
 // Mitspielen kann sie, weil das Brett **deterministisch aus dem `seed`**
 // entsteht: `roundStart` schickt den Seed, und dieselbe `createRound` aus
@@ -273,6 +275,51 @@ try {
   const meine = anna.meineLive();
   pruefe("P02", (meine?.score ?? 0) > 0,
     `Anna hat wirklich gepunktet (${meine?.score ?? 0} Punkte, ${meine?.clears ?? 0} geräumte Bretter)`);
+
+  // ── P08: der Platz überlebt den Abbruch, der Knopf nicht ────────────────
+  //
+  // Das ist die Umstellung vom 08.09.2026. Vorher gab die Lobby einen Platz
+  // sofort frei, sobald die Verbindung wegbrach – und auf dem Handy bricht sie
+  // bei jedem gesperrten Bildschirm weg. Wer zurückkam, saß als zweite Person
+  // neben sich selbst, und der Host stand womöglich woanders.
+  {
+    anna.schicke({ t: "leaveRoom" });
+    await schlaf(400);
+    anna.schicke({ t: "createRoom", isPublic: false });
+    const neu = await anna.warte((m) => m.t === "room" && m.room.phase === "lobby", 8000);
+    const code2 = neu.room.code;
+    const b2 = await new Spieler("Bert").auf();
+    await b2.warte((m) => m.t === "welcome");
+    // Mit derselben Identität wie vorhin – sonst wäre der Wiedereinstieg kein
+    // Wiedereinstieg, sondern ein neuer Gast.
+    b2.schicke({ t: "hello", name: "Bert", pid: bert.id, token: bert.token });
+    await b2.warte((m) => m.t === "hello");
+    b2.schicke({ t: "joinRoom", code: code2 });
+    await b2.warte((m) => m.t === "room" && m.room.players.length === 2, 8000);
+
+    anna.msgs.length = 0;
+    b2.zu();
+    const gehalten = await anna.warte(
+      (m) => m.t === "room" && m.room.players.some((x) => x.id === b2.id && !x.online), 8000);
+    pruefe("P08", Boolean(gehalten) && gehalten.room.players.length === 2,
+      "ein Abbruch in der Lobby räumt den Platz nicht mehr");
+
+    const b3 = await new Spieler("Bert").auf();
+    await b3.warte((m) => m.t === "welcome");
+    b3.schicke({ t: "hello", name: "Bert", pid: bert.id, token: bert.token });
+    await b3.warte((m) => m.t === "hello");
+    const zurueck = await b3.warte((m) => m.t === "room", 8000);
+    pruefe("P08", Boolean(zurueck) && zurueck.room.code === code2,
+      "der Rückkehrer landet ohne Zutun wieder am selben Tisch");
+    pruefe("P08", (zurueck?.room.players.length ?? 0) === 2,
+      `nach der Rückkehr sitzen ${zurueck?.room.players.length} am Tisch, nicht drei`);
+
+    anna.msgs.length = 0;
+    b3.schicke({ t: "leaveRoom" });
+    const raus = await anna.warte((m) => m.t === "room" && m.room.players.length === 1, 8000);
+    pruefe("P08", Boolean(raus), "der Verlassenknopf räumt den Platz sofort");
+    b3.zu();
+  }
 
   // ── P03: zurück in die Lobby ────────────────────────────────────────────
   anna.schicke({ t: "leaveRoom" });

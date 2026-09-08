@@ -113,9 +113,20 @@ export function starteSchale({
   // Ohne den mittleren Fall zoegen zwei Tabs einander abwechselnd den Platz weg.
   const HERZ_MS = 4000;
   const HERZ_TOT = 12_000;
-  const TAB = sessionStorage.getItem("spiele_tab") ??
-    (crypto.randomUUID?.() ?? String(Date.now()) + String(Math.random()).slice(2));
-  sessionStorage.setItem("spiele_tab", TAB);
+  // Nach zwei Stunden verfaellt der Eintrag: den Raum gibt es dann laengst
+  // nicht mehr, und niemand will morgen frueh in die Runde von gestern
+  // geworfen werden. Gleicher Wert wie in den neun eigenen Clients.
+  const SITZ_VERFALL = 2 * 60 * 60 * 1000;
+  const TAB = (() => {
+    try {
+      const t = sessionStorage.getItem("spiele_tab") ??
+        (crypto.randomUUID?.() ?? String(Date.now()) + String(Math.random()).slice(2));
+      sessionStorage.setItem("spiele_tab", t);
+      return t;
+    } catch {
+      return "tab";
+    }
+  })();
   let herzUhr = null;
 
   function sitzLesen() {
@@ -126,24 +137,34 @@ export function starteSchale({
   function sitzFrei() {
     const s = sitzLesen();
     if (!s?.code || !s?.token) return null;
+    const alt = Date.now() - (s.herz ?? 0);
+    if (alt > SITZ_VERFALL) { sitzLoeschen(); return null; }
     if (s.tab === TAB) return s;
-    return Date.now() - (s.herz ?? 0) > HERZ_TOT ? s : null;
+    return alt > HERZ_TOT ? s : null;
   }
 
   const tokenFuer = (code) => (sitzFrei()?.code === code ? sitzFrei().token : undefined);
 
   function sitzHalten() {
     if (!S.code || !S.token) return;
-    localStorage.setItem(key, JSON.stringify({
-      code: S.code, token: S.token, tab: TAB, herz: Date.now(),
-    }));
+    try {
+      localStorage.setItem(key, JSON.stringify({
+        code: S.code, token: S.token, tab: TAB, herz: Date.now(),
+      }));
+    } catch { /* Privatmodus - dann eben ohne Wiedereinstieg */ }
   }
 
   function sitzLoeschen() {
     clearInterval(herzUhr);
     herzUhr = null;
-    localStorage.removeItem(key);
+    try { localStorage.removeItem(key); } catch { /* egal */ }
   }
+
+  // Ist auf *dieser* Verbindung schon ein Raumzustand angekommen? Daran haengt,
+  // was ein „error" bedeutet: vor dem ersten `room` ist es die Antwort auf den
+  // Wiedereinstieg (Raum weg, Runde laeuft schon) - danach nur eine Meldung,
+  // die niemanden aus dem Raum werfen darf.
+  let angekommen = false;
 
   function empfange(m) {
     switch (m.t) {
@@ -155,10 +176,26 @@ export function starteSchale({
         herzUhr = setInterval(sitzHalten, HERZ_MS);
         history.replaceState(null, "", "#" + m.code);
         break;
-      case "room": S.room = m; zeichneLobby(); zeichneRaum?.(m); break;
+      case "room":
+        angekommen = true;
+        S.room = m;
+        zeichneLobby();
+        zeichneRaum?.(m);
+        break;
       case "runde": S.runde = m; zeichneSpiel(m); break;
       case "final": (zeichneFinal ?? standardFinal)(m); break;
-      case "error": toast(m.msg); break;
+      case "error":
+        toast(m.msg);
+        // Kam die Meldung, bevor auf dieser Verbindung je ein Raum ankam, ist
+        // der Wiedereinstieg gescheitert: den Raum gibt es nicht mehr, oder die
+        // Runde laeuft ohne uns weiter. Dann muss die gemerkte Kennung weg -
+        // sonst versucht der Client sie bei jedem Neuverbinden wieder und man
+        // bekommt dieselbe Meldung im Halbminutentakt.
+        //
+        // Steht dagegen schon ein Raum, sitzen wir drin: dann ist es nur eine
+        // Meldung (Raum voll, zu viele Raeume) und niemand fliegt heraus.
+        if (!angekommen) heimwaerts();
+        break;
       default: sonstige?.(m);
     }
   }
@@ -191,14 +228,38 @@ export function starteSchale({
   let warte = WARTE_ANFANG;
   let bewaehrung = null;
 
+  // Was beim Verbinden als Erstes gesagt wird. Entweder wir haben einen Platz
+  // (dann zurueck darauf) oder nicht (dann die Raumliste). Steht an einer
+  // Stelle, weil es an dreien gebraucht wird: erster Start, Wiederaufbau nach
+  // Abbruch und die Rueckkehr aus der Hosentasche.
+  function anmelden() {
+    const s = S.code && S.token ? { code: S.code, token: S.token } : sitzFrei();
+    if (s?.code && s?.token) {
+      S.code = s.code;
+      S.token = s.token;
+      schicke({ t: "join", code: s.code, token: s.token, name: nameFeld() });
+    } else {
+      schicke({ t: "browse" });
+    }
+  }
+
+  let wiederUhr = null;
+
   function verbinde(dann) {
+    clearTimeout(wiederUhr);
+    wiederUhr = null;
+    // Doppelte Verbindungen sind der Hauptgrund, warum der Wiedereinstieg
+    // frueher schiefging: `sofortWieder` unten feuert bei jeder Rueckkehr, und
+    // Handys feuern gleich drei Ereignisse auf einmal.
+    if (S.ws && S.ws.readyState === WebSocket.CONNECTING) return;
     if (S.ws && S.ws.readyState === WebSocket.OPEN) return dann?.();
+    angekommen = false;
     S.ws = new WebSocket(wsUrl());
     S.ws.onopen = () => {
       clearTimeout(bewaehrung);
       bewaehrung = setTimeout(() => { warte = WARTE_ANFANG; }, BEWAEHRT_NACH);
       $("status").textContent = "";
-      dann?.();
+      (dann ?? anmelden)();
     };
     S.ws.onmessage = (ev) => {
       let m;
@@ -210,12 +271,31 @@ export function starteSchale({
       $("status").textContent = T("schale.weg", {}, "Verbindung weg – neu verbinden …");
       const gleich = warte * (0.8 + Math.random() * 0.4);
       warte = Math.min(warte * 1.8, WARTE_MAX);
-      setTimeout(() => verbinde(() => {
-        if (S.code) schicke({ t: "join", code: S.code, token: S.token, name: nameFeld() });
-        else schicke({ t: "browse" });
-      }), gleich);
+      clearTimeout(wiederUhr);
+      wiederUhr = setTimeout(() => verbinde(), gleich);
     };
   }
+
+  // Zurueck aus der Hosentasche.
+  //
+  // Auf dem Handy ist der weggelegte Bildschirm der Normalfall. Safari friert
+  // den Tab ein, kappt die Verbindung und laesst auch die Wartezeit oben nicht
+  // weiterlaufen. Wer dann zurueckkommt, sitzt vor einer toten Seite, bis der
+  // Zaehler irgendwann von selbst zuschlaegt - bis zu acht Sekunden lang, und
+  // in dieser Zeit weiss niemand, ob er noch im Raum ist. Deshalb bei jedem
+  // Zeichen von Rueckkehr sofort und ohne Wartezeit neu verbinden; `verbinde`
+  // bricht von selbst ab, wenn die Verbindung noch steht. Gleiche Fassung wie
+  // in den neun eigenen Clients.
+  function sofortWieder() {
+    if (document.visibilityState === "hidden") return;
+    warte = WARTE_ANFANG;
+    verbinde();
+  }
+
+  document.addEventListener("visibilitychange", sofortWieder);
+  globalThis.addEventListener("pageshow", sofortWieder);
+  globalThis.addEventListener("focus", sofortWieder);
+  globalThis.addEventListener("online", sofortWieder);
 
   // Gemerkt, damit sie nach einem Sprachwechsel neu gezeichnet werden kann:
   // „Gerade keine offenen Raeume" stand sonst weiter auf Deutsch da, bis der
@@ -260,12 +340,17 @@ export function starteSchale({
       const s = el("div", "seat" + (p.ready ? " ready" : "") + (p.connected ? "" : " off"));
       s.append(el("div", "av", (p.name[0] ?? "?").toUpperCase()));
       s.append(el("div", "nm", p.name));
+      // Reihenfolge mit Absicht: wer weg ist, steht als „weg" da - auch wenn
+      // er sich vorher bereit gemeldet hat. Sein Bereit-Zeichen bleibt jetzt
+      // ueber den Abbruch hinweg stehen (siehe `raum.js`), und ein Platz, der
+      // „bereit" sagt, obwohl dort niemand sitzt, ist genau die Unklarheit,
+      // um die es hier geht.
       s.append(el("div", "st",
-        p.ready
+        !p.connected
+          ? T("schale.fort", {}, "weg")
+          : p.ready
           ? T("schale.bereit", {}, "bereit")
-          : p.connected
-          ? T("schale.wartet", {}, "wartet")
-          : T("schale.fort", {}, "weg")));
+          : T("schale.wartet", {}, "wartet")));
       if (p.host) s.append(el("div", "host", T("schale.host", {}, "Host")));
       liste.append(s);
     }
@@ -353,16 +438,51 @@ export function starteSchale({
   // Knopf mit `data-raus`. Vorher fuehrte aus dem Spielbildschirm nur der
   // Zurueck-Knopf des Browsers heraus, und aus dem Endstand gar nichts - wer
   // nicht Host war, sass fest. Das war Bugreport 10.
+  //
+  // Seit dem 08.09.2026 ist dieser Knopf der **einzige** Weg, den Platz
+  // wirklich aufzugeben: alles andere - weggewischt, gesperrt, Funkloch -
+  // haelt der Server bis zu zwanzig Minuten lang frei. Umgekehrt heisst das,
+  // dass ein Fehlgriff hier teuer ist, deshalb fragt er mitten in der Runde
+  // einmal nach.
   const raus = () => {
     schicke({ t: "leave" });
-    S.code = null; S.room = null; S.runde = null;
+    heimwaerts();
+    schicke({ t: "browse" });
+  };
+
+  /** Aus dem Raum heraus auf die Startseite - ohne dem Server etwas zu sagen. */
+  function heimwaerts() {
+    S.code = null; S.token = null; S.me = null; S.room = null; S.runde = null;
     sitzLoeschen();
     history.replaceState(null, "", location.pathname);
     zeige("home");
-    schicke({ t: "browse" });
-  };
-  $("leaveBtn").onclick = raus;
-  for (const b of document.querySelectorAll("[data-raus]")) b.onclick = raus;
+  }
+
+  // Zwei Stufen, aber nur wo es weh tut: im Warteraum kostet ein Fehlgriff
+  // nichts, in der laufenden Runde das Blatt. Der Knopf schreibt sich dafuer
+  // kurz um, statt einen Dialog aufzumachen - `confirm()` blockiert auf dem
+  // Handy die ganze Seite, und die Verbindung laeuft derweil weiter.
+  const BEDENK_MS = 4000;
+  function knopfRaus(b) {
+    let scharf = null;
+    const zurueck = () => {
+      clearTimeout(scharf);
+      scharf = null;
+      if (b.dataset.wortlaut != null) b.textContent = b.dataset.wortlaut;
+      b.classList.remove("fragt");
+    };
+    b.onclick = () => {
+      if (!S.room || S.room.phase === "lobby") return raus();
+      if (scharf) { zurueck(); return raus(); }
+      b.dataset.wortlaut = b.textContent;
+      b.textContent = T("schale.wirklichRaus", {}, "Wirklich raus?");
+      b.classList.add("fragt");
+      scharf = setTimeout(zurueck, BEDENK_MS);
+    };
+  }
+
+  knopfRaus($("leaveBtn"));
+  for (const b of document.querySelectorAll("[data-raus]")) knopfRaus(b);
   $("helpBtn").onclick = () => { $("help").hidden = false; };
   $("helpClose").onclick = () => { $("help").hidden = true; };
 
@@ -371,17 +491,38 @@ export function starteSchale({
   // Der Schluessel heisst in allen dreiundzwanzig Spielen gleich - nur so
   // findet man seinen Namen beim naechsten Spiel wieder vor, ohne ihn neu zu
   // tippen. Wer ihn hier aendert, trennt die Schale von den uebrigen Spielen.
-  $("name").value = localStorage.getItem("spiele_name") ?? "";
-  $("name").onchange = () => localStorage.setItem("spiele_name", nameFeld());
+  try {
+    $("name").value = localStorage.getItem("spiele_name") ?? "";
+    $("name").onchange = () => localStorage.setItem("spiele_name", nameFeld());
+  } catch { /* Privatmodus */ }
+
+  // Wer einen gehaltenen Platz hat, geht zurueck darauf - **auch ohne `#CODE`
+  // in der Adresse**. Das war die zweite Haelfte der Unklarheit: der Server
+  // hielt den Platz brav zwanzig Minuten, aber wer ueber die Kachel statt ueber
+  // den geteilten Link zurueckkam, landete auf der Startseite und hielt sich
+  // fuer draussen - waehrend er in Wahrheit noch am Tisch sass.
+  //
+  // Der Hash gewinnt trotzdem, wenn er auf einen *anderen* Raum zeigt: wer
+  // gerade einen Link geschickt bekommt, will dorthin und nicht in seine alte
+  // Runde. Dann bleibt die alte Kennung liegen, statt sie mitzuschicken.
+  if (hash && gespeichert?.code !== hash) $("codeInput").value = hash;
   verbinde(() => {
     if (hash && gespeichert?.code === hash) {
-      schicke({ t: "join", code: hash, token: gespeichert.token, name: nameFeld() });
-    } else {
-      if (hash) $("codeInput").value = hash;
-      schicke({ t: "browse" });
+      S.code = hash;
+      S.token = gespeichert.token;
     }
+    if (hash && gespeichert?.code !== hash) {
+      schicke({ t: "join", code: hash, token: tokenFuer(hash), name: nameFeld() });
+      return;
+    }
+    anmelden();
   });
-  setInterval(() => schicke({ t: "ping", c: Date.now() }), 25000);
+
+  // Lebenszeichen alle 20 s. Der Server raeumt Verbindungen ab, die 180 s lang
+  // schweigen (die Geisterwache in `raum.js`) - das sind neun Pings Luft.
+  // Frueher: 25 s Takt gegen 65 s Frist, also zwei. Wer eine Weile nur zusah,
+  // flog dadurch mitten im Spiel aus dem Raum.
+  setInterval(() => schicke({ t: "ping", c: Date.now() }), 20_000);
 
   return { verbinde };
 }

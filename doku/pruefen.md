@@ -110,6 +110,21 @@ node werkzeug/pruefe-keep-effekte.mjs # Keep: jeder Ton und jeder Effekt, den ap
 node werkzeug/pruefe-solo.mjs      # Keep, Card Chaos und Snake starten allein
 ```
 
+Seconds hat seit dem 08.09.2026 eine eigene Probe – vorher als einziges der
+Lobbyspiele gar keine, und genau deshalb wurde es auch nie mit umgestellt:
+
+```bash
+cd /var/www/html/seconds
+PORT=8091 GEIST_MS=3000 deno task dev &          # eigene Fassung
+PORT=8091 GEIST_MS=3000 deno task probe
+```
+
+Sie prüft nicht das Spiel, sondern den Weg hinein und hinaus: der Platz
+überlebt einen Abbruch, der Rückkehrer landet wieder darauf, der Verlassenknopf
+räumt sofort, und die Geisterwache holt einen stummen Socket, ohne die
+Pingenden mitzunehmen. `GEIST_MS` gehört an **beide** Aufrufe; ohne die
+Variable überspringt sie den letzten Abschnitt, statt drei Minuten zu warten.
+
 `pruefe-solo.mjs` ist die kurze davon: die drei Spiele haben seit dem
 18.08.2026 `minPlayers = 1`, und diese Probe weist nur nach, dass ein
 einzelner Host wirklich losdrücken kann und die Partie allein bis zum
@@ -186,12 +201,30 @@ Aus den Bugreports 4, 7, 8, 9, 10 und 13:
   drückt ihn nicht darunter. Diese Falle hat die Probe beim Schreiben zuerst
   selbst gestellt und rot geleuchtet, obwohl alles stimmte.
 
+## Was am 08.09.2026 dazugekommen ist
+
+Die Geisterwache wurde neu gefasst (`doku/gemeinsam.md`): sie stellt nur noch
+fest, dass eine *Verbindung* tot ist, und wirft niemanden mehr aus dem Raum.
+Endgültig geht nur, wer selbst auf „Verlassen" tippt. Das brachte drei neue
+Nachweise und einen umgeschriebenen:
+
+- **`lobbyprobe.mjs` L18** – die Gegenprobe zu L17: Platz *und* Bereit-Zeichen
+  überstehen einen Abbruch im Warteraum, der Rückkehrer landet auf demselben
+  Platz, und `leave` räumt ihn sofort.
+- **`lobbyprobe.mjs` L08** – neu geschrieben. Er prüft nicht mehr „rund
+  60 Sekunden", sondern die Regel: der Platz wird *nicht* sofort frei und *wird*
+  irgendwann frei. Die Fristen kommen dafür über `SITZ_MS`/`LOBBY_MS` aus der
+  Umgebung; `--lang` gibt es nicht mehr, der Test dauert acht Sekunden.
+- **`seconds/probe.js`** – dasselbe für Seconds, das erste Mal überhaupt.
+- **`pruefe-keep.mjs` P08** und **`pruefe-cardchaos.mjs` P08** – dasselbe für
+  die beiden PM2-Spiele.
+
 ## Die Lobby-Probe
 
 `werkzeug/lobbyprobe.mjs` (10.08.2026) prüft nicht das Spiel, sondern den Weg
 **hinein und wieder hinaus** – das, was kein `probe.js` tut: neu laden, das
 Netz verlieren, einen zweiten Tab aufmachen, einer laufenden Runde beitreten,
-Müll schicken. Siebzehn Tests (L01–L17) gegen die siebzehn Spiele mit
+Müll schicken. Achtzehn Tests (L01–L18) gegen die siebzehn Spiele mit
 gemeinsamem Lobby-Protokoll.
 
 **Revier, Wurm und Ameisen fallen heraus** – sie haben keine Lobby, kein
@@ -269,10 +302,9 @@ wäre ein leerer Hang mit drei Punkten darauf.
 
 ```bash
 cd /var/www/html
-node werkzeug/lobbyprobe.mjs                     # alle sechzehn
+node werkzeug/lobbyprobe.mjs                     # alle siebzehn
 node werkzeug/lobbyprobe.mjs --nur paare
 node werkzeug/lobbyprobe.mjs --nur paare --test L07
-node werkzeug/lobbyprobe.mjs --lang              # auch der 60-s-Test (L08)
 node werkzeug/lobbyprobe.mjs --live              # gegen die Live-Fassung
 ```
 

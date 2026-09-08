@@ -13,7 +13,6 @@
 //   node werkzeug/lobbyprobe.mjs                 # alle
 //   node werkzeug/lobbyprobe.mjs --nur paare
 //   node werkzeug/lobbyprobe.mjs --nur paare --test L07
-//   node werkzeug/lobbyprobe.mjs --lang          # auch die 60-s-Tests
 //   node werkzeug/lobbyprobe.mjs --port 8062     # gegen 127.0.0.1 statt live
 //
 // Kein Testrahmen und keine Abhaengigkeit: Node bringt WebSocket seit 21
@@ -39,7 +38,6 @@ const flag = (name) => argv.includes(name);
 
 const NUR = arg("--nur");
 const NUR_TEST = arg("--test");
-const LANG = flag("--lang");
 const LIVE = flag("--live");
 const PORT = arg("--port");
 const PRUEFPORT = Number(arg("--pruefport", "8101"));
@@ -581,7 +579,7 @@ test("L07", "Neu laden IN DER RUNDE: kommt das Spielbild von selbst zurueck?", a
   return `»${runde.t}« nach ${dauer} ms wieder da, ohne Zutun Dritter`;
 });
 
-test("L08", "Karenzzeit: 60 s Platz halten, danach raeumen", async (ctx) => {
+test("L08", "Karenzzeit: der Platz bleibt stehen, bis die Frist um ist", async (ctx) => {
   const { host, gaeste } = await rundeAn(ctx, { mindestens: 2 });
   const wer = gaeste[0] ?? host;
   const andere = wer === host ? gaeste[0] : host;
@@ -594,17 +592,25 @@ test("L08", "Karenzzeit: 60 s Platz halten, danach raeumen", async (ctx) => {
   );
   muss(weg.players.length >= 2, "der Platz wurde sofort geraeumt statt gehalten");
 
-  if (!LANG) return "Platz bleibt stehen (Ablauf nach 60 s nur mit --lang)";
-
+  // Ab hier zaehlen. Ohne Marke passt die Bedingung unten auf den Raumzustand
+  // von vorhin, als `wer` noch gar nicht drin war - und die Karenzzeit sieht
+  // aus wie null Sekunden.
+  const ab = andere.marke();
   const t0 = Date.now();
   const frei = await andere.warte(
     (m) => m.t === "room" && !m.players.some((p) => p.id === wer.you),
-    { ms: 90_000, was: "Platz nach Ablauf der Karenzzeit geraeumt" },
+    { ab, ms: 20_000, was: "Platz nach Ablauf der Karenzzeit geraeumt" },
   );
   const s = Math.round((frei._zeit - t0) / 1000);
-  muss(s >= 45 && s <= 80, `Karenzzeit war ${s} s statt rund 60 s`);
+  muss(s >= 4 && s <= 14, `Karenzzeit war ${s} s statt rund 8 s`);
   return `Platz stand ${s} s, dann geraeumt`;
-}, { lang: true });
+  //
+  // In Betrieb sind es zwanzig Minuten in der Runde und fuenf im Warteraum -
+  // so lange kann keine Probe warten, und so lange soll sie auch nicht. Was
+  // hier nachgewiesen wird, ist die Regel, nicht die Zahl: der Platz wird
+  // *nicht* sofort frei, und er wird irgendwann frei. Ueber `SITZ_MS` und
+  // `LOBBY_MS` liest jedes der siebzehn Spiele die Fristen aus der Umgebung.
+}, { env: { SITZ_MS: "8000", LOBBY_MS: "8000", HOST_MS: "1000" } });
 
 test("L09", "Host geht - in der Lobby und in der Runde", async (ctx) => {
   // Teil 1: Lobby
@@ -646,10 +652,10 @@ test("L09", "Host geht - in der Lobby und in der Runde", async (ctx) => {
   );
   return "wandert, und der Nachfolger darf auch beenden";
   //
-  // `HOST_MS`: Imposter und „Wer am ehesten" lassen das Hostzeichen 45 s lang
-  // liegen, wenn der Host nur gerade weg ist - sonst springt es bei jedem
-  // gesperrten Bildschirm. Fuer die Probe wird die Frist auf eine Sekunde
-  // gekuerzt; Spiele ohne diese Uhr ignorieren die Variable.
+  // `HOST_MS`: seit dem 08.09.2026 lassen **alle** siebzehn das Hostzeichen
+  // 45 s lang liegen, wenn der Host nur gerade weg ist - sonst springt es bei
+  // jedem gesperrten Bildschirm. Fuer die Probe wird die Frist auf eine
+  // Sekunde gekuerzt.
 }, { env: { HOST_MS: "1000" } });
 
 test("L10", "Letzter geht: Raum verschwindet aus der Liste", async (ctx) => {
@@ -895,6 +901,60 @@ test("L17", "Geist auf dem Hostplatz: offener Socket, der stumm bleibt", async (
   return `stummer Host nach ~3 s weg (Schluss ${host.schluss.code}), ` +
     "Host wandert zum Gast, wer pingt bleibt sitzen";
 }, { env: { GEIST_MS: "3000", HOST_MS: "1000" } });
+
+// Die Gegenprobe zu L17, und der Kern der Umstellung vom 08.09.2026: die
+// Geisterwache raeumt Verbindungen ab, **nicht Menschen**. Wer die Verbindung
+// verliert, behaelt seinen Platz und sein Bereit-Zeichen; endgueltig geht nur,
+// wer selbst auf „Verlassen" tippt. Vorher gab der Warteraum den Platz sofort
+// frei - und wer wiederkam, sass als zweite Person neben sich selbst.
+test("L18", "Warteraum: Platz und Bereit-Zeichen ueberstehen den Abbruch",
+  async (ctx) => {
+    const host = await raumAuf(ctx, "Wirt");
+    const { c: gast } = await dazu(ctx, host.code, "Gast");
+    await gast.typ("joined");
+    await sitze(host, 2);
+    const gastId = gast.you;
+    const token = gast.token;
+
+    const kannBereit = (await koennen(ctx.spiel)).kannBereit;
+    if (kannBereit) {
+      gast.schicke({ t: "ready", value: true });
+      await host.warte((m) => m.t === "room" && m.players.some((p) => p.id === gastId && p.ready),
+        { ms: 5000, was: "der Gast meldet sich bereit" });
+    }
+
+    // 1. Verbindung weg - der Platz muss stehen bleiben.
+    const ab = host.marke();
+    await gast.zu();
+    const weg = await host.warte(
+      (m) => m.t === "room" && m.players.some((p) => p.id === gastId && !p.connected),
+      { ab, ms: 6000, was: "der Abbruch kommt im Warteraum an" },
+    );
+    muss(weg.players.length === 2,
+      "der Warteraum hat den Platz sofort geraeumt - genau das soll er nicht mehr");
+    if (kannBereit) {
+      muss(weg.players.find((p) => p.id === gastId)?.ready,
+        "das Bereit-Zeichen fiel beim blossen Verbindungsabbruch weg");
+    }
+
+    // 2. Zurueck auf denselben Platz, ohne Zutun Dritter.
+    const { c: zurueck } = await dazu(ctx, host.code, "Gast", token);
+    const j = await zurueck.typ("joined");
+    muss(j.you === gastId, "die Rueckkehr bekam eine neue Id - der Platz war weg");
+    const r = await sitze(host, 2, 6000);
+    muss(r.players.every((p) => p.connected), "nach der Rueckkehr steht noch eine Leiche im Raum");
+
+    // 3. Und jetzt der Knopf: das ist die eine Stelle, die sofort wirkt.
+    zurueck.schicke({ t: "leave" });
+    await sitze(host, 1, 6000);
+    return kannBereit
+      ? "Abbruch haelt Platz und Bereit-Zeichen, Verlassen raeumt sofort"
+      : "Abbruch haelt den Platz, Verlassen raeumt sofort";
+    //
+    // Ohne `env`: dieser Test braucht keine gekuerzten Fristen, im Gegenteil -
+    // er weist nach, dass die *echten* halten. Deshalb laeuft er als einziger
+    // der drei neuen auch gegen live.
+  });
 
 // ---------------------------------------------------------------------------
 // Lauf

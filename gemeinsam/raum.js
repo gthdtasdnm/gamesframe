@@ -16,19 +16,47 @@
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 /**
- * Wie lange ein Socket stumm bleiben darf, bevor die Geisterwache ihn abraeumt.
- * Der Client meldet sich alle 25 s; zwei ausgefallene Pings plus Puffer.
+ * Fristen. Alle in Millisekunden, alle ueber die Umgebung verkuerzbar - nicht
+ * fuer den Betrieb, sondern damit `werkzeug/lobbyprobe.mjs` einen Fall in
+ * Sekunden statt in Minuten pruefen kann. Ohne die Variable (oder ohne
+ * `--allow-env`) gilt die Vorgabe.
  *
- * Ueber `GEIST_MS` verkuerzbar - nicht fuer den Betrieb, sondern damit
- * `werkzeug/lobbyprobe.mjs` den Fall in Sekunden statt in Minuten pruefen kann.
- * Steht der Wert nicht oder fehlt das Recht, bleibt es bei 65 s.
+ * Die Vorgaben sind seit dem 08.09.2026 **grosszuegig**, und das ist der Kern
+ * der Sache: wer sein Handy weglegt, den Bildschirm sperrt, kurz in eine
+ * andere App schaut oder durch ein Funkloch faehrt, ist der Normalfall und
+ * nicht die Ausnahme. Jedes Mal, wenn so jemand als *neuer* Spieler zurueck
+ * kam, spann der ganze Tisch: Platz weg, Hostzeichen woanders, Blatt futsch.
+ * Und weil niemand wusste, ob er noch drin ist oder nicht, hat auch niemand
+ * mehr sicher weiterspielen koennen.
+ *
+ * Deshalb gilt jetzt: **endgueltig geht nur, wer selbst auf „Verlassen"
+ * tippt.** Alles andere ist eine Pause, und eine Pause kostet den Platz nicht.
  */
-function geistVorgabe() {
+const FRISTEN = {
+  /** Leerer Raum wird abgeraeumt. */
+  RAUM_MS: ["RAUM_MS", 30 * 60_000],
+  /** So lange bleibt ein Platz in der laufenden Runde reserviert. */
+  SITZ_MS: ["SITZ_MS", 20 * 60_000],
+  /** Dasselbe im Warteraum - kuerzer, weil ein Platz dort jemanden aussperrt. */
+  LOBBY_MS: ["LOBBY_MS", 5 * 60_000],
+  /** So lange behaelt ein abwesender Host sein Zeichen. */
+  HOST_MS: ["HOST_MS", 45_000],
+  /**
+   * So lange darf ein Socket stumm bleiben, bevor die Geisterwache ihn
+   * abraeumt. Der Client meldet sich alle 20 s; das sind neun ausgefallene
+   * Pings, bevor jemand als weg gilt. Vorher waren es 65 s - zwei Pings - und
+   * genau das hat auf mobilen Netzen staendig Unschuldige getroffen.
+   */
+  GEIST_MS: ["GEIST_MS", 180_000],
+};
+
+function frist(name) {
+  const [variable, vorgabe] = FRISTEN[name];
   try {
-    const n = Number(Deno.env.get("GEIST_MS"));
-    if (Number.isFinite(n) && n >= 1000) return n;
+    const n = Number(Deno.env.get(variable));
+    if (Number.isFinite(n) && n >= 200) return n;
   } catch { /* ohne --allow-env: dann eben die Vorgabe */ }
-  return 65_000;
+  return vorgabe;
 }
 
 /** Einmal anlegen, nicht bei jedem Namen neu - das Ding ist teuer. */
@@ -80,12 +108,16 @@ export function shuffle(list) {
  * @param {number} o.maxPlayers        obere Grenze, gilt auch fuer die Raumliste
  * @param {number} o.minPlayers        untere Grenze, geht in roomState mit
  * @param {object} o.einstellungen     Vorgabe je Raum (wird flach kopiert)
+ * Die fuenf Fristen haben seit dem 08.09.2026 grosszuegige Vorgaben (siehe
+ * `FRISTEN` oben) und muessen von keinem Spiel mehr gesetzt werden. Wer sie
+ * doch angibt, sollte einen Grund haben, der im Spiel steht - kuerzer machen
+ * heisst hier immer: jemanden aus einer Runde werfen, in der er noch sitzt.
+ *
  * @param {number} [o.roomIdleMs]      leerer Raum wird danach abgeraeumt
  * @param {number} [o.seatGraceMs]     so lange bleibt ein Platz nach Abbruch
- * @param {number} [o.lobbyGraceMs]    dasselbe, aber im Warteraum. 0 = Platz
- *                                     sofort frei (Vorgabe, altes Verhalten)
+ * @param {number} [o.lobbyGraceMs]    dasselbe, aber im Warteraum
  * @param {number} [o.hostGraceMs]     so lange behaelt ein abwesender Host sein
- *                                     Zeichen. 0 = wandert sofort (Vorgabe)
+ *                                     Zeichen, bevor es weiterwandert
  * @param {number} [o.geistMs]         so lange darf ein Socket stumm bleiben
  * @param {() => object} [o.raumfelder]        zusaetzliche Felder je Raum
  * @param {() => object} [o.spielerfelder]     zusaetzliche Felder je Spieler
@@ -101,11 +133,11 @@ export function raumverwaltung({
   maxPlayers,
   minPlayers,
   einstellungen,
-  roomIdleMs = 5 * 60_000,
-  seatGraceMs = 60_000,
-  lobbyGraceMs = 0,
-  hostGraceMs = 0,
-  geistMs = geistVorgabe(),
+  roomIdleMs = frist("RAUM_MS"),
+  seatGraceMs = frist("SITZ_MS"),
+  lobbyGraceMs = frist("LOBBY_MS"),
+  hostGraceMs = frist("HOST_MS"),
+  geistMs = frist("GEIST_MS"),
   raumfelder = () => ({}),
   spielerfelder = () => ({}),
   zustandZusatz = () => ({}),
@@ -344,11 +376,16 @@ export function raumverwaltung({
   }
 
   /**
-   * Verbindung weg. In einer laufenden Partie bleibt der Platz `seatGraceMs`
-   * lang stehen, damit ein Netzwechsel oder ein Neuladen nicht aus der Runde
-   * wirft. Im Warteraum ist er sofort frei - es sei denn, das Spiel gibt eine
-   * `lobbyGraceMs` an: dann gilt dort dieselbe Regel. Das braucht, wer lange
-   * Warteraeume hat, in denen niemand etwas druecken muss.
+   * Verbindung weg - aber nicht unbedingt der Mensch.
+   *
+   * Die Unterscheidung ist der ganze Punkt. Ein geschlossener Socket heisst
+   * auf dem Handy fast nie „ich hoere auf": er heisst gesperrter Bildschirm,
+   * gewechseltes Netz, eine Nachricht beantwortet, ein Tunnel. Deshalb bleibt
+   * der Platz stehen - `seatGraceMs` lang in der Runde, `lobbyGraceMs` lang im
+   * Warteraum - und wer zurueckkommt, setzt sich auf denselben.
+   *
+   * `immediate` setzt nur der Verlassenknopf (`t: "leave"`). Das ist die eine
+   * Stelle, an der jemand *gesagt* hat, dass er geht.
    */
   function dropPlayer(ws, { immediate = false } = {}) {
     const room = ws._room;
@@ -363,7 +400,12 @@ export function raumverwaltung({
   function verlasse(room, player, immediate) {
     player.connected = false;
     player.ws = null;
-    player.ready = false;
+    // `ready` bleibt stehen, solange der Platz steht. Wer im Warteraum kurz
+    // das Netz verliert, hat sich deshalb nicht anders entschieden - musste
+    // aber frueher nach der Rueckkehr noch einmal auf „Bereit" tippen, und
+    // bis dahin war der Startknopf des Hosts gesperrt. Beim endgueltigen
+    // Abgang faellt es ohnehin mit dem Platz weg.
+    if (immediate) player.ready = false;
 
     const gnade = room.phase === "lobby" ? lobbyGraceMs : seatGraceMs;
     if (immediate || gnade <= 0) {
@@ -417,14 +459,26 @@ export function raumverwaltung({
    * (Snake) und der Grund, warum die Runde nie losging.
    *
    * `connected` allein ist deshalb kein Nachweis. Der Client meldet sich alle
-   * 25 Sekunden mit `ping`, auch wenn niemand etwas tut; `statisch.js` stempelt
-   * jede eingehende Nachricht auf `lastSeen`. Wer nach zwei ausgefallenen Pings
-   * und etwas Puffer nichts mehr gesagt hat, wird behandelt wie einer, dessen
-   * Verbindung ordentlich zuging - der Platz wird frei, der Host rueckt weiter.
+   * 20 Sekunden mit `ping`, auch wenn niemand etwas tut; `statisch.js` stempelt
+   * jede eingehende Nachricht auf `lastSeen`.
    *
-   * `geistMs` steht bewusst ueber `seatGraceMs`: erst gilt einer als weg, dann
-   * laeuft seine Karenzzeit. Andersherum verloere ein kurz gestoerter Client
-   * seinen Platz, bevor er ueberhaupt als abwesend gilt.
+   * **Was die Wache tut und was nicht** - das ist die Aenderung vom 08.09.2026
+   * und der Grund, warum das Ganze jetzt stabil ist:
+   *
+   *   - Sie stellt *nur* fest, dass eine Verbindung tot ist. Sie wirft
+   *     niemanden aus dem Raum. Der Platz geht in dieselbe Karenzzeit wie bei
+   *     einem sauber geschlossenen Socket - `verlasse(..., false)`.
+   *   - Sie laesst dafuer viel Zeit: 180 s statt der frueheren 65 s. Das sind
+   *     neun ausgefallene Pings. Mit 65 s reichten zwei, und zwei ausgefallene
+   *     Pings hat jedes Mobilfunknetz mehrmals am Abend.
+   *   - Ein Socket, der schon zu ist, wird nicht noch einmal geschlossen; das
+   *     `close(4002)` ist nur dazu da, dem Client zu sagen, dass er neu
+   *     verbinden soll, statt in eine Leitung zu reden, die keine mehr ist.
+   *
+   * Wichtig bleibt die Reihenfolge der Fristen: `geistMs` steht unter
+   * `seatGraceMs` und `lobbyGraceMs` - erst gilt einer als weg, *dann* laeuft
+   * seine Karenzzeit. Andersherum verloere ein kurz gestoerter Client seinen
+   * Platz, bevor er ueberhaupt als abwesend gilt.
    */
   function geisterPruefen(jetzt = Date.now()) {
     let gefunden = 0;
@@ -438,30 +492,58 @@ export function raumverwaltung({
           ws._room = null;
           ws._player = null;
           browsing.delete(ws);
-          try { ws.close(4002, "stumm"); } catch { /* war ja schon tot */ }
+          if (ws.readyState === WebSocket.OPEN) {
+            try { ws.close(4002, "stumm"); } catch { /* war ja schon tot */ }
+          }
         }
+        // Kein `immediate`: ein Geist ist kein Mensch, der „Verlassen" getippt
+        // hat. Sein Platz steht weiter, bis die Karenzzeit ihn raeumt.
         verlasse(room, player, false);
       }
     }
     return gefunden;
   }
 
-  const geisterUhr = setInterval(() => geisterPruefen(), Math.max(5_000, Math.floor(geistMs / 4)));
+  // Viertelstuendlich im Verhaeltnis zur Frist, mindestens alle fuenf Sekunden:
+  // die Wache soll nicht selbst zur Verzoegerung werden, wenn `geistMs` fuer
+  // eine Probe auf Sekunden heruntergesetzt ist.
+  const geisterUhr = setInterval(
+    () => geisterPruefen(),
+    Math.max(5_000, Math.floor(geistMs / 4)),
+  );
 
-  /** Raeume abraeumen, in denen seit zehn Minuten niemand mehr war. */
+  /**
+   * Sicherheitsnetz gegen liegengebliebene Raeume - etwa wenn ein Timer beim
+   * Neustart des Dienstes verlorenging.
+   *
+   * Es darf niemandem den Platz wegnehmen, deshalb die grosszuegige Grenze:
+   * erst wenn selbst ein reservierter Platz laengst abgelaufen waere, ist der
+   * Raum wirklich tot. Frueher standen hier zehn Minuten - weniger als die
+   * Karenzzeit, das haette Plaetze geraeumt, die noch stehen sollten.
+   */
+  const RAUM_TOT_MS = roomIdleMs + seatGraceMs;
+
   function starteAufraeumen(intervall = 60_000) {
     return setInterval(() => {
       const now = Date.now();
-      for (const room of rooms.values()) {
-        if (!anwesende(room).length && now - room.lastActivity > 10 * 60_000) {
-          destroyRoom(room);
-        }
+      for (const room of [...rooms.values()]) {
+        if (anwesende(room).length) continue;
+        const zuletzt = Math.max(
+          room.lastActivity ?? 0,
+          ...[...room.players.values()].map((p) => p.lastSeen ?? 0),
+        );
+        if (now - zuletzt > RAUM_TOT_MS) destroyRoom(room);
       }
     }, intervall);
   }
 
   return {
     rooms, browsing, maxPlayers, minPlayers,
+    // Die tatsaechlich geltenden Fristen - Vorgabe, Umgebung oder was das
+    // Spiel uebergeben hat. Wer im `server.js` selbst eine Karenzuhr stellt
+    // (etwa um beim Rundenstart von der kurzen auf die lange umzuhaengen),
+    // nimmt den Wert von hier statt eine eigene Zahl zu tippen.
+    fristen: { roomIdleMs, seatGraceMs, lobbyGraceMs, hostGraceMs, geistMs },
     newCode, createRoom, destroyRoom,
     scheduleIdleClose, cancelIdleClose, clearTimers,
     ensureHost, hostWacht, cancelHostWacht, anwesende,
