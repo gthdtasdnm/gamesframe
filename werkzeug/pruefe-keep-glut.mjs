@@ -12,9 +12,9 @@
 //   G05  Eine gewertete Kachel behaelt ihre Zahl, auch wenn die Stufe wechselt.
 //   G06  Der Jubel haengt oben und liegt nie auf Walzen oder Kombi-Tafel -
 //        und keine Effekt-Ebene nimmt einen Klick weg.
-//   G08  Bezahlt wird, was in den Walzen liegt: der Preis steht einmal ueber
-//        der Tafel, die freien Kacheln tragen keine Zahl mehr - und gewertet
-//        wird genau der angesagte Wert.
+//   G08  Bezahlt wird, was in den Walzen liegt: jede gueltige Kachel zeigt
+//        denselben Preis wie die Zeile ueber der Tafel - und gewertet wird
+//        genau dieser Wert.
 //   G07  Die Tafel steht sofort. Die Walzen zeigen ihr Symbol in dem Moment,
 //        in dem es gezogen wird - es gibt nichts abzuwarten.
 //
@@ -131,7 +131,8 @@ try {
     const welche = await kachel.getAttribute("data-cat");
     // G08: was die Tafel ansagt, BEVOR getippt wird - und was auf der Kachel
     // selbst steht, die getippt wird.
-    const zugwert = zahl(await seite.locator("#zugwertZahl").textContent());
+    const zugwertText = (await seite.locator("#zugwertZahl").textContent()).trim();
+    const zugwert = zahl(zugwertText);
     const kachelText = (await kachel.locator(".cat-pts").textContent()).trim();
     const vorMult = await mult(seite);
     await kachel.click();
@@ -148,8 +149,8 @@ try {
     if (!ersteKachel) { ersteKachel = welche; ersteZahl = wert; }
     pruefe("G08", zugwert > 0,
       `Zug ${zug + 1}: angesagt ${zugwert.toLocaleString("de-DE")} ueber der Tafel`);
-    pruefe("G08", !/[0-9]/.test(kachelText),
-      `die freie Kachel traegt keine Zahl mehr, sondern "${kachelText}"`);
+    pruefe("G08", kachelText === zugwertText,
+      `die Kachel zeigt dieselbe Zahl wie die Zeile darueber ("${kachelText}")`);
     // Zwischen Ablesen und Antippen kann die Glut eine Stufe fallen, nie
     // steigen: gewertet wird also der angesagte Wert oder ein Stufenschritt
     // darunter - und die ganze Leiter umfasst nur den Faktor zwei.
