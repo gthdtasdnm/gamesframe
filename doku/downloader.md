@@ -66,6 +66,57 @@ sich dabei –, sondern aus zwei anderen Gründen:
 
 Höherstellen bringt deshalb wenig und kann schaden.
 
+### Der Absturz vom 21.09.2026 – und warum „einer zur Zeit" nicht stimmte
+
+Eine Playlist mit hundert Liedern hat die ganze Maschine umgelegt: kein SSH
+mehr, Neustart nur noch von außen. `GLEICHZEITIG=1` stand da, aber es galt
+nicht.
+
+Der Fehler saß in `pumpe()` in `warteschlange.js`. Die Funktion zählte die
+laufenden Aufträge an `laufen.size` ab – einer `Map`, die aber erst *nach*
+einem `await` gefüllt wird (dazwischen wird der Ordner angelegt). In dieser
+Lücke sah die Pumpe weiterhin null laufende Aufträge, startete den nächsten,
+sah wieder null, startete den nächsten … Weil `queueMicrotask` vollständig
+abgearbeitet wird, bevor die Platten-Ein-/Ausgabe zurückkommt, lief das in
+einem Zug durch die ganze Liste. Hundert Lieder wurden zu **hundert
+gleichzeitigen `yt-dlp`-Prozessen**, jeder mit `--concurrent-fragments 4`
+und einem eigenen ffmpeg dahinter.
+
+Nachgemessen im Protokoll: ab 14:46 meldete MariaDB im Minutentakt
+`InnoDB: Memory pressure event`, um 14:48:23 bricht das Journal mitten im Satz
+ab. Kein OOM-Kill – die Maschine kam gar nicht mehr so weit, sie steckte im
+Swap fest. Deshalb war auch `sshd` nicht mehr ansprechbar.
+
+Behoben: die Pumpe zählt jetzt an einem eigenen Zähler (`belegt`), der
+**vor** dem ersten `await` erhöht und erst im `finally` wieder gesenkt wird;
+der Auftrag wird im selben Atemzug synchron auf `laeuft` gesetzt, damit die
+nächste Runde ihn nicht noch einmal findet. Gleich daneben lag ein zweiter,
+kleinerer Fehler derselben Bauart: wer in dieser Lücke auf **Abbrechen**
+drückte, fand in `laufen` noch nichts vor – der Prozess lud danach munter
+weiter. Auch das ist zu.
+
+**Probe G20** hält das fest: sechs Stücke auf einmal, und geprüft wird nicht
+das Ergebnis, sondern der Verlauf – wie viele zur selben Zeit gelaufen sind.
+Gegen den alten Stand schlägt sie fehl („höchste Gleichzeitigkeit 6"), gegen
+den neuen nicht.
+
+### Der Gurt in der Unit
+
+Der Fehler ist weg, aber dass ein Werkzeug für eine Person die dreißig Spiele
+mitreißen kann, war die eigentliche Lücke. Die Unit hat deshalb seit dem
+21.09.2026 Grenzen – gemessener Normalbedarf sind rund 190 MB und 6 Tasks:
+
+| Zeile | Warum |
+|---|---|
+| `MemoryHigh=1G`, `MemoryMax=2G` | ab hier bremst der Kernel, dann räumt er auf – im Lader, nicht im Haus |
+| `MemorySwapMax=0` | das Verrecken war Thrashing, nicht der OOM-Killer; mit vollem Swap steht auch `sshd` |
+| `TasksMax=192` | eine Prozesslawine läuft gegen die Wand statt gegen die Maschine |
+| `CPUWeight=20`, `IOWeight=20` | wenn es eng wird, gehen die Spiele vor |
+
+Läuft der Lader gegen `MemoryMax`, stirbt er und `Restart=always` holt ihn
+zurück. Das ist unschön und allemal besser als ein Server, der nur noch von
+außen neu zu starten ist.
+
 ## Was es wirklich kostet
 
 Gemessen am 21.09.2026 auf dieser Maschine (4 Kerne EPYC, 7,7 GB RAM):
@@ -208,7 +259,7 @@ Die laufende Fassung steht in der Fußzeile der Seite.
 ```bash
 cd /var/www/html/downloader
 deno task check     # findet keine vergessenen Importe - siehe Falle 4
-deno task probe     # 19 Proben, dauert ~45 s
+deno task probe     # 20 Proben, dauert ~50 s
 ```
 
 `probe.js` läuft **nicht** gegen den laufenden Dienst und **nicht** gegen
@@ -216,8 +267,9 @@ YouTube: es baut sich mit ffmpeg eine eigene kleine Mediendatei, stellt sie
 über einen eigenen Webserver bereit und startet den Lader als zweiten Prozess
 mit eigenem Port und eigener Ablage. Geprüft werden URL-Abweisung, Erkunden,
 Video- und MP3-Auftrag, Ausliefern samt Range-Anfragen, Gruppe und ZIP mit
-gleichnamigen Stücken, Löschen, Aufräumen, Abbrechen, die Formatliste – und
-das Abholen mit allen vier Fällen aus der Tabelle oben.
+gleichnamigen Stücken, Löschen, Aufräumen, Abbrechen, die Formatliste, das
+Abholen mit allen vier Fällen aus der Tabelle oben – und seit G20, dass eine
+Liste wirklich Stück für Stück läuft.
 
 Für den Abbruch-Fall (G16) baut die Probe eine zweite, absichtlich große
 Datei: bei 70 kB liegt schon alles im Puffer des Betriebssystems, bevor man
