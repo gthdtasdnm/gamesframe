@@ -312,6 +312,23 @@ footer a:hover, footer a:focus-visible {
   outline: none;
 }
 
+/* Der Lader-Link im Fuss. Steht im HTML, ist aber `hidden`, bis das eigene
+   Geraet ihn einmal freigeschaltet hat (siehe Skript am Seitenende). Der
+   Punkt davor unterscheidet ihn von den beiden Rechtstexten: er fuehrt nicht
+   ins Angebot, sondern ins Werkzeug. */
+footer a.nurich { color: var(--akzent); opacity: .75; }
+footer a.nurich::before {
+  content: "";
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+footer a.nurich:hover, footer a.nurich:focus-visible { opacity: 1; color: var(--akzent); }
+footer a.nurich[hidden] { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
@@ -411,8 +428,38 @@ footer a:hover, footer a:focus-visible {
   <nav>
     <a href="/recht/impressum/" data-t="start.impressum">Impressum</a>
     <a href="/recht/datenschutz/" data-t="start.datenschutz">Datenschutz</a>
+    <!-- Nur fuer den Betreiber. Kein data-t: diesen Text sieht genau eine
+         Person, und die liest Deutsch. Steht hinter den beiden Rechtstexten,
+         damit `footer nav a` weiterhin das Impressum meint - darauf prueft
+         werkzeug/pruefe-sprache.mjs. -->
+    <a id="laderLink" class="nurich" href="/downloader/" rel="nofollow"
+       title="yt-dlp hinter Passwort" hidden>Lader</a>
   </nav>
 </footer>
+
+<!-- Der Lader-Link, nur auf den eigenen Geraeten.
+     `inf-zeus.de/?lader` schaltet ihn auf diesem Geraet frei, `?lader=weg`
+     wieder ab; die Marke steht danach im localStorage dieses Browsers und
+     ueberlebt jeden Besuch. Fuer alle anderen bleibt der Link `hidden`.
+     Das ist Sichtbarkeit, kein Schloss - das Schloss ist das Passwort in
+     Apache vor /downloader/, und daran aendert diese Zeile nichts. -->
+<script>
+  (function () {
+    var MARKE = "lader";
+    try {
+      var frage = new URLSearchParams(location.search);
+      if (frage.has(MARKE)) {
+        if (frage.get(MARKE) === "weg") localStorage.removeItem(MARKE);
+        else localStorage.setItem(MARKE, "1");
+        history.replaceState(null, "", location.pathname);
+      }
+      if (localStorage.getItem(MARKE)) document.getElementById("laderLink").hidden = false;
+    } catch (e) {
+      /* Privates Fenster oder gesperrter Speicher: dann bleibt der Link weg.
+         Die Adresse /downloader/ tut es auch von Hand. */
+    }
+  })();
+</script>
 
 <!-- Sprachen. Deutsch steht im HTML darueber; dieses Modul legt Tuerkisch und
      Englisch darauf. Ohne JavaScript bleibt alles deutsch und vollstaendig. -->
