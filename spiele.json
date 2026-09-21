@@ -1,7 +1,6 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
   "portsFrei": [
-    "8091",
     "8092",
     "8093",
     "8094",
@@ -581,6 +580,16 @@
         "bremse": "bremse.js",
         "statisch": "statisch.js"
       }
+    },
+    {
+      "name": "downloader",
+      "titel": "Lader",
+      "pfad": "/downloader/",
+      "port": 8091,
+      "dienst": "systemd",
+      "art": "still",
+      "repo": null,
+      "hinweis": "yt-dlp hinter einer Weboberflaeche: MP3 oder Video (360p Vorgabe, bis 1080p), erkennt Playlists. Kein Spiel, keine Kachel, noindex - deshalb hier und nicht unter spiele. Passwort sitzt in Apache (<Location /downloader/>, dieselbe htpasswd wie die beiden Tradingbots), der Dienst selbst horcht nur auf 127.0.0.1. Traegt KEINE gemeinsamen Teile: kein WebSocket, keine Bremse, kein lobbyCss - verteilen.mjs hat hier nichts zu tun. Nur fuer den Betreiber. Siehe doku/downloader.md."
     }
   ],
   "seiten": [

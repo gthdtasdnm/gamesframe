@@ -15,11 +15,12 @@ Wie viele es gerade sind, sagt `spiele.json` – nicht dieser Satz:
 `jq '[.spiele[]|select(.art!="werkzeug")]|length' spiele.json`
 
 Was dort unter `still` steht, ist mit Absicht **nicht** mitgezaehlt: Dienste,
-die dieselben gemeinsamen Teile tragen, aber nirgends verlinkt sind.
+die auf derselben Maschine laufen, aber nirgends verlinkt sind - ob sie
+gemeinsame Teile tragen, sagt ihr `gemeinsam`-Eintrag.
 
 **Arbeitsbereich sind die Spiele.** `nextcloud`, `tradingbot_value`,
-`tradingbot_momentum`, `/reader/`, `hochzeit` und `_alt-tot-20260807` nur
-anfassen, wenn ausdrücklich danach gefragt wird.
+`tradingbot_momentum`, `/reader/`, `hochzeit`, `downloader` und
+`_alt-tot-20260807` nur anfassen, wenn ausdrücklich danach gefragt wird.
 
 `hochzeit` ist eine private Bildergalerie hinter einem Zugangswort – kein
 Spiel, keine Kachel, in keiner Suchmaschine. Details: `doku/hochzeit.md`.
@@ -30,6 +31,12 @@ geht. Um Spielgeld: es entsteht ausschließlich an einem Knopf (ein Cent je
 Druck), es gibt keine Einzahlung, keine Auszahlung und keine Verbindung zum
 Spendenknopf. Das ist nicht verhandelbar – siehe `doku/inhalte.md`. 18+ nach
 demselben Muster wie die drei anderen 18+-Spiele.
+
+`downloader` ist der **Lader**: `yt-dlp` hinter einer Weboberfläche, MP3 oder
+Video bis 1080p, erkennt Playlists. Kein Spiel, keine Kachel, `noindex`, und
+**hinter einem Passwort in Apache** – dieselbe `htpasswd` wie die beiden
+Tradingbots. Nur Deutsch, weil es genau eine Person liest.
+Details: `doku/downloader.md`.
 
 `dating` ist ZWEI, ein Speed-Dating-Abend (taeglich 20 Uhr), der die
 bestehenden Spiele benutzt. Ebenfalls kein Spiel, keine Kachel, `noindex` –
@@ -55,6 +62,7 @@ bewusst kein `lobbyCss`: es hat ein eigenes, dunkelrotes Aussehen, das
 | Seite mit den Aufrufzahlen (Adresse, Passwort) | `ZUGAENGE.md` (nicht im Repo, 403) |
 | Hochzeitsseite (`/hochzeit/`, kein Spiel) | `doku/hochzeit.md` |
 | Speed-Dating (`/dating/`, kein Spiel, geheim) | `doku/dating.md` – und **`dating/CLAUDE.md`**, wenn dort gearbeitet wird |
+| Lader (`/downloader/`, kein Spiel, Passwort) | `doku/downloader.md` – und **`downloader/CLAUDE.md`**, wenn dort gearbeitet wird |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |
 | Was bei den neuen Spielen noch fehlt | `OFFEN-NACHZIEHEN.md` (nicht im Repo, 403) |
