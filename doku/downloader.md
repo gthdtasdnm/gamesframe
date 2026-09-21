@@ -7,7 +7,8 @@ Angelegt am 21.09.2026.
 
 ## Was es tut
 
-Eine Adresse einwerfen, Format wählen, fertige Datei abholen. MP3 oder Video
+Eine Adresse einwerfen, Format wählen – fertig. Der Browser speichert von
+selbst, der Server räumt danach weg; beides abschaltbar. MP3 oder Video
 in 360p (Vorgabe), 480p, 720p oder 1080p. Erkennt YouTube-Playlists und
 Kanalseiten und legt sie zum Ankreuzen vor; eine ganze Liste gibt es hinterher
 als ZIP.
@@ -83,9 +84,63 @@ Gemessen am 21.09.2026 auf dieser Maschine (4 Kerne EPYC, 7,7 GB RAM):
   Anschluss hat kein Kontingent – sonst wäre das die Grenze.
 * **RAM** ist kein Thema: ein `yt-dlp`-Prozess nimmt 100–150 MB.
 
+## Fertiges speichert sich selbst
+
+Zwei Schalter unter der Formatwahl, beide von Haus aus **an**, gemerkt im
+`localStorage` des Browsers:
+
+* **Fertiges sofort speichern.** Sobald ein Auftrag fertig ist, stößt die
+  Seite den Download selbst an – ein unsichtbarer Link mit `download`, der
+  sich selbst klickt. Der Dateiname kommt aus dem `content-disposition` des
+  Dienstes, nicht aus der URL. Mehrere Anstöße laufen gestaffelt (1,2 s
+  Abstand); beim ersten Mal fragt Chrome einmal, ob die Seite mehrere Dateien
+  speichern darf.
+* **Danach vom Server löschen.** Hängt `?weg=1` an den Link. Der Dienst räumt
+  die Datei weg, sobald er sie vollständig hinausgeschrieben hat.
+
+Eine **Playlist** wird nicht Stück für Stück angestoßen, sondern einmal als
+ZIP der ganzen Gruppe, sobald darin nichts mehr läuft. Hundert einzelne
+Downloads wären für jeden Browser eine Zumutung.
+
+Was schon fertig war, **bevor** die Seite geöffnet wurde, wird nicht
+nachträglich geladen – „fertig geworden" heißt: währenddessen. Und ein
+ausgeschalteter Schalter merkt die Stücke trotzdem als gesehen vor; sonst
+lüde ein späteres Einschalten rückwirkend alles herunter, was herumliegt.
+
+### Wann genau gelöscht wird – und wann nicht
+
+Die Entscheidung fällt im Dienst, nicht im Browser. Ein Browser, der „hab
+ich" sagt, ist keine Auskunft: ein abgebrochener Download sähe genauso aus.
+Stattdessen hängt `server.js` einen Strom dazwischen, dessen `flush` **nur**
+läuft, wenn die Quelle regulär endet und die Gegenstelle alles davor abgeholt
+hat (ein `TransformStream` hat Gegendruck). Bricht die Verbindung ab, läuft
+statt dessen `cancel`, und es passiert nichts.
+
+| Abruf | Ergebnis |
+|---|---|
+| vollständig, mit `?weg=1` | Datei weg, Eintrag bleibt als Verlaufszeile |
+| Ausschnitt (`Range`), auch mit `?weg=1` | bleibt liegen – wer fortsetzt, will sie behalten |
+| mitten im Strom abgebrochen | bleibt liegen |
+| ohne `?weg=1` | bleibt liegen |
+
+Die drei unteren Zeilen sind in `probe.js` je eine eigene Probe (G15–G17).
+Das ist Absicht: sie prüfen, dass *nichts* passiert, und genau das ist der
+Teil, der wehtut, wenn er falsch ist.
+
+**Die Grenze, ehrlich gesagt:** „vollständig hinausgeschrieben" ist nicht
+dasselbe wie „liegt beim Browser auf der Platte". Dazwischen liegen Puffer,
+die der Dienst nicht sehen kann. Deshalb ist das Löschen abschaltbar – und
+wenn doch einmal etwas schiefgeht, ist die Adresse ja noch da.
+
+Abgeholte Aufträge bleiben als Zeile unter **Gespeichert und weggeräumt**
+stehen: sie kosten keinen Platz mehr, sagen aber, was passiert ist. „Liste
+leeren" wirft sie weg, ein Neustart des Dienstes auch (es gibt keinen Ordner
+mehr, aus dem sie wiederkämen).
+
 ## Die Ablage räumt sich selbst
 
-Fertige Dateien verschwinden nach **6 Stunden**, die Ablage bleibt insgesamt
+Das gilt auch ohne den Schalter oben: fertige Dateien verschwinden nach
+**6 Stunden**, die Ablage bleibt insgesamt
 unter **40 GB** (darüber fliegt das Älteste zuerst). Beides sind
 `Environment=`-Zeilen in der Unit – ändern, `systemctl daemon-reload`,
 `systemctl restart downloader`, fertig. Kein Neuschreiben.
@@ -153,7 +208,7 @@ Die laufende Fassung steht in der Fußzeile der Seite.
 ```bash
 cd /var/www/html/downloader
 deno task check     # findet keine vergessenen Importe - siehe Falle 4
-deno task probe     # 13 Proben, dauert ~30 s
+deno task probe     # 19 Proben, dauert ~45 s
 ```
 
 `probe.js` läuft **nicht** gegen den laufenden Dienst und **nicht** gegen
@@ -161,7 +216,15 @@ YouTube: es baut sich mit ffmpeg eine eigene kleine Mediendatei, stellt sie
 über einen eigenen Webserver bereit und startet den Lader als zweiten Prozess
 mit eigenem Port und eigener Ablage. Geprüft werden URL-Abweisung, Erkunden,
 Video- und MP3-Auftrag, Ausliefern samt Range-Anfragen, Gruppe und ZIP mit
-gleichnamigen Stücken, Löschen, Aufräumen, Abbrechen und die Formatliste.
+gleichnamigen Stücken, Löschen, Aufräumen, Abbrechen, die Formatliste – und
+das Abholen mit allen vier Fällen aus der Tabelle oben.
+
+Für den Abbruch-Fall (G16) baut die Probe eine zweite, absichtlich große
+Datei: bei 70 kB liegt schon alles im Puffer des Betriebssystems, bevor man
+abbrechen könnte. Sie entsteht mit `-qp 0` – verlustfrei ist in zwei Sekunden
+kodiert und ergibt vier Megabyte. Rohe Bytes gehen dafür **nicht**:
+`--embed-metadata` stößt immer einen ffmpeg-Durchlauf an, und der scheitert
+an allem, was kein Medium ist (nachgemessen am 21.09.2026).
 
 Dass der Dienst dabei wirklich gestartet wird, ist kein Zufall: `deno check`
 sieht einen vergessenen Import in reinem JS nicht (Falle 4 in `CLAUDE.md`).
