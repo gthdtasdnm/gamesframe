@@ -103,6 +103,73 @@ Handvoll Anfragen, die yt-dlp an die Formatliste stellt.
 **Probe G24** hält es fest: zwei Stücke, und geprüft wird der Abstand zwischen
 dem Ende des ersten und dem Start des zweiten.
 
+### Altersbeschränkte Videos – dagegen hilft nur die Cookie-Datei
+
+„Sign in to confirm your age" ist **nicht** die Bot-Sperre, auch wenn die
+Meldung gleich anfängt. Nachgemessen am 25.09.2026 gegen alle sechs
+Player-Clients:
+
+```
+tv_embedded  web_embedded  ios  tv  mweb  android     → alle sechs: derselbe Fehler
+```
+
+yt-dlp probiert den Embed-Client von sich aus („Downloading web embedded client
+config" steht in der Ausgabe) und kommt nicht durch. Die Umgehungen, die früher
+funktionierten, sind zu. **Es gibt nur `cookies.txt`**, von einem angemeldeten
+Konto, das auf 18+ steht.
+
+Der Fehler dabei, der teuer war: `istSperre()` sah `/sign in to confirm/` und
+ordnete die Altersschranke als Tageslaune ein. Folge – drei Versuche über
+1 + 5 Minuten je Stück, und nach zwei solchen Stücken lief die
+**Abkühlung der ganzen Schlange** an, zehn Minuten, für etwas, das nie gehen
+wird. In einer Playlist mit einer Handvoll 18+-Videos stand der Stapel damit
+länger still als er lief.
+
+`sign in to confirm your age` steht deshalb in `ENDGUELTIG`, und das wird
+**vor** `SPERRMUSTER` geprüft. Dazu kamen `HTTP Error 404`,
+„this video is not available", „join this channel", „premieres in",
+„live event will begin/has ended" und „requested format is not available" – alle
+aus demselben Grund: jeder vergebliche Wiederversuch kostet Minuten und kann die
+Schlange anhalten.
+
+### Wiederholen und Abkühlen sind zwei Fragen
+
+Vorher war es eine. Jetzt:
+
+| | wiederholen? | Schlange anhalten? |
+|---|---|---|
+| „not a bot", 429, 403, rate limit, throttled | ja | **ja** |
+| 5xx, Zeitüberschreitung, Verbindungsabbruch | ja | nein |
+| 18+, privat, gelöscht, 404, Mitglieder, Vorpremiere | nein | nein |
+
+Ein zappeliges Netz soll den ganzen Stapel nicht zehn Minuten schlafen legen –
+das darf nur eine echte Bot-Sperre. `istBotSperre()` ist dafür da.
+
+### Die Meldung sagt, was zu tun ist
+
+yt-dlps Meldung zur Altersschranke ist vierhundert Zeichen lang und enthält zwei
+Wiki-Links. In einer Liste von siebzig Zeilen ist das unlesbar, und das
+Entscheidende fehlt: ob die Cookie-Datei überhaupt da ist. `deuteFehler()` macht
+daraus einen Satz:
+
+> Altersbeschraenkt (18+). Geht nur mit angemeldetem Konto – cookies.txt liegt
+> nicht vor.
+
+Liegt sie vor, steht dort statt dessen, dass sie abgelaufen sein dürfte oder das
+Konto nicht auf 18+ steht. Und in der **Fußzeile** steht der Stand der Datei –
+fehlt, gültig noch so-und-so-viele Tage, oder abgelaufen. Das ist nötig, weil
+„abgelaufen" von außen wie „da" aussieht und weil dieselbe Datei die Antwort auf
+*beide* häufigen Fehler ist.
+
+Der Knopf am Stapel heißt bei aussichtslosen Fehlern **„Trotzdem nochmal
+versuchen"** statt „Fehlgeschlagene nochmal" – er hilft erst, wenn sich etwas
+geändert hat, etwa weil gerade eine `cookies.txt` dazugelegt wurde. Genau dafür
+ist er da: Datei hinlegen, Knopf drücken, kein Neustart nötig.
+
+**Probe G00** hält die ganze Einordnung an zehn echten Meldungen fest – reine
+Textmusterarbeit, die beim nächsten Anfassen still umkippt. Gegen den alten
+Stand schlägt sie fehl.
+
 ### Ein Fehler ist nicht gleich ein Fehler
 
 Der zweite Teil desselben Problems, und der schwerere: ein Bot-Sperr-Fehler war
@@ -112,12 +179,8 @@ der Lauf durch, setzte die Warteschlange `stand = "fehler"`, warf den Ordner
 weg und ging zum nächsten. Deshalb blieben die zwanzig tot, obwohl sie zehn
 Minuten später problemlos gekommen wären.
 
-`istSperre()` in `ytdlp.js` unterscheidet jetzt:
-
-| Meldung | Urteil |
-|---|---|
-| „Sign in to confirm you are not a bot", 429, 403, 5xx, Zeitüberschreitung, Verbindungsabbruch | Tageslaune → zurück in die Schlange |
-| „Private video", „Video unavailable", „has been removed", „members-only", Alters- oder Ländersperre | endgültig → kein zweiter Versuch |
+`istSperre()` in `ytdlp.js` unterscheidet jetzt Tageslaune von endgültig – die
+Tabelle steht im Abschnitt „Wiederholen und Abkühlen sind zwei Fragen".
 
 Wiederholt wird dreimal (`VERSUCHE=3`), mit `RUECKLAUF_MS=60000,300000,900000`
 – eine Minute, fünf, eine Viertelstunde. Und **zwei Sperren hintereinander
@@ -508,7 +571,7 @@ Die laufende Fassung steht in der Fußzeile der Seite.
 ```bash
 cd /var/www/html/downloader
 deno task check     # findet keine vergessenen Importe - siehe Falle 4
-deno task probe     # 25 Proben, dauert ~90 s
+deno task probe     # 26 Proben, dauert ~90 s
 ```
 
 `probe.js` läuft **nicht** gegen den laufenden Dienst und **nicht** gegen
@@ -519,10 +582,11 @@ Video- und MP3-Auftrag, Ausliefern samt Range-Anfragen, Stapel, Löschen,
 Aufräumen, Abbrechen, die Formatliste, das Abholen mit allen vier Fällen aus der
 Tabelle oben, und seit G20, dass eine Liste wirklich Stück für Stück läuft.
 
-Seit dem 25.09.2026 dazu fünf, die die neuen Teile festhalten:
+Seit dem 25.09.2026 dazu diese, die die neuen Teile festhalten:
 
 | Probe | Was sie hält |
 |---|---|
+| G00 | Fehlermeldungen richtig eingeordnet: wiederholen, abkühlen, Klartext |
 | G09 | die Schätzung kommt beim Erkunden mit und rechnet mit der Laufzeit |
 | G18 | ein Stapel Stück für Stück abgeholt – Platte frei, Stapel als Verlauf |
 | G21 | Aufräumen lässt unvollständige Stapel in Ruhe – und räumt fertige doch |
@@ -543,7 +607,8 @@ G21 mit „währenddessen überlebt false", G22 mit „Versuch 0", G24 mit
 
 Die kleine Quelle im Prüflauf hat dafür zwei Sonderadressen: `/flatter.mp4`
 antwortet beim **ersten** Abruf mit 503 und danach mit der Datei (für den
-Wiederversuch), `/immerweg.mp4` immer mit 503 (für die Abkühlung).
+Wiederversuch), `/immerweg.mp4` immer mit **429** – und zwar 429 und nicht 503, weil nur eine
+echte Bot-Sperre die Abkühlung auslösen darf.
 
 Für den Abbruch-Fall (G16) baut die Probe eine zweite, absichtlich große
 Datei: bei 70 kB liegt schon alles im Puffer des Betriebssystems, bevor man
