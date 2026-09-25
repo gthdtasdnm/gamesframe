@@ -589,7 +589,7 @@
       "dienst": "systemd",
       "art": "still",
       "repo": null,
-      "hinweis": "yt-dlp hinter einer Weboberflaeche: MP3 oder Video (360p Vorgabe, bis 1080p), erkennt Playlists. Kein Spiel, keine Kachel, noindex - deshalb hier und nicht unter spiele. Passwort sitzt in Apache (<Location /downloader/>, dieselbe htpasswd wie die beiden Tradingbots), der Dienst selbst horcht nur auf 127.0.0.1. Traegt KEINE gemeinsamen Teile: kein WebSocket, keine Bremse, kein lobbyCss - verteilen.mjs hat hier nichts zu tun. Nur fuer den Betreiber. Siehe doku/downloader.md."
+      "hinweis": "yt-dlp hinter einer Weboberflaeche: MP3 oder Video (360p Vorgabe, bis 1080p), erkennt Playlists. Zwei Betriebsarten: parken (anschmeissen, drei Tage spaeter holen) oder sofort speichern; Kostenschaetzung vor dem Start, kein ZIP. Kein Spiel, keine Kachel, noindex - deshalb hier und nicht unter spiele. Passwort sitzt in Apache (<Location /downloader/>, dieselbe htpasswd wie die beiden Tradingbots), der Dienst selbst horcht nur auf 127.0.0.1. Traegt KEINE gemeinsamen Teile: kein WebSocket, keine Bremse, kein lobbyCss - verteilen.mjs hat hier nichts zu tun. Nur fuer den Betreiber. Siehe doku/downloader.md."
     }
   ],
   "seiten": [

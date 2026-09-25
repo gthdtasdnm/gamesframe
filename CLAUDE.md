@@ -33,10 +33,11 @@ Spendenknopf. Das ist nicht verhandelbar – siehe `doku/inhalte.md`. 18+ nach
 demselben Muster wie die drei anderen 18+-Spiele.
 
 `downloader` ist der **Lader**: `yt-dlp` hinter einer Weboberfläche, MP3 oder
-Video bis 1080p, erkennt Playlists. Kein Spiel, keine Kachel, `noindex`, und
-**hinter einem Passwort in Apache** – dieselbe `htpasswd` wie die beiden
-Tradingbots. Nur Deutsch, weil es genau eine Person liest.
-Details: `doku/downloader.md`.
+Video bis 1080p, erkennt Playlists. Adresse einwerfen, Kostenschätzung ansehen,
+dann **parken** – anschmeißen und drei Tage später holen. Kein Spiel, keine
+Kachel, `noindex`, und **hinter einem Passwort in Apache** – dieselbe
+`htpasswd` wie die beiden Tradingbots. Nur Deutsch, weil es genau eine Person
+liest. Details: `doku/downloader.md`.
 
 `dating` ist ZWEI, ein Speed-Dating-Abend (taeglich 20 Uhr), der die
 bestehenden Spiele benutzt. Ebenfalls kein Spiel, keine Kachel, `noindex` –
