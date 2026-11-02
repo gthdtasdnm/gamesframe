@@ -1,11 +1,6 @@
 {
   "_": "Einzige Quelle für Pfade, Ports und Dienste. Wer hier etwas ändert, ändert es überall – README und CLAUDE.md verweisen hierher, statt die Tabelle zu wiederholen. werkzeug/verteilen.mjs liest 'gemeinsam' aus.",
-  "portsFrei": [
-    "8092",
-    "8093",
-    "8094",
-    "8095"
-  ],
+  "portsFrei": ["8092", "8098"],
   "portsFremd": {
     "3002": "Whiteboard (Nextcloud)",
     "5000": "Piper PDF Reader",
@@ -564,6 +559,36 @@
         "sprache": "public/sprache.js",
         "schaleTexte": "public/schale-texte.js"
       }
+    },
+    {
+      "name": "elementar",
+      "titel": "Elementar",
+      "pfad": "/elementar/",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null,
+      "hinweis": "Falling-Sand-Actionspiel (TypeScript + Vite), nur allein, laeuft ganz im Browser. Der Ordner ist die Vite-Ausgabe (gebaut beim Betreiber). Kachel steht in gruppe-neu und nimmt nicht an der Rangliste teil (rangfolge.mjs). Braucht Tastatur und Maus.",
+      "gemeinsam": {
+        "lobbyCss": "style.css",
+        "rahmenCss": "style.css",
+        "sprache": "sprache.js"
+      },
+      "kategorie": "Neu"
+    },
+    {
+      "name": "ordnung",
+      "titel": "Ordnung",
+      "pfad": "/ordnung/",
+      "kategorie": "Neu",
+      "art": "statisch",
+      "leute": "1",
+      "repo": null,
+      "hinweis": "Aufraeumraetsel nach dem Vorbild von 'A Little to the Left': 14 Raeume. Kein Raum verraet, was wohin gehoert (keine Umrisse, keine Farbmarken): jedes Ding passt in jeden Platz seiner Sorte, geloest ist erst, wenn die Regeln des Raums stimmen (sortiert, einheitlich je Fach, Regenbogen ...). 💡 nennt die Regel. Canvas, alle Geraeusche aus WebAudio. Raeume und Regeln in ordnung.js; probe.js sucht fuer jeden Raum eine Loesung und prueft, dass Zufall selten aufgeht. Kachel steht in gruppe-neu.",
+      "gemeinsam": {
+        "lobbyCss": "style.css",
+        "rahmenCss": "style.css",
+        "sprache": "sprache.js"
+      }
     }
   ],
   "still": [
@@ -589,7 +614,51 @@
       "dienst": "systemd",
       "art": "still",
       "repo": null,
-      "hinweis": "yt-dlp hinter einer Weboberflaeche: MP3 oder Video (360p Vorgabe, bis 1080p), erkennt Playlists. Zwei Betriebsarten: parken (anschmeissen, drei Tage spaeter holen) oder sofort speichern; Kostenschaetzung vor dem Start, kein ZIP. Kein Spiel, keine Kachel, noindex - deshalb hier und nicht unter spiele. Passwort sitzt in Apache (<Location /downloader/>, dieselbe htpasswd wie die beiden Tradingbots), der Dienst selbst horcht nur auf 127.0.0.1. Traegt KEINE gemeinsamen Teile: kein WebSocket, keine Bremse, kein lobbyCss - verteilen.mjs hat hier nichts zu tun. Nur fuer den Betreiber. Siehe doku/downloader.md."
+      "hinweis": "yt-dlp hinter einer Weboberflaeche: MP3 oder Video (360p Vorgabe, bis 1080p), erkennt Playlists. Zwei Betriebsarten: parken (anschmeissen, drei Tage spaeter holen) oder sofort speichern; Kostenschaetzung vor dem Start, kein ZIP. Kein Spiel, noindex - deshalb hier und nicht unter spiele. Seit 11.10.2026 mit Kachel auf der Startseite (Stapel 'Werkzeuge'); vorher nur ein versteckter Fusslink. Passwort sitzt in Apache (<Location /downloader/>, dieselbe htpasswd wie die beiden Tradingbots), der Dienst selbst horcht nur auf 127.0.0.1. Traegt KEINE gemeinsamen Teile: kein WebSocket, keine Bremse, kein lobbyCss - verteilen.mjs hat hier nichts zu tun. Nur fuer den Betreiber. Siehe doku/downloader.md."
+    },
+    {
+      "name": "mitbringen",
+      "titel": "Mitbringen",
+      "pfad": "/mitbringen/",
+      "port": 8093,
+      "adminPort": 8094,
+      "dienst": "systemd",
+      "art": "still",
+      "repo": null,
+      "hinweis": "Schwarzes Brett fuer Einkaufslisten und Fahrer, beides mit Betragsvorschlag; nur anschreiben, alles im Chat; Konto (Name+Passwort), Chat, Benachrichtigungen, Melden. Kein Spiel - deshalb hier und nicht unter spiele. Seit 21.10.2026 oeffentlich: breite Kachel auf der Startseite, kein noindex (nur /admin/). Laeuft als eigener Benutzer `mitbringen` (nicht www-data), Chats/Telefon/Adresse AES-verschluesselt, Schluessel /etc/mitbringen/schluessel. Zwei Ports: 8093 die Seite, 8094 der Admin-Bereich, den Apache nur hinter dashboard.htpasswd durchlaesst (/mitbringen/admin/). SQLite in mitbringen/daten/. Ueber die Seite fliesst kein Geld. Traegt nur sprache.js, kein lobbyCss: eigenes, helles Aussehen. Siehe doku/mitbringen.md.",
+      "gemeinsam": {
+        "sprache": "public/sprache.js"
+      }
+    },
+    {
+      "name": "platte",
+      "titel": "Platte",
+      "pfad": "/platte/",
+      "port": 8097,
+      "dienst": "systemd",
+      "art": "still",
+      "repo": null,
+      "hinweis": "YouTube Music ohne Werbung: deine Lieder mit Mass (gespielte pausieren drei Tage, frueh Weitergeschaltetes sinkt, Kuenstler-Puls wie in der Roehre), dazu ein fester Anteil Neues aus dem Radio deiner Lieblingslieder. Bibliothek aus zwei Quellen: Google-Takeout (Verlauf, Playlists) und optional das YouTube-Music-Konto per Cookies (Likes, Playlists, Verlauf; Likes gehen zurueck ans Konto). Abgespielt als m4a im <audio>, der Server reicht googlevideo stueckweise durch. Kein Spiel, noindex, Kachel mit Schloss auf der Startseite seit 23.10.2026. Passwort in Apache (<Location /platte/>, dieselbe Anmeldung wie Roehre und Lader), Dienst nur auf 127.0.0.1. Stand in platte/daten/stand.json, Konto-Cookies in platte/daten/konto.txt (0600). Traegt KEINE gemeinsamen Teile. Nur fuer den Betreiber, nur Deutsch. Siehe doku/platte.md."
+    },
+    {
+      "name": "roehre",
+      "titel": "Röhre",
+      "pfad": "/roehre/",
+      "port": 8095,
+      "dienst": "systemd",
+      "art": "still",
+      "repo": null,
+      "hinweis": "Eigener YouTube-Feed ohne Werbung: Abos per RSS mit Mass (hoechstens zwei Videos je Kanal, seltene Kanaele wiegen mehr, Gesehenes verschwindet), dazu ein fester Anteil Neues aus aehnlichen Videos und Themen. Abgespielt mit Shaka (DASH), der Server reicht googlevideo stueckweise durch, weil die Adressen an seine IP gebunden sind. Kein Spiel, noindex, keine Kachel. Passwort in Apache (<Location /roehre/>, dieselbe htpasswd wie Lader und Tradingbots), Dienst nur auf 127.0.0.1. Stand in roehre/daten/stand.json. Traegt KEINE gemeinsamen Teile. Nur fuer den Betreiber, nur Deutsch. Siehe doku/roehre.md."
+    },
+    {
+      "name": "warteraum",
+      "titel": "Warteraum",
+      "pfad": "/warteraum/",
+      "port": 8096,
+      "dienst": "systemd",
+      "art": "still",
+      "repo": null,
+      "hinweis": "Notbremse vor der ganzen Seite, seit 21.10.2026. Misst alle 2 s Besucherverbindungen zu Apache, freien RAM und Last; ist es zu voll, legt er /run/warteraum/schleuse an und Apache schickt alle ohne Einlass-Keks (zeus_einlass) in eine Schlange. Wer schon drin ist oder angemeldet (zeus_anmeldung), spielt weiter. Nextcloud, Anmeldung, Rechtstexte und die passwortgeschuetzten Werkzeuge sind ausgenommen. Faellt der Dienst aus, ist die Seite offen. Von Hand: touch /run/warteraum/zu. Kein Spiel, keine Kachel, noindex, traegt keine gemeinsamen Teile. Siehe warteraum/README.md."
     }
   ],
   "seiten": [
@@ -612,6 +681,23 @@
       "gemeinsam": {
         "sprache": "sprache.js"
       }
+    },
+    {
+      "name": "noten",
+      "titel": "Noten erkennen",
+      "pfad": "/noten/",
+      "art": "seite",
+      "hinweis": "Werkzeug, kein Spiel: Audiodatei rein, Noten raus (Basic Pitch von Spotify, Apache-2.0, laeuft per tfjs ganz im Browser), zum Vergleich mit dem Original abspielen, MIDI herunterladen. Kein Dienst, kein Port, kein Upload - Apache liefert die Dateien aus. Kachel auf der Startseite im Stapel 'Werkzeuge'. vendor/tf.min.js (tfjs 3.21.0) und modell/ (aus @spotify/basic-pitch 1.0.1) sind unveraendert eingecheckt. Eigenes lokales Git. Siehe doku/noten.md.",
+      "gemeinsam": {
+        "sprache": "sprache.js"
+      }
+    },
+    {
+      "name": "berufsfinder",
+      "titel": "Berufsfinder",
+      "pfad": "/berufsfinder/",
+      "art": "seite",
+      "hinweis": "Werkzeug, kein Spiel: 50 Fragen (Interessen, Situationen, Arbeitsstil, Schulfaecher, Werte, Abschluss) -> Profil mit Netzdiagramm, Arbeitsstil, Wegempfehlung (Studium/dual/Ausbildung/direkt), Branchen, Top 5 von 124 Berufen mit Weg dorthin, seltene Berufe, aehnliche bekannte Menschen. Rein statisch, rechnet im Browser, Stand im localStorage, Teilen ueber #e= in der Adresse. Nur Deutsch, traegt keine gemeinsamen Teile. Breite Kachel auf der Startseite. Eigenes lokales Git. Probe: node berufsfinder/probe.mjs. Siehe doku/berufsfinder.md."
     }
   ]
 }

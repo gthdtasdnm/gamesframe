@@ -155,19 +155,18 @@ WS_URL=wss://inf-zeus.de/<spiel>/ws deno task probe
 ```
 
 ```bash
-# 7. Die eigenen Saetze uebersetzen – das Geruest legt sie mit TODO an
+# 7. (freiwillig) Die eigenen Saetze uebersetzen – das Geruest legt sie mit TODO an
 #    (Warteraum und Endstand kommen schon uebersetzt aus schale-texte.js)
 cd /root/werkzeug-screenshots && node pruefe-sprache.mjs
 ```
 
 Danach: Bild und Kachel nach `doku/startseite.md`, Repo nach `doku/betrieb.md`.
 
-**Dreisprachig von Anfang an.** `neuspiel.sh` legt `sprache.js`,
-`schale-texte.js`, `texte.js` und die `data-t` im Markup schon an; in
-`spiele.json` gehoeren dazu `"sprache"` und `"schaleTexte"` unter `gemeinsam`.
-Die eigenen Saetze stehen mit `TODO` in `texte.js` – `pruefe-sprache.mjs`
-schlaegt darauf an, ein Spiel gilt erst ohne TODO als fertig. Alles Weitere:
-`doku/sprachen.md`.
+**Übersetzen ist freiwillig** (seit 20.10.2026). `neuspiel.sh` legt
+`sprache.js`, `texte.js` und die `data-t` im Markup weiter an; wer nur Deutsch
+will, lässt die `TODO` in `texte.js` stehen oder wirft `texte.js` und den
+`sprache`-Eintrag in `spiele.json` heraus. Ein TODO macht ein Spiel nicht mehr
+unfertig. Alles Weitere: `doku/sprachen.md`.
 
 ## server.js aufbauen
 

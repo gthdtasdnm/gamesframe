@@ -8,7 +8,7 @@ cd /var/www/html/<spiel>
 DENO_DIR=/tmp/deno-check WS_URL=wss://inf-zeus.de/<spiel>/ws deno task probe
 
 # Spiele ohne Server: reine Rechenprobe, kein Browser
-cd /var/www/html/<minenfeld|sudoku|patience|wasserfarben|schafstall> && deno task probe
+cd /var/www/html/<minenfeld|sudoku|patience|wasserfarben|schafstall|ordnung> && deno task probe
 
 # Und dann doch im Browser, weil eine Rechenprobe keine Seite aufbaut
 cd /root/werkzeug-screenshots && node pruefe-statisch.mjs

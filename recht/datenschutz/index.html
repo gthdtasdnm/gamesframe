@@ -15,7 +15,7 @@
 <header>
   <a class="zurueck" href="/">← Zurück zur Startseite</a>
   <h1>Datenschutz</h1>
-  <p class="stand">Stand: 17. August 2026</p>
+  <p class="stand">Stand: 20. Oktober 2026</p>
 </header>
 
 <main>
@@ -184,6 +184,70 @@
     <p><a href="/datenschutz/">Zur Datenschutzerklärung des Spielebereichs →</a></p>
   </section>
 
+  <section id="mitbringen">
+    <h2>Mitbringen (Einkaufslisten)</h2>
+    <p>Unter <code>/mitbringen/</code> können Nutzerinnen und Nutzer Einkaufslisten mit einem
+      Trinkgeld aufgeben, sich als Fahrer eintragen und miteinander schreiben. Die Listen
+      sind ohne Konto lesbar; wer etwas aufgibt, übernimmt oder schreibt, braucht ein Konto.</p>
+
+    <h3>Was gespeichert wird</h3>
+    <ul>
+      <li><b>Konto:</b> der selbst gewählte Name, das Passwort ausschließlich als gesalzener
+        Hash (PBKDF2), Zeitpunkt der Anlage und der letzten Nutzung, die Bestätigung der
+        Volljährigkeit. Optional: Telefonnummer, Adresse und ein ungefährer Ort (PLZ/Ort),
+        wenn du sie selbst einträgst. Telefonnummer und Adresse sieht niemand außer dir; sie
+        werden nirgends angezeigt und nicht weitergegeben.</li>
+      <li><b>Anzeigen:</b> was du einträgst – Einkaufsliste, Betrag, ungefährer Ort, Datum,
+        Notiz. Aus PLZ bzw. Ort wird der ungefähre Mittelpunkt dieses Ortes bestimmt, damit
+        andere nach Entfernung sortieren können (angezeigt wird nur die gerundete Entfernung,
+        nie Koordinaten). Die Tabelle dafür liegt auf diesem Server; es wird kein
+        Kartendienst abgefragt. Sie sind für alle sichtbar, zusammen mit deinem Anzeigenamen.</li>
+      <li><b>Nachrichten</b> zwischen zwei Personen, und wer welche Nachricht schon gelesen
+        hat. Was du in den Chat schreibst – auch eine Telefonnummer oder Adresse –, sieht dein
+        Gegenüber.</li>
+      <li><b>Meldungen:</b> wer was gemeldet hat, der Grund und eine Kopie des gemeldeten
+        Textes.</li>
+      <li>Ein <b>Sitzungs-Cookie</b> (<code>mb</code>), technisch notwendig, um dich angemeldet
+        zu halten; in der Datenbank liegt davon nur ein Hash.
+        Sprache, gewählter Reiter, Suchbegriff, Sortierung, die PLZ für die Entfernung und
+        ob der Hinweiston an ist, liegen nur im Speicher deines Browsers.</li>
+    </ul>
+
+    <h3>Zweck und Rechtsgrundlage</h3>
+    <p>Die Verarbeitung dient allein dazu, die Funktion bereitzustellen, die du nutzt
+      (Art. 6 Abs. 1 lit. b DSGVO). Die Bearbeitung von Meldungen und der Schutz vor Missbrauch
+      beruhen auf dem berechtigten Interesse an einem sicheren Angebot und der Pflicht zur
+      Bearbeitung von Hinweisen auf rechtswidrige Inhalte (Art. 6 Abs. 1 lit. c und f DSGVO,
+      Art. 16 DSA). Es werden keine Daten an Dritte übermittelt.</p>
+    <p>Chats liest der Betreiber nicht. Ausnahme: eine Nachricht wird gemeldet – dann wird
+      genau diese Nachricht zur Prüfung gespeichert.</p>
+
+    <h3>Sicherheit</h3>
+    <p>Nachrichten, Telefonnummer, Adresse und gemeldete Texte werden <b>verschlüsselt
+      gespeichert</b> (AES-256-GCM). Der Schlüssel liegt getrennt von der Datenbank und ist
+      nur für diesen Dienst lesbar; der Dienst läuft unter einem eigenen Benutzerkonto,
+      getrennt von den übrigen Anwendungen dieses Servers. Gerät die Datenbankdatei allein
+      in falsche Hände, sind diese Inhalte nicht lesbar. Eine Ende-zu-Ende-Verschlüsselung
+      ist das nicht: Wer den Server selbst vollständig übernimmt, könnte mitlesen. Teile
+      Bankdaten deshalb nur, wenn es nötig ist, und lösch den Verlauf danach – das geht im
+      Chat mit „Verlauf jetzt löschen“, für beide Seiten.</p>
+
+    <h3>Speicherdauer</h3>
+    <ul>
+      <li>Einkaufslisten werden 14 Tage nach dem Einstellen automatisch gelöscht,
+        Fahrer-Angebote nach einem Monat (ab dem letzten Speichern). Drei Tage vorher steht
+        ein Hinweis auf der Seite. Selbst gelöschte Anzeigen sind sofort nicht mehr sichtbar
+        und werden nach 30 Tagen endgültig entfernt, vom Betreiber entfernte ebenso.</li>
+      <li>Ein Gesprächsverlauf wird 30 Tage nach der letzten Nachricht gelöscht – oder
+        sofort, wenn eine der beiden Seiten ihn löscht;
+        Benachrichtigungen nach 60 Tagen, erledigte Meldungen nach 180 Tagen.</li>
+      <li>Dein Konto bleibt, bis du es löschst. Unter „Ich → Konto löschen“ verschwinden
+        Konto, Anzeigen, Chats und Benachrichtigungen sofort. Unter „Meine Daten
+        herunterladen“ bekommst du alles, was zu deinem Konto gespeichert ist, als Datei
+        (Art. 15 und 20 DSGVO).</li>
+    </ul>
+  </section>
+
   <section>
     <h2>Verschlüsselung</h2>
     <p>Alle Seiten werden ausschließlich über HTTPS ausgeliefert; ein Aufruf über
@@ -222,8 +286,8 @@
     </ul>
     <p>Eine formlose E-Mail an
       <a href="mailto:ata.kaan.cengiz@outlook.de">ata.kaan.cengiz@outlook.de</a>
-      genügt. Wer ein Cloud-Konto hat, kann seine Daten außerdem jederzeit selbst
-      herunterladen.</p>
+      genügt. Wer ein Cloud-Konto oder ein Konto bei Mitbringen hat, kann seine Daten
+      außerdem jederzeit selbst herunterladen.</p>
     <h3>Beschwerderecht</h3>
     <p>Du kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren. Zuständig
       ist für mich:</p>

@@ -63,6 +63,10 @@ Nicht im Dienst. Der Unterschied ist wichtig: so kommt **keine einzige
 Anfrage** bis zu `yt-dlp` durch, die nicht angemeldet ist. Der Dienst horcht
 zusätzlich nur auf `127.0.0.1` und ist von außen gar nicht erreichbar.
 
+Seit 21.10.2026 kein Browser-Dialog mehr, sondern das Formular unter
+`/anmelden/` mit einem Keks, der ein Jahr hält – siehe `doku/betrieb.md`
+(„Anmeldung").
+
 Neuer Benutzer oder neues Passwort:
 
 ```bash

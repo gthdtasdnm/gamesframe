@@ -28,11 +28,29 @@
 
 export const WOERTER = {
   tr: {
+    "gruppe.neu.titel": "Yeni",
+    "gruppe.neu.sub": "Yeni eklendi – dene ve neyin eksik olduğunu söyle.",
+    "ui.neu": "Yeni",
+    "tag.rechner": "klavye + fare",
+    "k.ordnung.kurz": "Çatal bıçak, kalemler, düğmeler ve eğri tablolar – ama ne nereye ait? Sakin bir toparlama bulmacası.",
+    "k.ordnung.lang": "On dört küçük oda dolusu dağınıklık: bir çatal bıçak çekmecesi, bir alet duvarı, bir kitaplık, bir çamaşır ipi, bir baharatlık. Neyin nereye ait olduğu hiçbir yerde yazmıyor: Boyuna göre mi? Renge göre mi? Çift çift mi? Her şey doğru düzene göre durduğunda oda açılır – eşya eşya bir sesle, küçük bir melodi olana dek. Saat yok; takılan ampule sorar. En iyisi sesle.",
+    "k.ordnung.s1": "Her şey darmadağın. <b>Her eşyayı</b> bir yere sürükle – yeterince yakınsa yerine yerleşir.",
+    "k.ordnung.s2": "Neyin nereye ait olduğu <b>hiçbir yerde yazmıyor</b>. Her şey bir düzene göre durduğunda oda açılır.",
+    "k.ordnung.s3": "Yanlış mı? Geri al – <b>dolu bir yere</b> bırakırsan ikisi yer değiştirir. Eğri olanı çekerek düzeltirsin.",
+    "k.ordnung.s4": "Takıldın mı? <b>💡</b> odanın düzenini söyler. <b>☰</b> ile on dört odanın her birine geçersin.",
+    "k.elementar.kurz": "Ateşi, suyu, toprağı ya da havayı bük – her pikselin yandığı, aktığı, eridiği ya da çöktüğü bir dünyada.",
+    "k.elementar.lang": "Ormanları, çölleri, kar diyarı, dağları ve derin mağaralarıyla yana doğru sonsuz bir piksel dünyası – her hücre kum, su, taş, lav ya da başka bir şeydir ve öyle davranır. Bir element seçer, balçıklara, yarasalara ve element ruhlarına karşı savaşırsın: ateş topları krater açar, su buza döner, toprağı yerden koparırsın, hava bıçakları tünel açar. Üstelik lav, petrol ve tohumla çizebileceğin bir kum havuzu. Bilgisayarda klavye ve fareyle oynanır.",
+    "k.elementar.s1": "Element seç: <b>Ateş</b>, <b>Su</b>, <b>Toprak</b> ya da <b>Hava</b>. Her biri farklı oynanır ve kayanın içinden kendi yolunu açar.",
+    "k.elementar.s2": "<b>A/D</b> yürü, <b>W</b> zıpla – basılı tutunca ateş ve hava uçar, suda yüzülür. Fareyle nişan alınır.",
+    "k.elementar.s3": "Sol ve sağ fare tuşu ile <b>Q</b> elementinin üç yeteneğidir. Ne yaptıkları seçim kartında ve ekranın altında yazar.",
+    "k.elementar.s4": "Her yetenek Chi harcar. <b>Boşluğu basılı tutmak</b> meditasyondur: Chi hızla dolar, bu sırada yerinden kıpırdamazsın.",
+    "k.elementar.s5": "Canavarlar kendiliğinden gelir. Ruhların bir elementi vardır ve daha güçlü olana karşı zayıftır: su ateşi, ateş havayı, hava toprağı, toprak suyu yener.",
+    "k.elementar.s6": "<b>Tab</b> kum havuzuna geçer: 1–0 ile malzeme seç ve çiz. <b>Esc</b> seçime geri götürür.",
     // --- Kopf der Seite ---
     "seite.titel": "Oyunlar – inf-zeus.de",
-    "seite.beschreibung": "1 ile 20 kişi için otuz tarayıcı oyunu. Kurulum yok, hesap yok.",
+    "seite.beschreibung": "1 ile 20 kişi için otuz iki tarayıcı oyunu. Kurulum yok, hesap yok.",
     "seite.h1": "Oyunlar",
-    "seite.sub": "1 ile 20 kişi için otuz tarayıcı oyunu. İndirme yok, hesap yok – bağlantıyı paylaş, adını yaz, başla.",
+    "seite.sub": "1 ile 20 kişi için otuz iki tarayıcı oyunu. İndirme yok, hesap yok – bağlantıyı paylaş, adını yaz, başla.",
 
     // --- Suche - die drei Meldungen entstehen erst beim Tippen ---
     "suche.platz": "Oyun ara – ad, anahtar kelime, kişi sayısı",
@@ -407,11 +425,29 @@ export const WOERTER = {
   },
 
   en: {
+    "gruppe.neu.titel": "New",
+    "gruppe.neu.sub": "Just arrived – give it a try and tell us what's missing.",
+    "ui.neu": "New",
+    "tag.rechner": "keyboard + mouse",
+    "k.ordnung.kurz": "Cutlery, pencils, buttons and crooked pictures – but what goes where? A calm tidying puzzle.",
+    "k.ordnung.lang": "Fourteen small rooms full of mess: a cutlery drawer, a tool wall, a bookshelf, a washing line, a spice rack. Nothing tells you what goes where: by length? By colour? In pairs? Only when everything follows the right order does the room resolve – one thing after another with a note, until it turns into a little melody. No clock; if you're stuck, ask the light bulb. Best with sound on.",
+    "k.ordnung.s1": "Everything is a mess. <b>Drag each thing</b> to a place – close enough, and it settles in.",
+    "k.ordnung.s2": "What goes where <b>is written nowhere</b>. Only when everything follows an order does the room resolve.",
+    "k.ordnung.s3": "Wrong? Take it out again – dropped on an <b>occupied place</b>, the two swap. Drag crooked things straight.",
+    "k.ordnung.s4": "Stuck? <b>💡</b> reveals the room's order. <b>☰</b> takes you to any of the fourteen rooms.",
+    "k.elementar.kurz": "Bend fire, water, earth or air – in a world where every pixel burns, flows, melts or collapses.",
+    "k.elementar.lang": "A sideways endless pixel world with forests, deserts, snowland, mountains and deep caves – every cell is sand, water, stone, lava or something else, and behaves like it. You pick an element and fight slimes, bats and elemental spirits: fireballs blast craters, water turns to ice, you tear earth out of the ground, air blades bore tunnels. Plus a sandbox for painting with lava, oil and seeds. Played on a computer with keyboard and mouse.",
+    "k.elementar.s1": "Pick an element: <b>Fire</b>, <b>Water</b>, <b>Earth</b> or <b>Air</b>. Each plays differently and digs through rock in its own way.",
+    "k.elementar.s2": "<b>A/D</b> to walk, <b>W</b> to jump – held, fire and air fly, in water you swim. You aim with the mouse.",
+    "k.elementar.s3": "Left and right mouse button and <b>Q</b> are your element's three abilities. What they do is on the selection card and at the bottom of the screen.",
+    "k.elementar.s4": "Every ability costs Chi. <b>Holding space</b> means meditating: Chi refills fast while you stand still.",
+    "k.elementar.s5": "Monsters come on their own. Spirits have an element and are weak against the stronger one: water beats fire, fire air, air earth, earth water.",
+    "k.elementar.s6": "<b>Tab</b> switches to the sandbox: pick a material with 1–0 and paint. <b>Esc</b> takes you back to the selection.",
     // --- Kopf der Seite ---
     "seite.titel": "Games – inf-zeus.de",
-    "seite.beschreibung": "Thirty browser games for 1 to 20 people. No install, no account.",
+    "seite.beschreibung": "Thirty-two browser games for 1 to 20 people. No install, no account.",
     "seite.h1": "Games",
-    "seite.sub": "Thirty browser games for 1 to 20 people. No download, no account – share the link, type a name, go.",
+    "seite.sub": "Thirty-two browser games for 1 to 20 people. No download, no account – share the link, type a name, go.",
 
     // --- Suche - die drei Meldungen entstehen erst beim Tippen ---
     "suche.platz": "Search games – name, keyword, player count",

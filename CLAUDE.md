@@ -19,7 +19,7 @@ die auf derselben Maschine laufen, aber nirgends verlinkt sind - ob sie
 gemeinsame Teile tragen, sagt ihr `gemeinsam`-Eintrag.
 
 **Arbeitsbereich sind die Spiele.** `nextcloud`, `tradingbot_value`,
-`tradingbot_momentum`, `/reader/`, `hochzeit`, `downloader` und
+`tradingbot_momentum`, `/reader/`, `hochzeit`, `downloader`, `roehre`, `platte`, `mitbringen` und
 `_alt-tot-20260807` nur anfassen, wenn ausdrücklich danach gefragt wird.
 
 `hochzeit` ist eine private Bildergalerie hinter einem Zugangswort – kein
@@ -38,6 +38,17 @@ dann **parken** – anschmeißen und drei Tage später holen. Kein Spiel, keine
 Kachel, `noindex`, und **hinter einem Passwort in Apache** – dieselbe
 `htpasswd` wie die beiden Tradingbots. Nur Deutsch, weil es genau eine Person
 liest. Details: `doku/downloader.md`.
+
+`roehre` ist die **Röhre**: ein eigener YouTube-Feed ohne Werbung – Abos
+mit Maß, dazu ein fester Anteil Neues, abgespielt ohne YouTubes Player. Kein
+Spiel, Kachel mit Schloss auf der Startseite (seit 21.10.2026), `noindex`, **hinter derselben `htpasswd` wie der Lader**.
+Nur Deutsch. Details: `doku/roehre.md`.
+
+`platte` ist die **Platte**: YouTube Music ohne Werbung – deine Lieder mit
+Maß, dazu ein fester Anteil Neues aus dem Radio. Bibliothek aus Takeout und
+dem YouTube-Music-Konto (Cookies). Kein Spiel, Kachel mit Schloss auf der
+Startseite (seit 23.10.2026), `noindex`, **hinter derselben Anmeldung wie die
+Röhre**. Nur Deutsch. Details: `doku/platte.md`.
 
 `dating` ist ZWEI, ein Speed-Dating-Abend (taeglich 20 Uhr), der die
 bestehenden Spiele benutzt. Ebenfalls kein Spiel, keine Kachel, `noindex` –
@@ -63,7 +74,11 @@ bewusst kein `lobbyCss`: es hat ein eigenes, dunkelrotes Aussehen, das
 | Seite mit den Aufrufzahlen (Adresse, Passwort) | `ZUGAENGE.md` (nicht im Repo, 403) |
 | Hochzeitsseite (`/hochzeit/`, kein Spiel) | `doku/hochzeit.md` |
 | Speed-Dating (`/dating/`, kein Spiel, geheim) | `doku/dating.md` – und **`dating/CLAUDE.md`**, wenn dort gearbeitet wird |
+| Berufsfinder (`/berufsfinder/`, kein Spiel, statisch, nur Deutsch) | `doku/berufsfinder.md` |
+| Röhre (`/roehre/`, YouTube-Feed, kein Spiel, Passwort) | `doku/roehre.md` – und **`roehre/CLAUDE.md`**, wenn dort gearbeitet wird |
+| Platte (`/platte/`, YouTube Music, kein Spiel, Passwort) | `doku/platte.md` – und **`platte/CLAUDE.md`**, wenn dort gearbeitet wird |
 | Lader (`/downloader/`, kein Spiel, Passwort) | `doku/downloader.md` – und **`downloader/CLAUDE.md`**, wenn dort gearbeitet wird |
+| Mitbringen (`/mitbringen/`, Einkaufslisten, kein Spiel) | `doku/mitbringen.md` – und **`mitbringen/CLAUDE.md`**, wenn dort gearbeitet wird |
 | Was als Nächstes gebaut wird | `SPIELE-IDEEN.md` (nicht im Repo, 403) |
 | Offene Risiken | `RISIKEN-TODO.md` (nicht im Repo, 403) |
 | Was bei den neuen Spielen noch fehlt | `OFFEN-NACHZIEHEN.md` (nicht im Repo, 403) |
@@ -86,13 +101,10 @@ deshalb **kopiert, nicht importiert** – siehe `doku/gemeinsam.md`.
 Zu jedem neuen Spiel gehören: Anleitung, Screenshot und eine Kachel auf
 `spiele/`. Ohne grünen Prüflauf gilt nichts als fertig.
 
-**Alles spricht drei Sprachen** (seit 02.09.2026): Deutsch, Türkisch,
-Englisch. Deutsch steht im HTML, die beiden anderen liegen darüber – ohne
-JavaScript bleibt jede Seite vollständig deutsch. Jedes neue Spiel wird
-dreisprachig geboren; `werkzeug/neuspiel.sh` und `neusolo.sh` legen das Gerüst
-dafür an. **Nicht übersetzt sind die Inhaltslisten** (Karten, Fragen, Begriffe,
-Wortlisten) – die bräuchten eigene Listen je Sprache. Einzelheiten:
-`doku/sprachen.md`.
+**Übersetzen ist keine Pflicht mehr** (seit 20.10.2026). Was schon
+dreisprachig ist (Deutsch, Türkisch, Englisch), bleibt es – Deutsch steht im
+HTML, die beiden anderen liegen darüber. Neues darf nur Deutsch sein; wer doch
+übersetzt, macht es nach `doku/sprachen.md`.
 
 ## Die vier Fallen
 

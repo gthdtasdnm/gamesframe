@@ -46,6 +46,7 @@ const ZAHLWORT = {
   einundzwanzig: 21, zweiundzwanzig: 22, dreiundzwanzig: 23,
   vierundzwanzig: 24, fünfundzwanzig: 25, sechsundzwanzig: 26,
   siebenundzwanzig: 27, achtundzwanzig: 28, neunundzwanzig: 29, dreißig: 30,
+  einunddreißig: 31, zweiunddreißig: 32, dreiunddreißig: 33, vierunddreißig: 34, fünfunddreißig: 35,
 };
 const sub = await page.textContent('.sub');
 // Umlaute gehoeren in die Klasse: `\w` kennt sie nicht, und aus

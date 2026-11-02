@@ -76,6 +76,15 @@ const SPIELE = [
     danach: [".tier.tipp", 1],
   },
   {
+    name: "ordnung",
+    // Eine Leinwand statt vieler Felder: gezaehlt wird, was app.js in seinen
+    // Zustand gelegt hat. Stirbt ein Modul beim Laden, bleibt __ordnung leer.
+    warte: "#leinwand",
+    mindestens: ["#leinwand", 1],
+    klick: "#raeumeBtn",
+    danach: [".raumknopf", 14],
+  },
+  {
     name: "patience",
     warte: ".ptisch .pspalte",
     mindestens: [".ptisch .pspalte", 7],

@@ -33,6 +33,50 @@ nach jedem Schreiben in einen Spielordner als root:
 In der Apache-Konfiguration muss die `/ws`-Regel **vor** der allgemeinen
 stehen.
 
+## Last: Apache, Grenzen, Notbremse, Wächter
+
+Seit 21.10.2026 (Umbau in `/root/zeus-umbau/`, Rückweg `zurueck.sh`):
+
+- **Apache läuft mit `mpm_event`, PHP getrennt in `php8.3-fpm`.** Vorher
+  prefork + mod_php: jeder offene WebSocket hielt einen 55-MB-Prozess, bei
+  etwa 80 Spielern war der RAM voll. Jetzt ein Thread je Verbindung, Grenze
+  2000 (`mods-available/mpm_event.conf`). PHP-Einstellungen für Nextcloud
+  stehen in `/etc/php/8.3/fpm/` (php.ini und `conf.d/99-nextcloud.ini`) – die
+  unter `apache2/` wirken nicht mehr. Collabora (`coolwsd`) startet als Kind
+  von PHP und läuft damit im Topf von `php8.3-fpm`.
+- **Die Spiele gehen vor.** Bots, PDF-Reader, Nextcloud-PHP und Whiteboard
+  haben Drop-ins `/etc/systemd/system/<dienst>.service.d/grenzen.conf`
+  (`CPUWeight` 20–50, `MemoryMax`). Spiele haben keine Grenze.
+- **Notbremse:** `warteraum/README.md`. Wird es zu voll, landen Neue in einer
+  Schlange; wer schon spielt, merkt nichts.
+- **Wächter:** `/usr/local/bin/zeus-waechter`, jede Minute per
+  `zeus-waechter.timer`. Meldet Ausfälle und den zugehenden Warteraum über
+  ntfy.sh; das Thema steht in `/etc/zeus-waechter.conf` und ist das Passwort.
+  Was er nicht sieht: dass die ganze Maschine weg ist.
+
+## Anmeldung (Tradingbots, Lader, Röhre)
+
+Seit 21.10.2026 kein Basic Auth mehr – der Browser fragte nach jedem Neustart
+wieder. Stattdessen `mod_auth_form`: Apache leitet Unangemeldete nach
+`/anmelden/?ziel=<pfad>` (statisches Formular im Repo), das schickt an
+`/anmelden/pruefen` (`form-login-handler`), und danach trägt ein
+verschlüsselter Keks `zeus_anmeldung` (`path=/`, `Secure`, `HttpOnly`,
+`SameSite=Lax`, ein Jahr, verlängert sich bei Benutzung) die Anmeldung. Ein
+Keks für alle vier, also einmal anmelden reicht. Der Passwortmanager kann das
+Formular füllen.
+
+- Baustein: `/etc/apache2/zeus-anmeldung.inc`, per `Include` in jeder
+  `<Location>`; dort steht nur noch `Require valid-user` dazu.
+- Schlüssel: `/etc/apache2/zeus-anmeldung.schluessel` (root, 600). Neu würfeln
+  = **alle abmelden**: `openssl rand -base64 48 > …schluessel && systemctl reload apache2`.
+- Konten: unverändert `htpasswd /etc/apache2/dashboard.htpasswd <name>`. Ein
+  geändertes Passwort wirft alte Kekse hinaus – im Keks steht das Passwort
+  (verschlüsselt) und wird bei jeder Anfrage gegen die Datei geprüft.
+- Module: `auth_form session session_cookie session_crypto request`.
+- Neue geschützte Adresse: `Include /etc/apache2/zeus-anmeldung.inc` +
+  `Require valid-user` in ihre `<Location>`, und auf der Startseite das
+  `.schloss` an die Kachel.
+
 ## Speicher
 
 Nachgemessen am 09.08.2026, nicht geschätzt:

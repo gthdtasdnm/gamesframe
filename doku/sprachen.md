@@ -4,6 +4,10 @@ Stand: 06.09.2026. **Alle 30 Spiele, der Bugreport, die Spieleübersicht und die
 Startseite sind dreisprachig** – die Oberfläche jedenfalls. Was bewusst deutsch
 bleibt, steht unten unter „Was nicht übersetzt wird".
 
+**Keine Pflicht mehr (seit 20.10.2026).** Neue Seiten und Spiele dürfen nur
+Deutsch sein – so wie der Lader und der Berufsfinder. Was unten steht, gilt
+für alles, was übersetzt ist oder übersetzt werden soll.
+
 ## Die eine Regel
 
 **Deutsch steht im HTML. Türkisch und Englisch liegen darüber.**

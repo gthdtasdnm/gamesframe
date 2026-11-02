@@ -110,6 +110,12 @@ const ORTE = [
     texte: "texte.js",
     code: ["index.html"],
   },
+  {
+    name: "Noten erkennen",
+    html: "noten/index.html",
+    texte: "noten/texte.js",
+    code: ["noten/app.js"],
+  },
 ];
 
 {
@@ -342,7 +348,7 @@ try {
     pruefe(await p.locator(".sprachknopf").count() === 3, "drei Sprachknöpfe");
     await p.click('.sprachknopf[data-sprache="en"]');
     await schlaf(250);
-    pruefe((await p.textContent("h1")).includes("Three applications"), "die Überschrift wechselt");
+    pruefe((await p.textContent("h1")).includes("One server"), "die Überschrift wechselt");
     pruefe((await p.textContent("footer nav a")).includes("German"),
       "die Rechtstexte sind als deutsch gekennzeichnet, nicht übersetzt");
     pruefe(p._fehler.length === 0, `Konsole still (${p._fehler.join(" | ").slice(0, 120)})`);

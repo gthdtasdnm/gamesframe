@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>inf-zeus.de</title>
-<meta name="description" data-t-attr="content:start.beschreibung" content="Startseite von inf-zeus.de: Nextcloud für den Jahrgang, zwei Auswertungswerkzeuge für Aktien und eine Sammlung Browserspiele.">
+<meta name="description" data-t-attr="content:start.beschreibung" content="Startseite von inf-zeus.de: Nextcloud für den Jahrgang, zwei Auswertungswerkzeuge für Aktien, Notenerkennung, ein Lader für Audio und Video und eine Sammlung Browserspiele.">
 <meta name="theme-color" content="#f4f5f7">
 <meta name="robots" content="index, follow">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231f3a5f'/><text x='16' y='22' font-family='system-ui,sans-serif' font-size='17' font-weight='700' fill='%23ffffff' text-anchor='middle'>Z</text></svg>">
@@ -23,8 +23,9 @@
   --akzent:  #1f3a5f;
   --akzent-hell: #eef2f7;
   --radius: 10px;
-  --hoehe: 236px;   /* Hoehe einer vollen Kachel; die Trading-Spalte teilt sie */
-  --spalt: 18px;    /* Abstand im Raster – die Trading-Spalte nutzt denselben */
+  --hoehe: 236px;   /* Hoehe einer vollen Kachel; die Stapel teilen sie */
+  --spalt: 18px;    /* Abstand im Raster – die Stapel nutzen denselben */
+  --breit: 1080px;  /* Kopf, Raster und Fuss enden an derselben Kante */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,7 +47,7 @@ body {
 
 /* --- Kopf ---------------------------------------------------------------- */
 
-header { width: 100%; max-width: 900px; }
+header { width: 100%; max-width: var(--breit); }
 
 /* Kopfzeile: Marke links, Sprachwahl rechts. Der Umschalter wird von
    sprache.js gefuellt und bleibt ohne JavaScript leer - deshalb :empty. */
@@ -129,18 +130,24 @@ h1 {
 }
 
 /* --- Raster -------------------------------------------------------------- */
+/* Oben vier volle Kacheln, darunter die Werkzeuge als Reihe kleiner Kacheln.
+   Breit vier nebeneinander, mittelbreit 2x2, schmal alles untereinander. */
 
 .raster {
   width: 100%;
-  max-width: 900px;
+  max-width: var(--breit);
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
 }
 
-@media (min-width: 760px) {
-  .raster { grid-template-columns: repeat(3, 1fr); gap: var(--spalt); }
-  .kachel, .stapel { min-height: var(--hoehe); }
+@media (min-width: 640px) {
+  .raster { grid-template-columns: repeat(2, 1fr); gap: var(--spalt); }
+  .kachel { min-height: var(--hoehe); }
+}
+
+@media (min-width: 1000px) {
+  .raster { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* --- Kacheln ------------------------------------------------------------- */
@@ -209,6 +216,8 @@ h1 {
   color: var(--akzent);
 }
 
+.fuss > :last-child { white-space: nowrap; }
+
 .hinweis {
   font-weight: 400;
   color: var(--leise);
@@ -222,69 +231,69 @@ h1 {
 
 .kachel:hover .pfeil { transform: translateX(3px); }
 
-/* --- Trading: zwei halbhohe Kacheln in einer Spalte ----------------------- */
-/* Beide Dashboards stehen direkt hier. Bewusst nichts zum Aufklappen und keine
-   Zwischenseite: ein Klick von der Startseite bis ins Dashboard.
-   Die beiden teilen sich die Hoehe einer vollen Kachel (flex:1 auf gleicher
-   Basis), deshalb schliesst die Spalte oben und unten buendig mit den
-   Nachbarn ab. */
+/* --- Werkzeuge: kleine Kacheln ueber die ganze Breite ---------------------- */
+/* Flex mit Wachsen statt Raster: breit stehen alle fuenf in einer Reihe, und
+   bricht es um, fuellt die letzte Reihe die Breite, statt halb leer zu
+   bleiben. Bewusst nichts zum Aufklappen: ein Klick bis ins Werkzeug. */
 
-.stapel {
+.werkzeuge {
+  grid-column: 1 / -1;
   display: flex;
-  flex-direction: column;
-  gap: var(--spalt);
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-@media (max-width: 759px) {
-  .stapel { gap: 16px; }
+.werkzeuge > .kachel { flex: 1 1 150px; }
+
+/* Handy 2 + 2 + 1, mittelbreit 3 + 2, breit alle fuenf in einer Reihe. */
+@media (min-width: 640px) {
+  .werkzeuge { gap: var(--spalt); }
+  .werkzeuge > .kachel { flex-basis: 30%; }
 }
 
-.stapel > .kachel {
-  flex-direction: row;
-  align-items: center;
-  gap: 14px;
+@media (min-width: 1000px) {
+  .werkzeuge > .kachel { flex-basis: 0; }
+}
+
+.kachel { position: relative; }
+
+.kachel.klein {
+  min-height: 0;
+  gap: 4px;
   padding: 16px 18px;
 }
 
-/* Die Haelfte-der-Hoehe-Regel gilt nur im dreispaltigen Raster. Einspaltig hat
-   .stapel keine vorgegebene Hoehe – flex-basis:0 haette dort nichts zu
-   verteilen und die beiden Kacheln fielen auf die Hoehe des Symbols zusammen. */
-@media (min-width: 760px) {
-  .stapel > .kachel { flex: 1 1 0; min-height: 0; }
-}
-
-.stapel .symbol {
+.klein .symbol {
   width: 34px;
   height: 34px;
-  margin-bottom: 0;
+  margin-bottom: 8px;
 }
 
-.stapel .symbol svg { width: 18px; height: 18px; }
+.klein .symbol svg { width: 18px; height: 18px; }
 
-/* min-width:0 laesst den Textblock schrumpfen, statt den Pfeil aus der Kachel
-   zu schieben, wenn die Spalte schmal wird. */
-.stapel .text { min-width: 0; }
+.klein h2 { font-size: 16px; }
 
-.stapel h2 { font-size: 16px; }
-
-.stapel p {
+.klein p {
   font-size: 12.5px;
   line-height: 1.45;
-  margin-top: 2px;
 }
 
-.stapel .pfeil {
-  margin-left: auto;
-  flex: none;
-  color: var(--akzent);
-  font-weight: 600;
+/* Das Schloss oben rechts an allem, was nach /anmelden/ fragt. Nextcloud
+   bekommt keins - dort gibt es eigene, offene Konten. */
+.schloss {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 15px;
+  height: 15px;
+  color: var(--leise);
 }
 
 /* --- Fuss ---------------------------------------------------------------- */
 
 footer {
   width: 100%;
-  max-width: 900px;
+  max-width: var(--breit);
   border-top: 1px solid var(--linie);
   padding-top: 20px;
   display: flex;
@@ -312,23 +321,6 @@ footer a:hover, footer a:focus-visible {
   outline: none;
 }
 
-/* Der Lader-Link im Fuss. Steht im HTML, ist aber `hidden`, bis das eigene
-   Geraet ihn einmal freigeschaltet hat (siehe Skript am Seitenende). Der
-   Punkt davor unterscheidet ihn von den beiden Rechtstexten: er fuehrt nicht
-   ins Angebot, sondern ins Werkzeug. */
-footer a.nurich { color: var(--akzent); opacity: .75; }
-footer a.nurich::before {
-  content: "";
-  display: inline-block;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  margin-right: 7px;
-  vertical-align: middle;
-}
-footer a.nurich:hover, footer a.nurich:focus-visible { opacity: 1; color: var(--akzent); }
-footer a.nurich[hidden] { display: none; }
-
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
@@ -342,65 +334,14 @@ footer a.nurich[hidden] { display: none; }
     <!-- Wird von sprache.js gefuellt; ohne JavaScript bleibt er leer. -->
     <div data-sprachwahl aria-label="Sprache"></div>
   </div>
-  <h1 data-t="start.h1">Drei Anwendungen auf einem Server</h1>
+  <h1 data-t="start.h1">Ein Server, ein paar Anwendungen</h1>
   <p class="sub" data-t-html="start.sub">Diese Seite ist nur der Einstieg. Dahinter liegen eine Nextcloud für
-    meinen Jahrgang, zwei Auswertungswerkzeuge für Aktien und eine Sammlung
-    Browserspiele. Jedes läuft eigenständig.</p>
+    meinen Jahrgang, zwei Auswertungswerkzeuge für Aktien, drei Werkzeuge für
+    Musik und Videos, eine Sammlung Browserspiele und ein Brett, auf dem man sich
+    Einkäufe mitbringen lässt. Jedes läuft eigenständig.</p>
 </header>
 
 <main class="raster">
-
-  <a class="kachel" href="/nextcloud/">
-    <span class="symbol" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-           stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17.5 19H7a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.8 9.2 4.4 4.4 0 0 1 17.5 19Z"/>
-      </svg>
-    </span>
-    <h2>Nextcloud</h2>
-    <p data-t-html="start.cloud">Dateien, Kalender und Termine für den Jahrgang – an einer Stelle, auf
-      eigenem Server statt bei einem Anbieter.</p>
-    <span class="fuss">
-      <span class="hinweis" data-t="start.konto">Konto erforderlich</span>
-      <span data-t-html="start.oeffnen">Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
-    </span>
-  </a>
-
-  <div class="stapel">
-
-    <a class="kachel" href="/tradebot_value/">
-      <span class="symbol" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 20V4"/><path d="M4 20h16"/>
-          <rect x="7.5" y="12" width="3.4" height="5"/>
-          <rect x="13.6" y="8" width="3.4" height="9"/>
-        </svg>
-      </span>
-      <span class="text">
-        <h2>Value</h2>
-        <p data-t="start.value">Trading · Bewertung</p>
-      </span>
-      <span class="pfeil" aria-hidden="true">→</span>
-    </a>
-
-    <a class="kachel" href="/tradingbot_momentum/">
-      <span class="symbol" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 20V4"/><path d="M4 20h16"/>
-          <path d="M7.5 16l3.5-4.5 3 2.5L20 8"/>
-          <path d="M16.2 8H20v3.6"/>
-        </svg>
-      </span>
-      <span class="text">
-        <h2>Momentum</h2>
-        <p data-t="start.momentum">Trading · Kursverlauf</p>
-      </span>
-      <span class="pfeil" aria-hidden="true">→</span>
-    </a>
-
-  </div>
 
   <a class="kachel" href="/spiele/">
     <span class="symbol" aria-hidden="true">
@@ -421,6 +362,169 @@ footer a.nurich[hidden] { display: none; }
     </span>
   </a>
 
+  <!-- Mitbringen (seit 21.10.2026). doku/mitbringen.md -->
+  <a class="kachel" href="/mitbringen/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 5h2.2l2.3 10.2h10.3L20 8H6.4"/>
+        <circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/>
+      </svg>
+    </span>
+    <h2 data-t="start.mitbringen">Mitbringen</h2>
+    <p data-t="start.mitbringenText">Einkaufslisten und Fahrer in deiner Nähe</p>
+    <span class="fuss">
+      <span class="hinweis" data-t="start.frei">Frei zugänglich</span>
+      <span data-t-html="start.oeffnen">Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
+    </span>
+  </a>
+
+  <!-- Berufsfinder (seit 20.10.2026). Nur Deutsch, deshalb ohne data-t: die
+       Kachel bleibt auch auf der tuerkischen und englischen Startseite deutsch,
+       wie die Seite dahinter. -->
+  <a class="kachel" href="/berufsfinder/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.5" y="7.5" width="17" height="12" rx="2"/>
+        <path d="M9 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5.5v2"/>
+        <path d="M3.5 12.5h17"/>
+      </svg>
+    </span>
+    <h2>Berufsfinder</h2>
+    <p>Profil, passende Berufe und der Weg dorthin</p>
+    <span class="fuss">
+      <span class="hinweis">Nur Deutsch</span>
+      <span>Starten <span class="pfeil" aria-hidden="true">→</span></span>
+    </span>
+  </a>
+
+  <!-- Nextcloud ohne Schloss: sie hat eigene Konten, und neue kommen dazu -
+       das ist nicht die eine Anmeldung der Werkzeuge darunter. -->
+  <a class="kachel" href="/nextcloud/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.5 19H7a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 17.8 9.2 4.4 4.4 0 0 1 17.5 19Z"/>
+      </svg>
+    </span>
+    <h2>Nextcloud</h2>
+    <p data-t-html="start.cloud">Dateien, Kalender und Termine für den Jahrgang – an einer Stelle, auf
+      eigenem Server statt bei einem Anbieter.</p>
+    <span class="fuss">
+      <span class="hinweis" data-t="start.konto">Konto erforderlich</span>
+      <span data-t-html="start.oeffnen">Öffnen <span class="pfeil" aria-hidden="true">→</span></span>
+    </span>
+  </a>
+
+  <!-- Die Werkzeuge: eine Reihe kleiner Kacheln. Das Schloss oben rechts heisst
+       "dahinter fragt /anmelden/" (doku/betrieb.md, "Anmeldung") - die
+       gesperrten stehen deshalb zusammen am Ende. -->
+  <div class="werkzeuge">
+
+  <a class="kachel klein" href="/noten/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>
+      </svg>
+    </span>
+    <h2 data-t="start.noten">Noten</h2>
+    <p data-t="start.notenText">Audio → Noten</p>
+  </a>
+
+  <a class="kachel klein" href="/tradebot_value/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20V4"/><path d="M4 20h16"/>
+        <rect x="7.5" y="12" width="3.4" height="5"/>
+        <rect x="13.6" y="8" width="3.4" height="9"/>
+      </svg>
+    </span>
+    <svg class="schloss" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" role="img"
+         data-t-attr="aria-label:start.passwort" aria-label="Mit Passwort"><title data-t="start.passwort">Mit Passwort</title>
+      <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+    </svg>
+    <h2>Value</h2>
+    <p data-t="start.value">Trading · Bewertung</p>
+  </a>
+
+  <a class="kachel klein" href="/tradingbot_momentum/">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20V4"/><path d="M4 20h16"/>
+        <path d="M7.5 16l3.5-4.5 3 2.5L20 8"/>
+        <path d="M16.2 8H20v3.6"/>
+      </svg>
+    </span>
+    <svg class="schloss" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" role="img"
+         data-t-attr="aria-label:start.passwort" aria-label="Mit Passwort"><title data-t="start.passwort">Mit Passwort</title>
+      <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+    </svg>
+    <h2>Momentum</h2>
+    <p data-t="start.momentum">Trading · Kursverlauf</p>
+  </a>
+
+  <!-- rel=nofollow beim Lader, der Roehre und der Platte: fuer Suchmaschinen liegt
+       dahinter nur die Anmeldung. -->
+  <a class="kachel klein" href="/downloader/" rel="nofollow">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 4v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>
+      </svg>
+    </span>
+    <svg class="schloss" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" role="img"
+         data-t-attr="aria-label:start.passwort" aria-label="Mit Passwort"><title data-t="start.passwort">Mit Passwort</title>
+      <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+    </svg>
+    <h2 data-t="start.lader">Lader</h2>
+    <p data-t="start.laderText">YouTube · MP3 &amp; Video</p>
+  </a>
+
+  <!-- Roehre (seit 21.10.2026 auf der Startseite). Nur Deutsch wie der
+       Berufsfinder, deshalb ohne data-t. doku/roehre.md -->
+  <a class="kachel klein" href="/roehre/" rel="nofollow">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="5" width="18" height="13" rx="3"/><path d="M10.5 9.2v5.6l4.6-2.8z"/>
+      </svg>
+    </span>
+    <svg class="schloss" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" role="img"
+         data-t-attr="aria-label:start.passwort" aria-label="Mit Passwort"><title data-t="start.passwort">Mit Passwort</title>
+      <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+    </svg>
+    <h2>Röhre</h2>
+    <p>YouTube · ohne Werbung</p>
+  </a>
+
+  <!-- Platte (seit 23.10.2026). Nur Deutsch wie die Roehre, deshalb ohne
+       data-t. doku/platte.md -->
+  <a class="kachel klein" href="/platte/" rel="nofollow">
+    <span class="symbol" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r=".6"/>
+      </svg>
+    </span>
+    <svg class="schloss" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" role="img"
+         data-t-attr="aria-label:start.passwort" aria-label="Mit Passwort"><title data-t="start.passwort">Mit Passwort</title>
+      <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+    </svg>
+    <h2>Platte</h2>
+    <p>YouTube Music · ohne Werbung</p>
+  </a>
+
+  </div>
+
 </main>
 
 <footer>
@@ -428,38 +532,8 @@ footer a.nurich[hidden] { display: none; }
   <nav>
     <a href="/recht/impressum/" data-t="start.impressum">Impressum</a>
     <a href="/recht/datenschutz/" data-t="start.datenschutz">Datenschutz</a>
-    <!-- Nur fuer den Betreiber. Kein data-t: diesen Text sieht genau eine
-         Person, und die liest Deutsch. Steht hinter den beiden Rechtstexten,
-         damit `footer nav a` weiterhin das Impressum meint - darauf prueft
-         werkzeug/pruefe-sprache.mjs. -->
-    <a id="laderLink" class="nurich" href="/downloader/" rel="nofollow"
-       title="yt-dlp hinter Passwort" hidden>Lader</a>
   </nav>
 </footer>
-
-<!-- Der Lader-Link, nur auf den eigenen Geraeten.
-     `inf-zeus.de/?lader` schaltet ihn auf diesem Geraet frei, `?lader=weg`
-     wieder ab; die Marke steht danach im localStorage dieses Browsers und
-     ueberlebt jeden Besuch. Fuer alle anderen bleibt der Link `hidden`.
-     Das ist Sichtbarkeit, kein Schloss - das Schloss ist das Passwort in
-     Apache vor /downloader/, und daran aendert diese Zeile nichts. -->
-<script>
-  (function () {
-    var MARKE = "lader";
-    try {
-      var frage = new URLSearchParams(location.search);
-      if (frage.has(MARKE)) {
-        if (frage.get(MARKE) === "weg") localStorage.removeItem(MARKE);
-        else localStorage.setItem(MARKE, "1");
-        history.replaceState(null, "", location.pathname);
-      }
-      if (localStorage.getItem(MARKE)) document.getElementById("laderLink").hidden = false;
-    } catch (e) {
-      /* Privates Fenster oder gesperrter Speicher: dann bleibt der Link weg.
-         Die Adresse /downloader/ tut es auch von Hand. */
-    }
-  })();
-</script>
 
 <!-- Sprachen. Deutsch steht im HTML darueber; dieses Modul legt Tuerkisch und
      Englisch darauf. Ohne JavaScript bleibt alles deutsch und vollstaendig. -->

@@ -167,10 +167,14 @@ if (fehltHeimat.length) {
 }
 
 // ---------------------------------------------------------------- Rechnen
-const spielbar = [...alleKacheln.keys()];
+// Kacheln unter „Neu" (gruppe-neu) stehen schon ganz oben und nehmen an der
+// Rangliste nicht teil – kaemen sie nach oben, bliebe ihre Kategorie leer und
+// die Rechnung braeche ab. Siehe doku/beliebt.md.
+const NEU = "gruppe-neu";
+const spielbar = [...alleKacheln.keys()].filter((s) => alleKacheln.get(s).heimat !== NEU);
 const gesperrt = (s) => tageSeit(stand.seit?.[s]) < RUHE;
 
-let oben = (stand.oben ?? []).filter((s) => alleKacheln.has(s));
+let oben = (stand.oben ?? []).filter((s) => spielbar.includes(s));
 let grund = null;
 
 if (!oben.length) {

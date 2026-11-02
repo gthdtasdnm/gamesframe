@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title data-t="seite.titel">Spiele – inf-zeus.de</title>
-<meta name="description" data-t-attr="content:seite.beschreibung" content="Dreißig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
+<meta name="description" data-t-attr="content:seite.beschreibung" content="Zweiunddreißig Browserspiele für 1 bis 20 Leute. Ohne Installation, ohne Account.">
 <meta name="theme-color" content="#0a0713">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
 <style>
@@ -435,6 +435,31 @@ h1 {
 .dot.up { color: #52ffa8; opacity: .8; }
 .dot.down { color: #ff4d5e; opacity: 1; }
 
+/* --- Neu ----------------------------------------------------------------- */
+/* Eigene Kategorie ganz oben fuer frisch dazugekommene Spiele. Die Kachel
+   hat als Heimat „gruppe-neu" (rangfolge.mjs schreibt das beim ersten Lauf
+   hinein) und nimmt deshalb nicht an der Rangliste teil – sonst wuerde die
+   Kategorie leer.
+   Ist ein Spiel nicht mehr neu: Kachel von Hand in ihre Kategorie ziehen,
+   das Abzeichen entfernen und, wenn nichts mehr neu ist, den Abschnitt. */
+.neu {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #1a0f00;
+  background: linear-gradient(90deg, #ff7a1a, #f0c040);
+  box-shadow: 0 0 14px rgba(255, 140, 40, .55);
+  animation: neuGlimmen 2.4s ease-in-out infinite;
+}
+@keyframes neuGlimmen {
+  50% { box-shadow: 0 0 22px rgba(255, 170, 60, .85); }
+}
+@media (prefers-reduced-motion: reduce) { .neu { animation: none; } }
+
 /* --- Fehler melden ------------------------------------------------------- */
 
 /* Bewusst keine .game-Kachel: der Bugreport ist kein Spiel und gehört in
@@ -691,7 +716,7 @@ footer a { color: inherit; }
     <div data-sprachwahl aria-label="Sprache"></div>
   </div>
   <h1 data-t="seite.h1">Spiele</h1>
-  <p class="sub" data-t-html="seite.sub">Dreißig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
+  <p class="sub" data-t-html="seite.sub">Zweiunddreißig Browserspiele für 1 bis 20 Leute. Kein Download, kein Account
     – Link teilen, Namen eintippen, los.</p>
 </header>
 
@@ -705,6 +730,72 @@ footer a { color: inherit; }
   </label>
   <p class="such-info" id="suchErgebnis" role="status" aria-live="polite"></p>
 </div>
+
+<section class="gruppe" aria-labelledby="gruppe-neu">
+  <h2 class="gruppe-titel" id="gruppe-neu" data-t="gruppe.neu.titel">Neu</h2>
+  <p class="gruppe-sub" data-t-html="gruppe.neu.sub">Frisch dazugekommen – probiert es aus und sagt, was fehlt.</p>
+</section>
+
+<main class="raster">
+  <article class="game" style="--accent:#ff9f5a; --accent2:#ffd88a;"
+           data-spiel="ordnung" data-heimat="gruppe-neu" data-platz="0" data-bild="bilder/ordnung-spiel.webp"
+           data-kurz="Besteck, Stifte, Knöpfe und schiefe Bilder – aber wohin gehört was? Ein ruhiges Aufräumrätsel.">
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Ordnung gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
+    <a class="game-link" href="/ordnung/">
+      <img class="schnappschuss" src="bilder/klein/ordnung-spiel.webp" alt="Bildschirmfoto aus Ordnung: eine Lochwand, an der die ersten Werkzeuge hängen"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🧺</span>
+        <h3>Ordnung</h3>
+        <span class="neu" data-t="ui.neu">Neu</span>
+      </div>
+      <p class="kurz" data-t-html="k.ordnung.kurz">Besteck, Stifte, Knöpfe und schiefe Bilder – aber wohin gehört was? Ein ruhiges Aufräumrätsel.</p>
+      <p class="lang" data-t-html="k.ordnung.lang">Vierzehn kleine Räume voller Unordnung: eine Besteckschublade, eine Werkzeugwand, ein Bücherregal, eine Wäscheleine, ein Gewürzregal. Nirgends steht, was wohin gehört: Nach Länge? Nach Farbe? Paarweise? Erst wenn alles nach der richtigen Ordnung liegt, geht der Raum auf – Ding für Ding mit einem Ton, bis eine kleine Melodie daraus wird. Keine Uhr, und wer nicht weiterkommt, fragt die Glühbirne. Am besten mit Ton.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.offline">offline</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li data-t-html="k.ordnung.s1">Alles liegt durcheinander. <b>Zieh jedes Ding</b> an einen Platz – nah genug, dann legt es sich hinein.</li>
+        <li data-t-html="k.ordnung.s2">Wohin was gehört, <b>steht nirgends</b>. Erst wenn alles nach einer Ordnung liegt, geht der Raum auf.</li>
+        <li data-t-html="k.ordnung.s3">Falsch? Wieder herausnehmen – auf einen <b>besetzten Platz</b> gelegt, tauschen die beiden. Schiefes ziehst du gerade.</li>
+        <li data-t-html="k.ordnung.s4">Nicht weiter? <b>💡</b> verrät die Ordnung des Raums. Über <b>☰</b> springst du in jeden der vierzehn Räume.</li>
+    </template>
+  </article>
+  <article class="game" style="--accent:#ff7a1a; --accent2:#3e9bf0;"
+           data-spiel="elementar" data-heimat="gruppe-neu" data-platz="1" data-bild="bilder/elementar-spiel.webp"
+           data-kurz="Feuer, Wasser, Erde oder Luft bändigen – in einer Welt, in der jedes Pixel brennt, fließt, schmilzt oder einstürzt.">
+    <button class="info" type="button" data-t-attr="aria-label:ui.anleitungLabel" aria-label="Wie Elementar gespielt wird"><span aria-hidden="true">i</span><span data-t="ui.anleitung">Anleitung</span></button>
+    <a class="game-link" href="/elementar/">
+      <img class="schnappschuss" src="bilder/klein/elementar-spiel.webp" alt="Bildschirmfoto aus einer Partie Elementar"
+           width="640" height="435" loading="lazy" decoding="async">
+      <div class="kopf">
+        <span class="icon" aria-hidden="true">🔥</span>
+        <h3>Elementar</h3>
+        <span class="neu" data-t="ui.neu">Neu</span>
+      </div>
+      <p class="kurz" data-t-html="k.elementar.kurz">Feuer, Wasser, Erde oder Luft bändigen – in einer Welt, in der jedes Pixel brennt, fließt, schmilzt oder einstürzt.</p>
+      <p class="lang" data-t-html="k.elementar.lang">Eine seitlich endlose Pixelwelt mit Wäldern, Wüsten, Schneeland, Gebirge und tiefen Höhlen – jede Zelle ist Sand, Wasser, Stein, Lava oder etwas anderes und verhält sich auch so. Du wählst ein Element und kämpfst gegen Schleime, Fledermäuse und Elementgeister: Feuerbälle sprengen Krater, Wasser wird zu Eis, Erde reißt du aus dem Boden, Luftklingen bohren Tunnel. Dazu ein Sandkasten zum Malen mit Lava, Öl und Samen. Läuft am Rechner mit Tastatur und Maus.</p>
+      <div class="meta">
+        <span class="dot" data-status></span>
+        <span class="tag" data-t-html="tag.allein">allein</span>
+        <span class="tag" data-t-html="tag.rechner">Tastatur + Maus</span>
+        <span class="go" data-t="ui.spielen">Spielen →</span>
+      </div>
+    </a>
+    <template class="ablauf">
+        <li data-t-html="k.elementar.s1">Element wählen: <b>Feuer</b>, <b>Wasser</b>, <b>Erde</b> oder <b>Luft</b>. Jedes spielt sich anders und gräbt sich auf seine Weise durch den Fels.</li>
+        <li data-t-html="k.elementar.s2"><b>A/D</b> laufen, <b>W</b> springen – gehalten fliegen Feuer und Luft, im Wasser schwimmt man. Gezielt wird mit der Maus.</li>
+        <li data-t-html="k.elementar.s3">Linke und rechte Maustaste und <b>Q</b> sind die drei Fähigkeiten deines Elements. Was sie tun, steht auf der Auswahlkarte und unten im Bild.</li>
+        <li data-t-html="k.elementar.s4">Jede Fähigkeit kostet Chi. <b>Leertaste halten</b> heißt meditieren: Chi lädt schnell auf, solange stehst du still.</li>
+        <li data-t-html="k.elementar.s5">Monster kommen von selbst. Geister haben ein Element und sind gegen das stärkere schwach: Wasser schlägt Feuer, Feuer Luft, Luft Erde, Erde Wasser.</li>
+        <li data-t-html="k.elementar.s6"><b>Tab</b> schaltet in den Sandkasten: mit 1–0 ein Material wählen und malen. <b>Esc</b> führt zurück zur Auswahl.</li>
+    </template>
+  </article>
+</main>
 
 <section class="gruppe" aria-labelledby="gruppe-beliebt">
   <h2 class="gruppe-titel" id="gruppe-beliebt" data-t="gruppe.beliebt.titel">Am meisten gespielt</h2>
